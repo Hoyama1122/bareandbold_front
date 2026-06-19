@@ -1,65 +1,129 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect } from "react";
+import Header from "@/components/storefront/Header";
+import Hero from "@/components/storefront/Hero";
+import PromoBanners from "@/components/storefront/PromoBanners";
+import TrustBadges from "@/components/storefront/TrustBadges";
+import ProductCard from "@/components/storefront/ProductCard";
+import Footer from "@/components/storefront/Footer";
+
+// Mock products catalog in Destry style
+const PRODUCTS = [
+  {
+    id: 1,
+    brand: "Studio Design",
+    name: "เสื้อฮู้ดสีเทา",
+    rating: 5,
+    price: "$35.00",
+    oldPrice: "$49.00",
+    imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=600&auto=format&fit=crop",
+    badge: null,
+  },
+  {
+    id: 2,
+    brand: "Studio Design",
+    name: "ผ้าพันคอทอลายเรียบหรู",
+    rating: 4,
+    price: "$45.00",
+    oldPrice: "$60.00",
+    imageUrl: "https://images.unsplash.com/photo-1605050604139-38e91aa795bb?q=80&w=600&auto=format&fit=crop",
+    badge: "มาใหม่",
+  },
+  {
+    id: 3,
+    brand: "Leather Design",
+    name: "รองเท้าสนีกเกอร์หนังสุดเท่",
+    rating: 5,
+    price: "$85.00",
+    oldPrice: null,
+    imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop",
+    badge: null,
+  },
+  {
+    id: 4,
+    brand: "Design Source",
+    name: "กระเป๋าสะพายแฮนด์เมด",
+    rating: 5,
+    price: "$95.00",
+    oldPrice: "$120.00",
+    imageUrl: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop",
+    badge: null,
+  },
+];
+
+export default function Storefront() {
+  const [activeTab, setActiveTab] = useState("new"); // new, best, sale
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("bare_auth_token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[#FDFBF7] text-[#3C322A] font-sans antialiased">
+      
+      {/* 1. Header (Utility & Navigation) */}
+      <Header isLoggedIn={isLoggedIn} />
+
+      {/* 2. Hero Section */}
+      <Hero />
+
+      {/* 3. Promo Banners Grid */}
+      <PromoBanners />
+
+      {/* 4. Trust Guarantee Badges */}
+      <TrustBadges />
+
+      {/* 5. Filter Category Tabs */}
+      <section className="max-w-7xl mx-auto px-6 pt-16 pb-8 flex justify-center gap-8 border-b border-[#F5F0E6]">
+        <button
+          onClick={() => setActiveTab("new")}
+          className={`pb-2 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+            activeTab === "new"
+              ? "text-[#556B2F] border-b-2 border-[#556B2F]"
+              : "text-[#777777] hover:text-[#3C322A]"
+          }`}
+        >
+          มาใหม่
+        </button>
+        <button
+          onClick={() => setActiveTab("best")}
+          className={`pb-2 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+            activeTab === "best"
+              ? "text-[#556B2F] border-b-2 border-[#556B2F]"
+              : "text-[#777777] hover:text-[#3C322A]"
+          }`}
+        >
+          ขายดี
+        </button>
+        <button
+          onClick={() => setActiveTab("sale")}
+          className={`pb-2 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+            activeTab === "sale"
+              ? "text-[#556B2F] border-b-2 border-[#556B2F]"
+              : "text-[#777777] hover:text-[#3C322A]"
+          }`}
+        >
+          ลดราคา
+        </button>
+      </section>
+
+      {/* 6. Products Catalog Grid */}
+      <section className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {PRODUCTS.map((prod) => (
+            <ProductCard key={prod.id} product={prod} />
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
+
+      {/* 7. Footer */}
+      <Footer />
+
     </div>
   );
 }
