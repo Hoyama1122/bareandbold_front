@@ -27,7 +27,7 @@ export default function AuthPage() {
   const fetchUserProfile = async (token) => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/profile", {
+      const res = await fetch("http://localhost:8000/api/auth/profile", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
