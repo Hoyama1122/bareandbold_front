@@ -68,6 +68,19 @@ Bracelet Marketplace เป็นเว็บไซต์ซื้อขาย�
 - Update Shipping Status
 - Revenue Dashboard
 
+### Backoffice Admin Features
+
+- Register
+- Login
+- Create Product
+- Edit Product
+- Delete Product
+- Manage Orders
+- Update Shipping Status
+- Revenue Dashboard
+- Approve shop
+- Approve withdraw
+
 ## Product Types
 
 ### Normal Product
@@ -98,7 +111,7 @@ Customer Order → Payment → Seller Notification → Preparing Product → Shi
 
 ### Database
 
-- PostgreSQL ,NEON
+- PostgreSQL , NEON
 
 ### Authentication
 
