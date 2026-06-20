@@ -3,9 +3,11 @@
 ## Project Information
 
 ### Project Name
+
 Bracelet Marketplace
 
 ### Project Type
+
 Multi-Vendor E-Commerce Website
 
 ### Project Description
@@ -29,11 +31,13 @@ Bracelet Marketplace เป็นเว็บไซต์ซื้อขาย�
 ## Target Users
 
 ### Buyers
+
 - บุคคลทั่วไป
 - ผู้ที่ต้องการสั่งทำกำไลเฉพาะบุคคล
 - ผู้ที่ชื่นชอบเครื่องประดับแฮนด์เมด
 
 ### Sellers
+
 - ร้านค้ากำไลข้อมือ
 - ร้านค้ากำไลข้อเท้า
 - ผู้ผลิตงาน Handmade
@@ -42,6 +46,7 @@ Bracelet Marketplace เป็นเว็บไซต์ซื้อขาย�
 ## Main Features
 
 ### Buyer Features
+
 - Register
 - Login
 - Browse Products
@@ -52,6 +57,7 @@ Bracelet Marketplace เป็นเว็บไซต์ซื้อขาย�
 - Track Orders
 
 ### Seller Features
+
 - Register
 - Login
 - Create Product
@@ -64,9 +70,11 @@ Bracelet Marketplace เป็นเว็บไซต์ซื้อขาย�
 ## Product Types
 
 ### Normal Product
+
 พร้อมจัดส่งทันที
 
 ### Custom Product
+
 ผู้ขายกำหนดจำนวนวันผลิตก่อนจัดส่ง เช่น 3 วัน, 7 วัน, 14 วัน
 
 ## Order Workflow
@@ -76,22 +84,28 @@ Customer Order → Payment → Seller Notification → Preparing Product → Shi
 ## Technologies
 
 ### Frontend
+
 - Next.js
 - React
 - Tailwind CSS
 
 ### Backend
+
 - Node.js
-- NestJS
+- Bun
+- Hono
 
 ### Database
-- PostgreSQL
+
+- PostgreSQL (Neon)
 
 ### Authentication
+
 - JWT
 
 ### Cloud Storage
-- AWS S3
+
+- Cloudflare R2
 
 ## Expected Benefits
 

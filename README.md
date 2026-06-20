@@ -15,7 +15,6 @@ Multi-Vendor E-Commerce Website
 Bracelet Marketplace เป็นเว็บไซต์ซื้อขายกำไลข้อมือและกำไลข้อเท้าแบบ Marketplace ที่เปิดให้ผู้ขายหลายรายสามารถสมัครสมาชิกและโพสต์ขายสินค้าได้
 
 ระบบรองรับทั้ง
-
 - สินค้าปกติ (Ready-to-Ship)
 - สินค้าคัสตอม (Made-to-Order)
 
@@ -98,7 +97,7 @@ Customer Order → Payment → Seller Notification → Preparing Product → Shi
 
 ### Database
 
-- PostgreSQL ,NEON
+- PostgreSQL (Neon)
 
 ### Authentication
 
