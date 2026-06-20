@@ -17,7 +17,8 @@ const PRODUCTS = [
     rating: 5,
     price: "$35.00",
     oldPrice: "$49.00",
-    imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=600&auto=format&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=600&auto=format&fit=crop",
     badge: null,
   },
   {
@@ -27,7 +28,8 @@ const PRODUCTS = [
     rating: 4,
     price: "$45.00",
     oldPrice: "$60.00",
-    imageUrl: "https://images.unsplash.com/photo-1605050604139-38e91aa795bb?q=80&w=600&auto=format&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1605050604139-38e91aa795bb?q=80&w=600&auto=format&fit=crop",
     badge: "มาใหม่",
   },
   {
@@ -37,7 +39,8 @@ const PRODUCTS = [
     rating: 5,
     price: "$85.00",
     oldPrice: null,
-    imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop",
     badge: null,
   },
   {
@@ -47,7 +50,8 @@ const PRODUCTS = [
     rating: 5,
     price: "$95.00",
     oldPrice: "$120.00",
-    imageUrl: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop",
     badge: null,
   },
 ];
@@ -65,7 +69,6 @@ export default function Storefront() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#3C322A] font-sans antialiased">
-      
       {/* 1. Header (Utility & Navigation) */}
       <Header isLoggedIn={isLoggedIn} />
 
@@ -79,10 +82,10 @@ export default function Storefront() {
       <TrustBadges />
 
       {/* 5. Filter Category Tabs */}
-      <section className="max-w-7xl mx-auto px-6 pt-16 pb-8 flex justify-center gap-8 border-b border-[#F5F0E6]">
+      <section className="font-anuphan max-w-[1440px] mx-auto px-6 pt-16 pb-8 flex justify-center gap-8 border-b border-[#F5F0E6]">
         <button
           onClick={() => setActiveTab("new")}
-          className={`pb-2 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+          className={`pb-2 text-base font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
             activeTab === "new"
               ? "text-[#556B2F] border-b-2 border-[#556B2F]"
               : "text-[#777777] hover:text-[#3C322A]"
@@ -92,7 +95,7 @@ export default function Storefront() {
         </button>
         <button
           onClick={() => setActiveTab("best")}
-          className={`pb-2 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+          className={`pb-2 text-base font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
             activeTab === "best"
               ? "text-[#556B2F] border-b-2 border-[#556B2F]"
               : "text-[#777777] hover:text-[#3C322A]"
@@ -102,7 +105,7 @@ export default function Storefront() {
         </button>
         <button
           onClick={() => setActiveTab("sale")}
-          className={`pb-2 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+          className={`pb-2 text-base font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
             activeTab === "sale"
               ? "text-[#556B2F] border-b-2 border-[#556B2F]"
               : "text-[#777777] hover:text-[#3C322A]"
@@ -113,7 +116,7 @@ export default function Storefront() {
       </section>
 
       {/* 6. Products Catalog Grid */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
+      <section className="max-w-[1440px] mx-auto px-6 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {PRODUCTS.map((prod) => (
             <ProductCard key={prod.id} product={prod} />
@@ -123,7 +126,6 @@ export default function Storefront() {
 
       {/* 7. Footer */}
       <Footer />
-
     </div>
   );
 }
