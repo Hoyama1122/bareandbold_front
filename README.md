@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Bracelet Marketplace
 
-## Getting Started
+## Project Information
 
-First, run the development server:
+### Project Name
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Bracelet Marketplace
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Project Type
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Multi-Vendor E-Commerce Website
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Project Description
 
-## Learn More
+Bracelet Marketplace เป็นเว็บไซต์ซื้อขายกำไลข้อมือและกำไลข้อเท้าแบบ Marketplace ที่เปิดให้ผู้ขายหลายรายสามารถสมัครสมาชิกและโพสต์ขายสินค้าได้
 
-To learn more about Next.js, take a look at the following resources:
+ระบบรองรับทั้ง
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- สินค้าปกติ (Ready-to-Ship)
+- สินค้าคัสตอม (Made-to-Order)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+ผู้ซื้อสามารถเลือกสินค้า เพิ่มลงตะกร้า หรือซื้อได้ทันที พร้อมติดตามสถานะการจัดส่งและตรวจสอบเลขพัสดุได้
 
-## Deploy on Vercel
+## Objectives
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. สร้างแพลตฟอร์มสำหรับซื้อขายกำไลข้อมือและกำไลข้อเท้า
+2. รองรับผู้ขายหลายร้านภายในระบบเดียว
+3. รองรับสินค้าคัสตอมที่ต้องใช้ระยะเวลาในการผลิต
+4. จัดการคำสั่งซื้อและการจัดส่งสินค้าอย่างเป็นระบบ
+5. แสดงรายได้และยอดขายของผู้ขายแบบเรียลไทม์
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Target Users
+
+### Buyers
+
+- บุคคลทั่วไป
+- ผู้ที่ต้องการสั่งทำกำไลเฉพาะบุคคล
+- ผู้ที่ชื่นชอบเครื่องประดับแฮนด์เมด
+
+### Sellers
+
+- ร้านค้ากำไลข้อมือ
+- ร้านค้ากำไลข้อเท้า
+- ผู้ผลิตงาน Handmade
+- ผู้รับทำสินค้าคัสตอม
+
+## Main Features
+
+### Buyer Features
+
+- Register
+- Login
+- Browse Products
+- Search Products
+- Shopping Cart
+- Checkout
+- Payment
+- Track Orders
+
+### Seller Features
+
+- Register
+- Login
+- Create Product
+- Edit Product
+- Delete Product
+- Manage Orders
+- Update Shipping Status
+- Revenue Dashboard
+
+## Product Types
+
+### Normal Product
+
+พร้อมจัดส่งทันที
+
+### Custom Product
+
+ผู้ขายกำหนดจำนวนวันผลิตก่อนจัดส่ง เช่น 3 วัน, 7 วัน, 14 วัน
+
+## Order Workflow
+
+Customer Order → Payment → Seller Notification → Preparing Product → Shipping → Order Completed
+
+## Technologies
+
+### Frontend
+
+- Next.js
+- React
+- Tailwind CSS
+
+### Backend
+
+- Node.js
+- Bun
+- Hono
+
+### Database
+
+- PostgreSQL ,NEON
+
+### Authentication
+
+- JWT
+
+### Cloud Storage
+
+- Cloudflare R2
+
+## Expected Benefits
+
+- เพิ่มช่องทางขายสินค้าให้ผู้ผลิตกำไล
+- รองรับธุรกิจขนาดเล็กและร้านค้าออนไลน์
+- ช่วยให้ลูกค้าสั่งสินค้าคัสตอมได้ง่ายขึ้น
+- ลดขั้นตอนการจัดการคำสั่งซื้อของผู้ขาย
+
+## Future Development
+
+- ระบบรีวิวสินค้า
+- ระบบรีวิวร้านค้า
+- ระบบแชตระหว่างผู้ซื้อและผู้ขาย
+- Mobile Application
