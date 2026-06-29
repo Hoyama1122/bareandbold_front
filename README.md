@@ -228,3 +228,6 @@ graph TD
     %% Gateway & Mock Connections
     Payment -->|API Call| Omise
     Shipping -->|Mock Tracking Data| DB
+```
+
+เอกสารเพิ่มตาม https://bareandbold-front.pages.dev/docs
