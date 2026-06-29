@@ -1,7 +1,7 @@
 # แบบฟอร์มขออนุมัติโครงงานกลุ่ม 
 **รายวิชา CSI204 ดิจิทัลแพลตฟอร์มสำหรับพัฒนาซอฟต์แวร์**
-**ภาคการศึกษา:** 3 (Summer) **ปีการศึกษา:** 2568 [1, 2]
-**Domain:** e-Commerce [1, 3]
+**ภาคการศึกษา:** 3 (Summer) **ปีการศึกษา:** 2568 
+**Domain:** e-Commerce
 
 ---
 
@@ -111,3 +111,64 @@
 | **2** | พัฒนา Frontend (Frontend Development) | พัฒนาหน้าจอผู้ใช้ (Buyer) และหน้าจัดการร้านค้า (Seller Dashboard) |
 | **3** | พัฒนา Backend และฐานข้อมูล (Backend & Database Development) | สร้าง API จัดการสินค้า ออเดอร์ และเชื่อมต่อกับ PostgreSQL |
 | **4** | ทดสอบระบบและนำเสนอผลงาน (Testing & Presentation) | ทำ Manual Testing/UAT ตรวจสอบบัค และเตรียมพรีเซนต์โปรเจกต์ |
+## 3. System Architecture Diagram
+ด้านล่างนี้คือแผนผังสถาปัตยกรรมระบบ (System Architecture) ของ Bracelet Marketplace ที่แสดงการเชื่อมต่อระหว่าง Frontend, Backend และ Database
+
+---
+
+```mermaid
+graph TD
+    %% 1. Actors Layer
+    Customer([Customer / Buyer])
+    Seller([Seller / Vendor])
+    Admin([Platform Admin])
+
+    %% 2. Frontend Layer
+    subgraph Frontend [Frontend Layer (Next.js & Tailwind)]
+        BuyerUI[Buyer Interface]
+        SellerUI[Seller Dashboard]
+        AdminUI[Admin Dashboard]
+    end
+
+    %% 3. Backend Layer
+    subgraph Backend [Backend API Layer (Node.js / Bun / Hono)]
+        Auth[Auth Service <br> JWT]
+        Product[Product Service]
+        Order[Order & Cart Service]
+        Payment[Payment Service]
+    end
+
+    %% 4. Infrastructure & Database Layer
+    subgraph Infrastructure [Data & Storage Layer]
+        DB[(PostgreSQL <br> Neon)]
+        Storage[(Cloud Storage <br> Cloudflare R2)]
+    end
+
+    %% --- Connections ---
+    
+    %% Users to Frontend
+    Customer -->|เข้าใช้งาน| BuyerUI
+    Seller -->|จัดการร้านค้า| SellerUI
+    Admin -->|ดูแลระบบ| AdminUI
+
+    %% Frontend to Backend (API Calls)
+    BuyerUI -->|HTTP REST| Auth
+    BuyerUI -->|HTTP REST| Product
+    BuyerUI -->|HTTP REST| Order
+    BuyerUI -->|HTTP REST| Payment
+
+    SellerUI -->|HTTP REST| Auth
+    SellerUI -->|HTTP REST| Product
+    SellerUI -->|HTTP REST| Order
+
+    AdminUI -->|HTTP REST| Auth
+    AdminUI -->|HTTP REST| Product
+    AdminUI -->|HTTP REST| Order
+    AdminUI -->|HTTP REST| Payment
+
+    %% Backend to Database & Storage
+    Auth -->|Read/Write| DB
+    Product -->|Read/Write| DB
+    Product -->|Upload/Fetch Images| Storage
+    Order -->|Read/Write| DB
+    Payment -->|Read/Write| DB
