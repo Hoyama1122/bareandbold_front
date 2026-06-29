@@ -7,10 +7,11 @@ import { Search01Icon, FavouriteIcon, ShoppingBag01Icon, UserIcon } from "hugeic
 
 const NAV_LINKS = [
   { label: "หน้าแรก", href: "/" },
-  { label: "ร้านค้า", href: "#shop" },
-  { label: "หน้าเพจ", href: "#pages" },
-  { label: "บทความ", href: "#blog" },
-  { label: "ติดต่อเรา", href: "#contact" },
+  { label: "ร้านค้า", href: "/#shop" },
+  { label: "หน้าเพจ", href: "/#pages" },
+  { label: "บทความ", href: "/#blog" },
+  { label: "ติดต่อเรา", href: "/#contact" },
+  { label: "เอกสารระบบ", href: "/docs" },
 ];
 
 export default function Header({ isLoggedIn }) {
