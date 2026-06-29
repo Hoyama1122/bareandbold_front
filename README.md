@@ -132,43 +132,49 @@ graph TD
 
     %% 3. Backend Layer
     subgraph Backend ["Backend API Layer (Node.js / Bun / Hono)"]
-        Auth["Auth Service <br> JWT"]
+        Auth["Auth Service"]
         Product["Product Service"]
         Order["Order & Cart Service"]
         Payment["Payment Service"]
+        Shipping["Shipping Service <br> (Mock / Stub)"]
     end
 
     %% 4. Infrastructure & Database Layer
     subgraph Infrastructure ["Data & Storage Layer"]
         DB[("PostgreSQL <br> Neon")]
-        Storage[("Cloud Storage <br> Cloudflare R2")]
+        Storage[("Cloud Storage <br> R2")]
+    end
+
+    %% 5. External Services Layer
+    subgraph External ["External Services"]
+        Omise["Omise <br> (Payment Gateway)"]
     end
 
     %% --- Connections ---
     
-    %% Users to Frontend
     Customer -->|เข้าใช้งาน| BuyerUI
     Seller -->|จัดการร้านค้า| SellerUI
     Admin -->|ดูแลระบบ| AdminUI
 
-    %% Frontend to Backend (API Calls)
     BuyerUI -->|HTTP REST| Auth
     BuyerUI -->|HTTP REST| Product
     BuyerUI -->|HTTP REST| Order
     BuyerUI -->|HTTP REST| Payment
+    BuyerUI -->|ติดตามพัสดุ| Shipping
 
-    SellerUI -->|HTTP REST| Auth
-    SellerUI -->|HTTP REST| Product
-    SellerUI -->|HTTP REST| Order
+    SellerUI -->|อัปเดตสถานะพัสดุ| Shipping
+    SellerUI -->|จัดการออเดอร์| Order
+    SellerUI -->|จัดการสินค้า| Product
 
-    AdminUI -->|HTTP REST| Auth
-    AdminUI -->|HTTP REST| Product
-    AdminUI -->|HTTP REST| Order
-    AdminUI -->|HTTP REST| Payment
+    AdminUI -->|ดูรายงาน| Order
+    AdminUI -->|จัดการระบบ| Auth
 
-    %% Backend to Database & Storage
     Auth -->|Read/Write| DB
     Product -->|Read/Write| DB
-    Product -->|Upload/Fetch Images| Storage
+    Product -->|Upload/Fetch| Storage
     Order -->|Read/Write| DB
-    Payment -->|Read/Write| DB
+    Payment -->|Verify/Update| DB
+    
+    %% Gateway & Mock Connections
+    Payment -->|API Call| Omise
+    Shipping -->|Mock Tracking Data| DB
