@@ -119,29 +119,29 @@
 ```mermaid
 graph TD
     %% 1. Actors Layer
-    Customer([Customer / Buyer])
-    Seller([Seller / Vendor])
-    Admin([Platform Admin])
+    Customer(["Customer / Buyer"])
+    Seller(["Seller / Vendor"])
+    Admin(["Platform Admin"])
 
     %% 2. Frontend Layer
-    subgraph Frontend [Frontend Layer (Next.js & Tailwind)]
-        BuyerUI[Buyer Interface]
-        SellerUI[Seller Dashboard]
-        AdminUI[Admin Dashboard]
+    subgraph Frontend ["Frontend Layer (Next.js & Tailwind)"]
+        BuyerUI["Buyer Interface"]
+        SellerUI["Seller Dashboard"]
+        AdminUI["Admin Dashboard"]
     end
 
     %% 3. Backend Layer
-    subgraph Backend [Backend API Layer (Node.js / Bun / Hono)]
-        Auth[Auth Service <br> JWT]
-        Product[Product Service]
-        Order[Order & Cart Service]
-        Payment[Payment Service]
+    subgraph Backend ["Backend API Layer (Node.js / Bun / Hono)"]
+        Auth["Auth Service <br> JWT"]
+        Product["Product Service"]
+        Order["Order & Cart Service"]
+        Payment["Payment Service"]
     end
 
     %% 4. Infrastructure & Database Layer
-    subgraph Infrastructure [Data & Storage Layer]
-        DB[(PostgreSQL <br> Neon)]
-        Storage[(Cloud Storage <br> Cloudflare R2)]
+    subgraph Infrastructure ["Data & Storage Layer"]
+        DB[("PostgreSQL <br> Neon")]
+        Storage[("Cloud Storage <br> Cloudflare R2")]
     end
 
     %% --- Connections ---
