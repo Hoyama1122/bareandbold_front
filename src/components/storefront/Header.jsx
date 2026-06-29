@@ -2,14 +2,25 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Search01Icon, FavouriteIcon, ShoppingBag01Icon, UserIcon } from "hugeicons-react";
 
+const NAV_LINKS = [
+  { label: "หน้าแรก", href: "/" },
+  { label: "ร้านค้า", href: "#shop" },
+  { label: "หน้าเพจ", href: "#pages" },
+  { label: "บทความ", href: "#blog" },
+  { label: "ติดต่อเรา", href: "#contact" },
+];
+
 export default function Header({ isLoggedIn }) {
+  const pathname = usePathname();
+
   return (
     <>
       {/* Main Navigation Bar */}
-      <header className="w-full py-5 bg-earth-cream border-b border-earth-beige sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+      <header className="sticky top-0 z-50 bg-[#FFFFFF]/95 backdrop-blur-md border-b border-[#F5F0E6] shadow-sm">
+        <div className="max-w-[1440px] mx-auto px-6 h-18 flex items-center justify-between">
           {/* Logo */}
           <Link
             href="/"
@@ -19,25 +30,23 @@ export default function Header({ isLoggedIn }) {
           </Link>
 
           {/* Nav links */}
-          <nav className="hidden md:flex items-center gap-8 text-[13px] font-bold text-earth-dark">
-            <Link
-              href="/"
-              className="text-earth-olive hover:opacity-80 transition"
-            >
-              หน้าแรก
-            </Link>
-            <a href="#shop" className="hover:text-earth-olive transition">
-              ร้านค้า
-            </a>
-            <a href="#pages" className="hover:text-earth-olive transition">
-              หน้าเพจ
-            </a>
-            <a href="#blog" className="hover:text-earth-olive transition">
-              บทความ
-            </a>
-            <a href="#contact" className="hover:text-earth-olive transition">
-              ติดต่อเรา
-            </a>
+          <nav className="hidden md:flex items-center gap-8 text-[14px] font-anuphan font-bold">
+            {NAV_LINKS.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className={`transition ${
+                    isActive
+                      ? "text-earth-olive border-b-2 border-earth-olive pb-1"
+                      : "text-earth-dark hover:text-earth-olive"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Action Icons & Profile Access */}

@@ -11,7 +11,7 @@ export default function Hero() {
           <h2 className="text-4xl sm:text-5xl md:text-6xl  tracking-wide font-anuphan font-extrabold text-earth-dark leading-tight">
             แฟชั่นผู้หญิง <br /> คอลเลกชันใหม่
           </h2>
-          <p className="text-sm text-earth-olive font-bold">
+          <p className="text-sm text-earth-olive font-bold font-anuphan ">
             ลดสูงสุด 70% เฉพาะสินค้าที่ร่วมรายการ
           </p>
           <button className="py-3 px-6 bg-earth-walnut hover:opacity-90 text-earth-cream text-xs font-bold uppercase tracking-wider rounded-md transition duration-300 shadow-sm shadow-earth-walnut/25">
