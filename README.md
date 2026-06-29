@@ -114,8 +114,6 @@
 | **2** | พัฒนา Frontend (Frontend Development) | พัฒนาหน้าจอผู้ใช้ (Buyer) และหน้าจัดการร้านค้า (Seller Dashboard) |
 | **3** | พัฒนา Backend และฐานข้อมูล (Backend & Database Development) | สร้าง API จัดการสินค้า, เชื่อมต่อ Omise API สำหรับชำระเงิน และทำ Mock Shipping |
 | **4** | ทดสอบระบบและนำเสนอผลงาน (Testing & Presentation) | ทำ Manual Testing/UAT ตรวจสอบบัค และเตรียมพรีเซนต์โปรเจกต์ |
-## 3. System Architecture Diagram
-ด้านล่างนี้คือแผนผังสถาปัตยกรรมระบบ (System Architecture) ของ Bracelet Marketplace ที่แสดงการเชื่อมต่อระหว่าง Frontend, Backend และ Database
 
 ---
 # 📊 Analysis & Design Document: Bracelet Marketplace
@@ -166,7 +164,8 @@
 *   **Payment Gateway:** เชื่อมต่อกับ **Omise API** เพื่อรับชำระเงินผ่านบัตรเครดิตและ PromptPay
 
 ---
-
+## 3. System Architecture Diagram
+ด้านล่างนี้คือแผนผังสถาปัตยกรรมระบบ (System Architecture) ของ Bracelet Marketplace ที่แสดงการเชื่อมต่อระหว่าง Frontend, Backend และ Database
 ```mermaid
 graph TD
     %% 1. Actors Layer
