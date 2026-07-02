@@ -20,8 +20,8 @@
 ---
 
 ### 2. ชื่อโครงงาน (Project Title)
-**ชื่อโครงงาน (ภาษาไทย):** ระบบตลาดซื้อขายกำไลข้อมือและกำไลข้อเท้าแบบมัลติเวนเดอร์
-**ชื่อโครงงาน (ภาษาอังกฤษ):** Bracelet Marketplace (Multi-Vendor E-Commerce Website)
+**ชื่อโครงงาน (ภาษาไทย):** ระบบตลาดซื้อขายกำไลข้อมือและกำไลข้อเท้า
+**ชื่อโครงงาน (ภาษาอังกฤษ):** Bracelet Marketplace (E-Commerce Website)
 
 ---
 
@@ -32,21 +32,21 @@
 
 ### 4. วัตถุประสงค์ของโครงงาน (Objectives)
 1. สร้างแพลตฟอร์ม e-Commerce เฉพาะกลุ่มสำหรับซื้อขายกำไลข้อมือและกำไลข้อเท้า
-2. รองรับผู้ขายหลายร้านภายในระบบเดียว (Multi-Vendor) และรองรับสินค้าสั่งทำ (Custom)
+2. รองรับสินค้าสั่งทำ (Custom) และสินค้าพร้อมส่ง
 3. จัดการคำสั่งซื้อ การจัดส่งสินค้า (ผ่าน Mock Shipping) และการชำระเงินอย่างเป็นระบบด้วย Omise
-4. แสดงรายได้และยอดขายของผู้ขายในรูปแบบ Dashboard แบบเรียลไทม์
+4. แสดงรายได้และยอดขายในรูปแบบ Dashboard แบบเรียลไทม์
 
 ---
 
 ### 5. ขอบเขตของระบบ (System Scope)
 **ผู้ใช้งาน (Actors):**
 - [x] ลูกค้า (Customer) - *ผู้ซื้อ*
-- [x] พนักงาน (Staff) - *ผู้ขาย / ร้านค้า*
+- [x] พนักงาน (Staff) - *ผู้ดูแลการจัดส่งสต็อกและออเดอร์*
 - [x] ผู้จัดการ (Manager) - *ผู้ดูแลระบบ / Admin*
 
 **ความสามารถหลักของระบบ (Main Functions):**
-1. ระบบสมาชิก (Register / Login) สำหรับผู้ซื้อและผู้ขาย
-2. ระบบจัดการข้อมูลสินค้า (รองรับสินค้าพร้อมส่ง และ สินค้า Made-to-Order)
+1. ระบบสมาชิก (Register / Login) สำหรับลูกค้า
+2. ระบบจัดการข้อมูลสินค้า (รองรับสินค้าพร้อมส่ง และ สินค้า Made-to-Order) จากส่วนกลาง
 3. ระบบค้นหาสินค้า ตะกร้าสินค้า และการชำระเงินออนไลน์ผ่าน Omise Payment Gateway
 4. ระบบจัดการคำสั่งซื้อและจำลองการอัปเดตสถานะการจัดส่งพัสดุ (Mock Shipping API)
 5. ระบบรายงานยอดขาย (Revenue Dashboard)
@@ -111,22 +111,22 @@
 | สัปดาห์ (Week) | กิจกรรม (Activities) | รายละเอียดโดยย่อ (Brief Description) |
 | :---: | :--- | :--- |
 | **1** | วิเคราะห์และออกแบบระบบ (Analysis & Design) | รวบรวมความต้องการ ออกแบบ Use Case, ER-Diagram และ UI/UX |
-| **2** | พัฒนา Frontend (Frontend Development) | พัฒนาหน้าจอผู้ใช้ (Buyer) และหน้าจัดการร้านค้า (Seller Dashboard) |
+| **2** | พัฒนา Frontend (Frontend Development) | พัฒนาหน้าจอผู้ใช้ (Buyer) และหน้าระบบหลังบ้าน (Backoffice) |
 | **3** | พัฒนา Backend และฐานข้อมูล (Backend & Database Development) | สร้าง API จัดการสินค้า, เชื่อมต่อ Omise API สำหรับชำระเงิน และทำ Mock Shipping |
 | **4** | ทดสอบระบบและนำเสนอผลงาน (Testing & Presentation) | ทำ Manual Testing/UAT ตรวจสอบบัค และเตรียมพรีเซนต์โปรเจกต์ |
 
 ---
 # 📊 Analysis & Design Document: Bracelet Marketplace
 
-เอกสารฉบับนี้จัดทำขึ้นเพื่อแสดงการวิเคราะห์และออกแบบสถาปัตยกรรมระบบ (System Architecture) สำหรับโครงงาน "Bracelet Marketplace" ซึ่งเป็นระบบ e-Commerce แบบ Multi-Vendor 
+เอกสารฉบับนี้จัดทำขึ้นเพื่อแสดงการวิเคราะห์และออกแบบสถาปัตยกรรมระบบ (System Architecture) สำหรับโครงงาน "Bracelet Marketplace" ซึ่งเป็นระบบ e-Commerce 
 
 ---
 
 ## 1. ขอบเขตของระบบ (System Scope)
 ระบบได้รับการออกแบบเพื่อรองรับกลุ่มผู้ใช้งาน (Actors) 3 กลุ่มหลัก ได้แก่:
 1. **ลูกค้า (Customer / Buyer):** ค้นหาสินค้า เพิ่มลงตะกร้า ชำระเงิน และติดตามสถานะพัสดุ
-2. **พนักงาน (Staff / Seller):** จัดการข้อมูลสินค้า (พร้อมส่งและ Made-to-Order) จัดการออเดอร์ และอัปเดตสถานะการจัดส่ง
-3. **ผู้จัดการ (Manager / Admin):** ดูแลระบบโดยรวม จัดการผู้ใช้งาน และดูรายงานสรุปยอดขายผ่าน Dashboard
+2. **พนักงาน (Staff):** อัปเดตสถานะการจัดส่ง
+3. **ผู้จัดการ (Manager / Admin):** ดูแลระบบโดยรวม จัดการข้อมูลสินค้า จัดการผู้ใช้งาน และดูรายงานสรุปยอดขายผ่าน Dashboard
 
 ---
 
@@ -144,7 +144,7 @@
 ### 3.1 Frontend Architecture (ส่วนติดต่อผู้ใช้งาน)
 *   **แนวคิดการออกแบบ:** พัฒนาด้วยรูปแบบ Component-Based Architecture (SPA) 
 *   **เทคโนโลยีที่ใช้:** Next.js (React) สำหรับโครงสร้างเว็บ และ Tailwind CSS สำหรับการตกแต่ง UI
-*   **รายละเอียด:** แบ่งการแสดงผลออกเป็น 3 ส่วนหลัก คือ หน้าเว็บสำหรับผู้ซื้อ (Buyer UI), หน้าจัดการร้านค้าสำหรับผู้ขาย (Seller Dashboard), และหน้าระบบหลังบ้าน (Admin Dashboard)
+*   **รายละเอียด:** แบ่งการแสดงผลออกเป็น 2 ส่วนหลัก คือ หน้าเว็บสำหรับผู้ซื้อ (Storefront), และหน้าระบบหลังบ้าน (Backoffice)
 
 ### 3.2 Backend Architecture (ส่วนประมวลผลหลัก)
 *   **แนวคิดการออกแบบ:** ใช้สถาปัตยกรรมแบบให้บริการ API (RESTful API) 
@@ -170,14 +170,13 @@
 graph TD
     %% 1. Actors Layer
     Customer(["Customer / Buyer"])
-    Seller(["Seller / Vendor"])
-    Admin(["Platform Admin"])
+    Staff(["Staff / Employee"])
+    Admin(["Admin / Manager"])
 
     %% 2. Frontend Layer
     subgraph Frontend ["Frontend Layer (Next.js & Tailwind)"]
-        BuyerUI["Buyer Interface"]
-        SellerUI["Seller Dashboard"]
-        AdminUI["Admin Dashboard"]
+        BuyerUI["Storefront Interface"]
+        AdminUI["Backoffice Dashboard"]
     end
 
     %% 3. Backend Layer
@@ -203,7 +202,7 @@ graph TD
     %% --- Connections ---
     
     Customer -->|เข้าใช้งาน| BuyerUI
-    Seller -->|จัดการร้านค้า| SellerUI
+    Staff -->|อัปเดตสถานะ| AdminUI
     Admin -->|ดูแลระบบ| AdminUI
 
     BuyerUI -->|HTTP REST| Auth
@@ -212,11 +211,9 @@ graph TD
     BuyerUI -->|HTTP REST| Payment
     BuyerUI -->|ติดตามพัสดุ| Shipping
 
-    SellerUI -->|อัปเดตสถานะพัสดุ| Shipping
-    SellerUI -->|จัดการออเดอร์| Order
-    SellerUI -->|จัดการสินค้า| Product
-
-    AdminUI -->|ดูรายงาน| Order
+    AdminUI -->|อัปเดตสถานะพัสดุ| Shipping
+    AdminUI -->|จัดการออเดอร์| Order
+    AdminUI -->|จัดการสินค้า| Product
     AdminUI -->|จัดการระบบ| Auth
 
     Auth -->|Read/Write| DB
