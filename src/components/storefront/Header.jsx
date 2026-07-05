@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search01Icon, FavouriteIcon, ShoppingBag01Icon, UserIcon } from "hugeicons-react";
+import AuthModal from "./AuthModal";
 
 const NAV_LINKS = [
   { label: "หน้าแรก", href: "/" },
@@ -14,8 +15,29 @@ const NAV_LINKS = [
   { label: "เอกสารระบบ", href: "/docs" },
 ];
 
-export default function Header({ isLoggedIn }) {
+export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthStatusChange }) {
   const pathname = usePathname();
+  const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(initialIsLoggedIn);
+  }, [initialIsLoggedIn]);
+
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("bare_auth_token") : null;
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleAuthSuccess = (user) => {
+    const hasToken = !!localStorage.getItem("bare_auth_token");
+    setIsLoggedIn(hasToken);
+    if (onAuthStatusChange) {
+      onAuthStatusChange(hasToken, user);
+    }
+  };
 
   return (
     <>
@@ -65,9 +87,9 @@ export default function Header({ isLoggedIn }) {
               </span>
             </button>
 
-            <Link
-              href="/auth"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-earth-beige hover:bg-earth-border border border-earth-border transition text-xs font-bold text-earth-dark"
+            <button
+              onClick={() => setIsAuthOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-earth-beige hover:bg-earth-border border border-earth-border transition text-xs font-bold text-earth-dark cursor-pointer"
             >
               {isLoggedIn ? (
                 <>
@@ -80,10 +102,17 @@ export default function Header({ isLoggedIn }) {
                   เข้าสู่ระบบ
                 </>
               )}
-            </Link>
+            </button>
           </div>
         </div>
       </header>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={isAuthOpen} 
+        onClose={() => setIsAuthOpen(false)} 
+        onAuthSuccess={handleAuthSuccess}
+      />
     </>
   );
 }

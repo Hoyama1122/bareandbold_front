@@ -104,7 +104,7 @@ export default function Storefront() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#3C322A] font-sans antialiased">
       {/* 1. Header (Utility & Navigation) */}
-      <Header isLoggedIn={isLoggedIn} />
+      <Header isLoggedIn={isLoggedIn} onAuthStatusChange={(status) => setIsLoggedIn(status)} />
 
       {/* 2. Hero Section */}
       <Hero />

@@ -56,9 +56,11 @@ export const authService = {
   },
 
   // ดึงโปรไฟล์ผู้ใช้งานปัจจุบัน (เช็คจาก Cookie หรือ Authorization Header)
-  getProfile: async () => {
+  getProfile: async (token) => {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     return apiFetch("/auth/profile", {
       method: "GET",
+      headers,
     });
   },
 
