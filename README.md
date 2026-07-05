@@ -1,4 +1,4 @@
-# แบบฟอร์มขออนุมัติโครงงานกลุ่ม
+# 🛍️ Bare & Bold (Bracelet Marketplace)
 **รายวิชา CSI204 ดิจิทัลแพลตฟอร์มสำหรับพัฒนาซอฟต์แวร์**
 **ภาคการศึกษา:** 3 (Summer) **ปีการศึกษา:** 2568
 **Domain:** e-Commerce
@@ -6,7 +6,7 @@
 ---
 
 ### 1. ข้อมูลกลุ่ม (Group Information)
-**ชื่อกลุ่ม:** Bracelet Marketplace
+**ชื่อกลุ่ม:** Bare & Bold (เดิม: Bracelet Marketplace)
 **จำนวนสมาชิก:** 4 / 5 คน
 
 | ลำดับ | รหัสนักศึกษา | ชื่อ-สกุล | หน้าที่รับผิดชอบ (Roles) |
@@ -20,13 +20,13 @@
 ---
 
 ### 2. ชื่อโครงงาน (Project Title)
-**ชื่อโครงงาน (ภาษาไทย):** ระบบตลาดซื้อขายกำไลข้อมือและกำไลข้อเท้า
-**ชื่อโครงงาน (ภาษาอังกฤษ):** Bracelet Marketplace (E-Commerce Website)
+**ชื่อโครงงาน (ภาษาไทย):** ระบบร้านค้าออนไลน์และคัสตอมสร้อยข้อมือ Bare & Bold
+**ชื่อโครงงาน (ภาษาอังกฤษ):** Bare & Bold (Custom Bracelet E-Commerce Platform)
 
 ---
 
 ### 3. หลักการและเหตุผล (Rationale)
-เพื่อเพิ่มช่องทางขายสินค้าให้กับผู้ผลิตกำไลและรองรับธุรกิจขนาดเล็ก รวมถึงช่วยให้ลูกค้าสามารถสั่งสินค้าคัสตอม (Made-to-Order) เฉพาะบุคคลได้ง่ายขึ้น พร้อมทั้งมีระบบช่วยลดขั้นตอนการจัดการคำสั่งซื้อและการจัดส่งของผู้ขายให้เป็นระบบมากยิ่งขึ้น
+เพื่อเพิ่มช่องทางขายสินค้าให้กับผู้ผลิตกำไลและรองรับธุรกิจขนาดเล็ก รวมถึงช่วยให้ลูกค้าสามารถสั่งสินค้าคัสตอม (Made-to-Order) เฉพาะบุคคลได้ง่ายขึ้น โดยเลือกตกแต่งชิ้นส่วนอะไหล่ (Accessories เช่น จี้, ลูกปัด, เชือก) ตามความต้องการ พร้อมทั้งมีระบบช่วยลดขั้นตอนการจัดการคำสั่งซื้อและการจัดส่งของผู้ขายให้เป็นระบบมากยิ่งขึ้น
 
 ---
 
@@ -65,19 +65,32 @@
 ---
 
 ### 7. เครื่องมือและเทคโนโลยีที่ใช้ (Tools & Technologies)
-**Frontend:**
-- [x] React / Next.js
+**Frontend (Storefront):** พอร์ต `:3000`
+- [x] React / Next.js 15
 - [x] Tailwind CSS
-**Backend:**
-- [x] Node.js (รวมถึง Bun, Hono)
-**Database:**
-- [x] PostgreSQL (Neon) / Cloudflare R2
+- [x] hugeicons-react (ไอคอน)
+
+**Backoffice:** พอร์ต `:3001`
+- [x] React / Next.js 15
+- [x] Tailwind CSS
+- [x] react-easy-crop (ครอบตัดรูปภาพ 1:1 ก่อนอัปโหลด)
+
+**Backend:** พอร์ต `:8000`
+- [x] Node.js (รันด้วย Bun Runtime + Hono Framework)
+- [x] Prisma ORM (ระบบ Migration สำหรับอัปเดตโครงสร้างฐานข้อมูล)
+
+**Database & Storage:**
+- [x] PostgreSQL (Neon Serverless)
+- [x] Cloudflare R2 (จัดเก็บรูปภาพสินค้า แยกโฟลเดอร์ `/products`)
+
 **External Services / APIs:**
 - [x] Omise (แพลตฟอร์มรับชำระเงิน / Payment Gateway)
 - [x] Mock Shipping API (การทำ Stub เพื่อจำลองระบบขนส่ง)
+
 **Design Tool:**
 - [x] Figma
 - [x] อื่นๆ: Mermaid Diagram
+
 **Version Control:**
 - [x] Git
 - [x] GitHub
@@ -94,7 +107,7 @@
 - [x] Postman (สำหรับทดสอบ API)
 - [x] Manual Testing (ทดสอบการทำงานของระบบด้วยตนเองตามฟังก์ชันที่พัฒนา)
 
-**รายละเอียดการทดสอบ:** 
+**รายละเอียดการทดสอบ:**
 ทดสอบระบบตะกร้าสินค้า การสั่งซื้อ การทำงานของการชำระเงิน (ทดสอบการเรียกใช้งาน API ของ Omise) และการจัดการสถานะออเดอร์ (ทดสอบผ่าน Mock Shipping) รวมถึงทดสอบการเรียกใช้งาน API ฝั่ง Backend ผ่าน Postman เพื่อตรวจสอบความถูกต้องของข้อมูล (Response Status) [2, 3]
 
 ---
@@ -116,56 +129,64 @@
 | **4** | ทดสอบระบบและนำเสนอผลงาน (Testing & Presentation) | ทำ Manual Testing/UAT ตรวจสอบบัค และเตรียมพรีเซนต์โปรเจกต์ |
 
 ---
-# 📊 Analysis & Design Document: Bracelet Marketplace
+# 📊 Analysis & Design Document: Bare & Bold (Bracelet Marketplace)
 
-เอกสารฉบับนี้จัดทำขึ้นเพื่อแสดงการวิเคราะห์และออกแบบสถาปัตยกรรมระบบ (System Architecture) สำหรับโครงงาน "Bracelet Marketplace" ซึ่งเป็นระบบ e-Commerce 
+เอกสารฉบับนี้จัดทำขึ้นเพื่อแสดงการวิเคราะห์และออกแบบสถาปัตยกรรมระบบ (System Architecture) สำหรับโครงงาน "Bare & Bold" ซึ่งเป็นระบบ e-Commerce
 
 ---
 
 ## 1. ขอบเขตของระบบ (System Scope)
 ระบบได้รับการออกแบบเพื่อรองรับกลุ่มผู้ใช้งาน (Actors) 3 กลุ่มหลัก ได้แก่:
 1. **ลูกค้า (Customer / Buyer):** ค้นหาสินค้า เพิ่มลงตะกร้า ชำระเงิน และติดตามสถานะพัสดุ
-2. **พนักงาน (Staff):** อัปเดตสถานะการจัดส่ง
+2. **พนักงาน (Staff):** อัปเดตสถานะการจัดส่ง จัดการสต็อก
 3. **ผู้จัดการ (Manager / Admin):** ดูแลระบบโดยรวม จัดการข้อมูลสินค้า จัดการผู้ใช้งาน และดูรายงานสรุปยอดขายผ่าน Dashboard
 
 ---
 
 ## 2. หลักการออกแบบสถาปัตยกรรมซอฟต์แวร์ (Software Architectural Design Principles)
 การออกแบบระบบยึดหลักการสำคัญเพื่อรองรับการขยายตัว (Scalability) และการบำรุงรักษา (Maintainability) ดังนี้:
-* **Separation of Concerns (SoC):** แบ่งแยกหน้าที่ความรับผิดชอบของระบบออกเป็นเลเยอร์อย่างชัดเจน ได้แก่ สวนหน้า (Frontend), ส่วนประมวลผลหลัก (Backend) และระบบฐานข้อมูล (Database) เพื่อไม่ให้โค้ดผูกติดกันจนเกินไป
-* **Loose Coupling:** การเชื่อมต่อระหว่าง Frontend และ Backend จะทำผ่าน RESTful API 
+* **Separation of Concerns (SoC):** แบ่งแยกหน้าที่ความรับผิดชอบของระบบออกเป็นเลเยอร์อย่างชัดเจน ได้แก่ ส่วนหน้า (Frontend Storefront พอร์ต :3000), ส่วนบริหารจัดการ (Backoffice พอร์ต :3001), ส่วนประมวลผลหลัก (Backend พอร์ต :8000) และระบบฐานข้อมูล (Database) เพื่อไม่ให้โค้ดผูกติดกันจนเกินไป
+* **Loose Coupling:** การเชื่อมต่อระหว่าง Frontend และ Backend จะทำผ่าน RESTful API
 * **Testability:** ระบบออกแบบให้ทดสอบได้ง่าย โดยเฉพาะระบบขนส่งที่มีการใช้ **Mock Objects (Stub)** เข้ามาจำลองการทำงานของระบบขนส่งภายนอก เพื่อให้สามารถทดสอบระบบอัปเดตสถานะพัสดุได้โดยไม่ต้องพึ่งพาระบบขนส่งจริง
 
 ---
 
 ## 3. การออกแบบสถาปัตยกรรมระบบ (System Architecture Design)
-ระบบแบ่งออกเป็น 4 ส่วนหลัก ดังนี้:
+ระบบแบ่งออกเป็น 5 ส่วนหลัก ดังนี้:
 
-### 3.1 Frontend Architecture (ส่วนติดต่อผู้ใช้งาน)
-*   **แนวคิดการออกแบบ:** พัฒนาด้วยรูปแบบ Component-Based Architecture (SPA) 
-*   **เทคโนโลยีที่ใช้:** Next.js (React) สำหรับโครงสร้างเว็บ และ Tailwind CSS สำหรับการตกแต่ง UI
-*   **รายละเอียด:** แบ่งการแสดงผลออกเป็น 2 ส่วนหลัก คือ หน้าเว็บสำหรับผู้ซื้อ (Storefront), และหน้าระบบหลังบ้าน (Backoffice)
+### 3.1 Frontend Storefront (ส่วนติดต่อผู้ใช้งาน — ลูกค้า)
+*   **แนวคิดการออกแบบ:** พัฒนาด้วยรูปแบบ Component-Based Architecture (SPA)
+*   **เทคโนโลยีที่ใช้:** Next.js 15 (React) สำหรับโครงสร้างเว็บ และ Tailwind CSS สำหรับการตกแต่ง UI
+*   **รายละเอียด:** หน้าแรก, รายการสินค้า (ดึงจาก API จริง), รายละเอียดสินค้า, ตะกร้าสินค้า, Checkout (Omise), ประวัติออเดอร์
 
-### 3.2 Backend Architecture (ส่วนประมวลผลหลัก)
-*   **แนวคิดการออกแบบ:** ใช้สถาปัตยกรรมแบบให้บริการ API (RESTful API) 
-*   **เทคโนโลยีที่ใช้:** Node.js (รันด้วย Bun / Hono) เพื่อประสิทธิภาพและความรวดเร็ว
+### 3.2 Backoffice Dashboard (ส่วนบริหารจัดการ — พนักงาน/ผู้จัดการ)
+*   **เทคโนโลยีที่ใช้:** Next.js 15 (React) + Tailwind CSS
+*   **รายละเอียด:** จัดการสินค้า (เพิ่ม/แก้ไข/ลบ + กำหนดราคาเต็มและราคาลด), ครอบตัดรูปภาพสินค้า 1:1 ด้วย `react-easy-crop`, จัดการหมวดหมู่วัสดุตกแต่ง, อัปเดตสถานะออเดอร์
+
+### 3.3 Backend Architecture (ส่วนประมวลผลหลัก)
+*   **แนวคิดการออกแบบ:** ใช้สถาปัตยกรรมแบบให้บริการ API (RESTful API)
+*   **เทคโนโลยีที่ใช้:** Node.js (รันด้วย Bun + Hono Framework) เพื่อประสิทธิภาพและความรวดเร็ว
 *   **การแบ่งโมดูล (Services):**
     *   `Auth Service`: จัดการการสมัครสมาชิกและยืนยันตัวตน (JWT)
-    *   `Product Service`: จัดการข้อมูลสินค้าและเชื่อมต่อกับ R2 สำหรับรูปภาพ
+    *   `Product Service`: จัดการข้อมูลสินค้า ราคา และเชื่อมต่อกับ R2 สำหรับรูปภาพ
+    *   `Category Service`: จัดการหมวดหมู่วัสดุตกแต่ง (Accessory Categories)
+    *   `Upload Service`: อัปโหลด/ลบรูปภาพบน Cloudflare R2 แยกโฟลเดอร์ตามประเภท
     *   `Order Service`: ตะกร้าสินค้าและการสร้างใบสั่งซื้อ
     *   `Payment Service`: รับชำระเงินผ่านการเชื่อมต่อ API ของ Omise
     *   `Shipping Service (Mock/Stub)`: จัดการสถานะการจัดส่งแบบจำลอง
 
-### 3.3 Database Architecture (ระบบจัดเก็บข้อมูล)
-*   **Relational Database:** ใช้ **PostgreSQL (Neon)** จัดเก็บข้อมูลที่มีความสัมพันธ์กัน เช่น ข้อมูลบัญชีผู้ใช้ ออเดอร์ และรายละเอียดสินค้า
-*   **Cloud Storage:** ใช้ **Cloudflare R2** ในการเก็บไฟล์รูปภาพสินค้า เพื่อลดภาระของฐานข้อมูลหลักและเพิ่มความเร็วในการโหลด
+### 3.4 Database Architecture (ระบบจัดเก็บข้อมูล)
+*   **Relational Database:** ใช้ **PostgreSQL (Neon Serverless)** จัดเก็บข้อมูลที่มีความสัมพันธ์กัน เช่น ข้อมูลบัญชีผู้ใช้ ออเดอร์ และรายละเอียดสินค้า
+*   **ORM:** Prisma ORM (ใช้ระบบ **Prisma Migrations** สำหรับการอัปเดตโครงสร้างฐานข้อมูล)
+*   **ตารางหลัก (Key Tables):** `User`, `Employee`, `Product` (รองรับ `price` + `originalPrice`), `ProductImage` (Position 0 คือรูปปก), `Category`, `Accessory`, `CustomOption`, `Cart`, `CartItem`, `Order`, `OrderItem`
+*   **Cloud Storage:** ใช้ **Cloudflare R2** ในการเก็บไฟล์รูปภาพสินค้า แยกโฟลเดอร์ `/products` เพื่อลดภาระของฐานข้อมูลหลัก
 
-### 3.4 External Services (บริการภายนอก)
+### 3.5 External Services (บริการภายนอก)
 *   **Payment Gateway:** เชื่อมต่อกับ **Omise API** เพื่อรับชำระเงินผ่านบัตรเครดิตและ PromptPay
 
 ---
-## 3. System Architecture Diagram
-ด้านล่างนี้คือแผนผังสถาปัตยกรรมระบบ (System Architecture) ของ Bracelet Marketplace ที่แสดงการเชื่อมต่อระหว่าง Frontend, Backend และ Database
+## 4. System Architecture Diagram
+ด้านล่างนี้คือแผนผังสถาปัตยกรรมระบบ (System Architecture) ของ Bare & Bold ที่แสดงการเชื่อมต่อระหว่าง Frontend, Backend และ Database
 ```mermaid
 graph TD
     %% 1. Actors Layer
@@ -175,28 +196,30 @@ graph TD
 
     %% 2. Frontend Layer
     subgraph Frontend ["Frontend Layer (Next.js & Tailwind)"]
-        BuyerUI["Storefront Interface"]
-        AdminUI["Backoffice Dashboard"]
+        BuyerUI["Storefront Interface (:3000)"]
+        AdminUI["Backoffice Dashboard (:3001)"]
     end
 
     %% 3. Backend Layer
-    subgraph Backend ["Backend API Layer (Node.js / Bun / Hono)"]
+    subgraph Backend ["Backend API Layer (Node.js / Bun / Hono) :8000"]
         Auth["Auth Service"]
         Product["Product Service"]
+        Category["Category Service"]
+        Upload["Upload Service (R2)"]
         Order["Order & Cart Service"]
         Payment["Payment Service"]
-        Shipping["Shipping Service <br> (Mock / Stub)"]
+        Shipping["Shipping Service (Mock / Stub)"]
     end
 
     %% 4. Infrastructure & Database Layer
     subgraph Infrastructure ["Data & Storage Layer"]
-        DB[("PostgreSQL <br> Neon")]
-        Storage[("Cloud Storage <br> R2")]
+        DB[("PostgreSQL (Neon)")]
+        Storage[("Cloudflare R2 /products")]
     end
 
     %% 5. External Services Layer
     subgraph External ["External Services"]
-        Omise["Omise <br> (Payment Gateway)"]
+        Omise["Omise (Payment Gateway)"]
     end
 
     %% --- Connections ---
@@ -213,12 +236,16 @@ graph TD
 
     AdminUI -->|อัปเดตสถานะพัสดุ| Shipping
     AdminUI -->|จัดการออเดอร์| Order
-    AdminUI -->|จัดการสินค้า| Product
+    AdminUI -->|จัดการสินค้า/ราคา| Product
+    AdminUI -->|อัปโหลด/ลบรูป| Upload
+    AdminUI -->|จัดการหมวดหมู่| Category
     AdminUI -->|จัดการระบบ| Auth
 
     Auth -->|Read/Write| DB
     Product -->|Read/Write| DB
-    Product -->|Upload/Fetch| Storage
+    Category -->|Read/Write| DB
+    Upload -->|Upload/Delete| Storage
+    Product -->|Fetch Images| Storage
     Order -->|Read/Write| DB
     Payment -->|Verify/Update| DB
     
