@@ -1,0 +1,93 @@
+graph LR
+    %% Actors Definition
+    Guest["ผู้ใช้งานทั่วไป (Guest)"]
+    Customer["ลูกค้า (Customer)"]
+    Staff["พนักงาน (Staff)"]
+    Manager["ผู้จัดการ (Manager / Admin)"]
+
+    %% Actor Generalizations (Inheritance)
+    Customer -->|Generalization| Guest
+    Manager -->|Generalization| Staff
+
+    subgraph SystemBoundary [" ระบบร้านค้าออนไลน์และคัสตอมสร้อยข้อมือ Bare & Bold "]
+        %% Guest Use Cases (Shared by Customer)
+        UC_Browse(("เรียกดูหน้าแรก"))
+        UC_Search(("ค้นหาสินค้า"))
+        UC_ViewDetail(("ดูรายละเอียดสินค้า"))
+
+        %% Customer Use Cases
+        UC_Register(("สมัครสมาชิก (Register)"))
+        UC_Verify(("ยืนยันตัวตน"))
+        UC_Login(("เข้าสู่ระบบ (Login)"))
+        UC_Profile(("จัดการข้อมูลส่วนตัว"))
+        UC_EditProfile(("แก้ไขข้อมูลส่วนตัว"))
+        UC_Custom(("ออกแบบสั่งคัสตอมสร้อยข้อมือ"))
+        UC_Cart(("จัดการตะกร้าสินค้า"))
+        UC_Checkout(("สั่งซื้อสินค้า (Checkout)"))
+        UC_Address(("ระบุที่อยู่จัดส่ง"))
+        UC_PayMethod(("เลือกช่องทางการชำระเงิน"))
+        UC_Payment(("ชำระเงินออนไลน์ (Payment)"))
+        UC_Track(("ติดตามคำสั่งซื้อ"))
+        UC_Wishlist(("จัดการรายการโปรด"))
+        UC_Contact(("ติดต่อสอบถามร้านค้า"))
+
+        %% Staff Use Cases
+        UC_ManageStock(("จัดการสต็อกสินค้า"))
+        UC_ManageCategory(("จัดการหมวดหมู่สินค้า"))
+        UC_ManageOrder(("จัดการคำสั่งซื้อ"))
+        UC_ConfirmOrder(("ตรวจสอบ/ยืนยันคำสั่งซื้อ"))
+        UC_CancelOrder(("ยกเลิกคำสั่งซื้อ"))
+        UC_ManageShipping(("จัดการสถานะจัดส่ง"))
+
+        %% Manager Use Cases
+        UC_ManageProduct(("จัดการข้อมูลสินค้า (เพิ่ม/แก้ไข/ลบ)"))
+        UC_CropImage(("ครอบตัดรูปภาพสินค้า 1:1"))
+        UC_ManageUsers(("จัดการผู้ใช้งานและพนักงาน"))
+        UC_Dashboard(("ดูรายงานสรุปยอดขาย (Dashboard)"))
+        UC_Settings(("ตั้งค่าระบบ"))
+    end
+
+    %% Relationships between Use Cases
+    UC_Register -.->|"<<include>>"| UC_Verify
+    UC_Profile -.->|"<<include>>"| UC_EditProfile
+    UC_Checkout -.->|"<<include>>"| UC_Address
+    UC_Checkout -.->|"<<include>>"| UC_PayMethod
+    UC_Checkout -.->|"<<include>>"| UC_Payment
+    
+    UC_ManageProduct -.->|"<<include>>"| UC_CropImage
+    UC_ManageOrder -.->|"<<include>>"| UC_ConfirmOrder
+    UC_ManageOrder -.->|"<<include>>"| UC_CancelOrder
+
+    %% Actor Connections to Use Cases
+    Guest --> UC_Browse
+    Guest --> UC_Search
+    Guest --> UC_ViewDetail
+
+    Customer --> UC_Register
+    Customer --> UC_Login
+    Customer --> UC_Profile
+    Customer --> UC_Custom
+    Customer --> UC_Cart
+    Customer --> UC_Checkout
+    Customer --> UC_Track
+    Customer --> UC_Wishlist
+    Customer --> UC_Contact
+
+    Staff --> UC_ManageStock
+    Staff --> UC_ManageCategory
+    Staff --> UC_ManageOrder
+    Staff --> UC_ManageShipping
+
+    Manager --> UC_ManageProduct
+    Manager --> UC_ManageUsers
+    Manager --> UC_Dashboard
+    Manager --> UC_Settings
+
+    %% Definition of External Systems (Secondary Actors)
+    Omise["ระบบชำระเงิน (Omise Gateway)"]
+    ShippingAPI["ระบบขนส่งจำลอง (Mock Shipping API)"]
+
+    %% External System Connections
+    UC_Payment --> Omise
+    UC_Track --> ShippingAPI
+    UC_ManageShipping --> ShippingAPI
