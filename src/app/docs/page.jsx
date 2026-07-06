@@ -254,7 +254,7 @@ export default function DocsPage() {
           </section>
           <section id="objectives" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
             <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">03 // เป้าหมายโครงการ</span>
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-6">วัตถุประสงค์โครงการตามกระบวนการ SDLC</h2>
+            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-6">วัตถุประสงค์โครงการ</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[
