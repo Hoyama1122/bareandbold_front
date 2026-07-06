@@ -151,9 +151,9 @@ export default function DocsPage() {
             </div>
 
             <div className="border-t border-[#EADECC]/60 pt-6 space-y-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-[#6A5242]">BRACELET MARKETPLACE</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#6A5242]">BARE & BOLD</span>
               <p className="text-xs text-[#6A5242]/90 leading-relaxed font-bold">
-                แพลตฟอร์ม e-Commerce สำหรับซื้อขายและคัสตอมกำไลข้อมือเฉพาะบุคคลแบบสั่งตัด (Made-to-Order)
+                ระบบร้านค้าออนไลน์และคัสตอมสร้อยข้อมือเฉพาะบุคคลแบบสั่งตัด (Made-to-Order)
               </p>
             </div>
           </div>
@@ -179,17 +179,17 @@ export default function DocsPage() {
               <div>
                 <h4 className="text-xs font-black text-[#6A5242] tracking-wider mb-1.5">ชื่ออย่างเป็นทางการ</h4>
                 <p className="text-xl md:text-2xl font-black text-[#3C322A] leading-tight">
-                  ระบบตลาดซื้อขายกำไลข้อมือและกำไลข้อเท้าแบบมัลติเวนเดอร์
+                  ระบบร้านค้าออนไลน์และคัสตอมสร้อยข้อมือ Bare & Bold
                 </p>
                 <p className="text-lg font-bold text-[#556B2F] mt-1">
-                  Bracelet Marketplace (Multi-Vendor E-Commerce Website)
+                  Bare & Bold (Custom Bracelet E-Commerce Platform)
                 </p>
               </div>
 
               <div className="pt-6 border-t border-[#EADECC]/40">
                 <h4 className="text-xs font-black text-[#6A5242] tracking-wider mb-2.5">หลักการและเหตุผล (RATIONALE)</h4>
                 <p className="text-sm md:text-base text-[#3C322A] leading-relaxed font-bold max-w-3xl">
-                  เพื่อเพิ่มช่องทางขายสินค้าให้กับผู้ผลิตกำไลและรองรับธุรกิจขนาดเล็ก รวมถึงช่วยให้ลูกค้าสามารถสั่งสินค้าคัสตอม (Made-to-Order) เฉพาะบุคคลได้ง่ายขึ้น พร้อมทั้งมีระบบช่วยลดขั้นตอนการจัดการคำสั่งซื้อและการจัดส่งของผู้ขายให้เป็นระบบมากยิ่งขึ้น
+                  ระบบที่รองรับการสั่งซื้อสินค้าออนไลน์และการคัสตอมสร้อยข้อมือเฉพาะบุคคล (Made-to-Order) โดยสามารถเลือกวัสดุชิ้นส่วนตกแต่งได้ตามความต้องการ พร้อมทั้งระบบหลังบ้านสำหรับพนักงานและผู้จัดการเพื่อความเป็นระเบียบและประสิทธิภาพในการดำเนินงาน
                 </p>
               </div>
             </div>
@@ -252,7 +252,6 @@ export default function DocsPage() {
               </table>
             </div>
           </section>
-
           {/* Section: Objectives */}
           <section id="objectives" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
             <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">03 // เป้าหมายโครงการ</span>
@@ -260,47 +259,92 @@ export default function DocsPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[
-                { label: "01 / แพลตฟอร์มตลาดกลาง", desc: "สร้างแพลตฟอร์ม e-Commerce เฉพาะกลุ่มสำหรับซื้อขายกำไลข้อมือและกำไลข้อเท้า" },
-                { label: "02 / การคัสตอมสินค้าพิเศษ", desc: "รองรับผู้ขายหลายร้านภายในระบบเดียว (Multi-Vendor) และรองรับสินค้าสั่งทำ (Custom)" },
-                { label: "03 / การจัดการที่มีประสิทธิภาพ", desc: "จัดการคำสั่งซื้อ การจัดส่งสินค้า และการชำระเงินอย่างเป็นระบบ" },
-                { label: "04 / ระบบรายงานยอดขายเรียลไทม์", desc: "แสดงรายได้และยอดขายของผู้ขายในรูปแบบ Dashboard แบบเรียลไทม์" }
+                {
+                  label: "01 / ระบบร้านค้าออนไลน์",
+                  desc: "สร้างระบบ e-Commerce ของแบรนด์ Bare & Bold สำหรับวางจำหน่ายกำไลข้อมือและกำไลข้อเท้าออนไลน์",
+                },
+                {
+                  label: "02 / การคัสตอมสินค้าพิเศษ",
+                  desc: "รองรับการสั่งทำแบบพิเศษ (Custom / Made-to-Order) โดยเปิดให้ลูกค้าเลือกอะไหล่ตกแต่งได้เองตามใจชอบ",
+                },
+                {
+                  label: "03 / การจัดการที่มีประสิทธิภาพ",
+                  desc: "มีระบบหลังบ้านสำหรับจัดการสต็อกสินค้า คำสั่งซื้อ ตรวจสอบการจัดส่งสินค้า และจัดการชำระเงินอย่างเป็นระบบ",
+                },
+                {
+                  label: "04 / ระบบรายงานยอดขายเรียลไทม์",
+                  desc: "แสดงยอดขาย รายรับรวม และสถิติที่สำคัญต่างๆ ในรูปแบบ Dashboard แบบเรียลไทม์",
+                },
               ].map((obj, i) => (
-                <div key={i} className="border-l-2 border-[#3C322A] pl-4 space-y-1">
-                  <h4 className="text-xs font-black tracking-wider text-[#556B2F]">{obj.label}</h4>
-                  <p className="text-sm font-bold text-[#3C322A] leading-relaxed">{obj.desc}</p>
+                <div
+                  key={i}
+                  className="border-l-2 border-[#3C322A] pl-4 space-y-1"
+                >
+                  <h4 className="text-xs font-black tracking-wider text-[#556B2F]">
+                    {obj.label}
+                  </h4>
+                  <p className="text-sm font-bold text-[#3C322A] leading-relaxed">
+                    {obj.desc}
+                  </p>
                 </div>
               ))}
             </div>
           </section>
-
           {/* Section: Actors */}
           <section id="scope-actors" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
             <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">04 // ผู้ใช้ระบบ</span>
             <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-6">ผู้ใช้งานในระบบ (Actors)</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-              <div className="space-y-2">
-                <span className="text-[10px] font-black px-2 py-0.5 bg-[#3C322A] text-white tracking-widest inline-block">CUSTOMER</span>
-                <h4 className="text-base font-black text-[#3C322A]">ลูกค้า (ผู้ซื้อสินค้า)</h4>
-                <p className="text-xs text-[#6A5242] leading-relaxed font-bold">
-                  ค้นหาสินค้าทั่วไป หยิบใส่ตะกร้า ชำระเงินผ่านระบบ ออกแบบระบุตัวเลือกสั่งคัสตอม และติดตามสถานะพัสดุจัดส่ง
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black px-2 py-0.5 bg-[#3C322A] text-white tracking-widest inline-block">CUSTOMER</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3C322A]" />
+                </div>
+                <h4 className="text-base font-black text-[#3C322A]">1. ลูกค้า</h4>
+                <ul className="space-y-2.5 text-xs text-[#6A5242] font-bold list-disc pl-4">
+                  <li>สมัครสมาชิก (Register)</li>
+                  <li>เข้าสู่ระบบ (Login)</li>
+                  <li>จัดการข้อมูลส่วนตัว (Profile Management)</li>
+                  <li>ค้นหาสินค้า และดูรายละเอียดสินค้า (สินค้าพร้อมส่ง และสินค้า Made-to-Order)</li>
+                  <li>เพิ่มสินค้าลงตะกร้า (Add to Cart)</li>
+                  <li>จัดการตะกร้าสินค้า (Cart Management)</li>
+                  <li>สั่งซื้อสินค้า (Place Order)</li>
+                  <li>ชำระเงิน (Payment)</li>
+                  <li>ติดตามคำสั่งซื้อ (Order Tracking)</li>
+                 
+                  <li>รายการโปรด (Wishlist)</li>
+                  <li>ติดต่อสอบถาม</li>
+                </ul>
               </div>
 
-              <div className="space-y-2">
-                <span className="text-[10px] font-black px-2 py-0.5 bg-[#556B2F] text-white tracking-widest inline-block">STAFF</span>
-                <h4 className="text-base font-black text-[#3C322A]">พนักงาน (ร้านค้า / ผู้ขาย)</h4>
-                <p className="text-xs text-[#6A5242] leading-relaxed font-bold">
-                  จัดการรายการอัปโหลดสินค้า แก้ไขข้อมูลสินค้าคัสตอม จัดการใบสั่งซื้อ และกรอกหมายเลขติดตามขนส่งพัสดุ
-                </p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black px-2 py-0.5 bg-[#556B2F] text-white tracking-widest inline-block">STAFF</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#556B2F]" />
+                </div>
+                <h4 className="text-base font-black text-[#3C322A]">2. พนักงาน (Staff)</h4>
+                <ul className="space-y-2.5 text-xs text-[#6A5242] font-bold list-disc pl-4">
+                  <li>จัดการสินค้า (Product Management)</li>
+                  <li>จัดการหมวดหมู่สินค้า (Category Management)</li>
+                  <li>จัดการคำสั่งซื้อ (Order Management)</li>
+                  <li>จัดการการจัดส่ง (Shipping Management)</li>
+                </ul>
               </div>
 
-              <div className="space-y-2">
-                <span className="text-[10px] font-black px-2 py-0.5 bg-[#6A5242] text-white tracking-widest inline-block">MANAGER</span>
-                <h4 className="text-base font-black text-[#3C322A]">ผู้จัดการ (แอดมิน)</h4>
-                <p className="text-xs text-[#6A5242] leading-relaxed font-bold">
-                  ดูแลการทำงานของเว็บไซต์ จัดสรรและอนุมัติผู้ขายรายใหม่เข้าสู่ระบบ และติดตามสรุปผลยอดขายรวมทั้งหมด
-                </p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black px-2 py-0.5 bg-[#6A5242] text-white tracking-widest inline-block">MANAGER</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#6A5242]" />
+                </div>
+                <h4 className="text-base font-black text-[#3C322A]">3. ผู้จัดการ (Manager / Admin)</h4>
+                <ul className="space-y-2.5 text-xs text-[#6A5242] font-bold list-disc pl-4">
+                  <li className="list-none -ml-4 text-[#556B2F] font-black">★ ครอบคลุมสิทธิ์การทำงานทั้งหมดของพนักงาน (Staff)</li>
+                  <li>จัดการลูกค้า (Customer Management)</li>
+                  <li>จัดการการชำระเงิน (Payment Management)</li>
+                  <li>ดูรายงานและสถิติ (Reports & Analytics Dashboard)</li>
+                  <li>ตั้งค่าระบบ (System Settings)</li>
+                </ul>
               </div>
             </div>
           </section>
@@ -342,7 +386,7 @@ export default function DocsPage() {
                 {/* Column: Frontend */}
                 <div className="space-y-3">
                   <h4 className="text-[10px] font-black text-[#6A5242] tracking-wider mb-1">FRONTEND LAYERS</h4>
-                  {["buyer-ui", "seller-ui", "admin-ui"].map((node) => (
+                  {["buyer-ui", "backoffice-ui"].map((node) => (
                     <button
                       key={node}
                       onClick={() => setSelectedArchNode(node)}
@@ -406,9 +450,8 @@ export default function DocsPage() {
                         {selectedArchNode.replace("-", " ")}
                       </h3>
                       <p className="text-xs text-[#6A5242] leading-relaxed font-bold">
-                        {selectedArchNode === "buyer-ui" && "หน้าเว็บการบริการของฝั่งลูกค้า เพื่อใช้ในการสืบค้นข้อมูลสินค้าหน้าร้านหยิบสินค้าลงในตะกร้า ออกแบบและสั่งทํากําไลคัสตอมรวมถึงเข้าสู่กระบวนการชําระเงิน"}
-                        {selectedArchNode === "seller-ui" && "หน้าบริหารจัดการของฝั่งผู้ขายเพื่อให้สามารถตรวจสอบรายการสินค้า อัปโหลดสต็อกใหม่ จัดการรายการที่สั่งซื้อจากฝั่งลูกค้า และตรวจดูกราฟสถิติรายได้ของร้าน"}
-                        {selectedArchNode === "admin-ui" && "หน้าจัดการระบบสําหรับผู้ดูแลระบบแพลตฟอร์มในการอนุมัติร้านค้า เข้ามาตรวจสอบประวัติการซื้อขาย และอนุมัติรับเงินในระบบ"}
+                        {selectedArchNode === "buyer-ui" && "หน้าเว็บส่วนของลูกค้า (Storefront) สำหรับเลือกชมสินค้า ค้นหา ออกแบบและสั่งทำกำไลคัสตอม รวมถึงชำระเงินออนไลน์ผ่านระบบ"}
+                        {selectedArchNode === "backoffice-ui" && "หน้าเว็บระบบหลังบ้าน (Backoffice) สำหรับพนักงาน (Staff) ในการจัดการคำสั่งซื้อ การจัดส่ง และสต็อกสินค้า และสำหรับผู้จัดการ (Manager) ในการดูแลข้อมูลสินค้าและดูแดชบอร์ดรายงานยอดขาย"}
                         {selectedArchNode === "auth" && "บริการบริหารระบบความปลอดภัยและเข้าสู่ระบบ สมัครสมาชิก ตรวจสอบ Token (JWT/Session) เพื่อแยกบทบาทความรับผิดชอบในการใช้งาน"}
                         {selectedArchNode === "product" && "บริการจัดการคลังสินค้า รับ-ส่งข้อมูลคุณลักษณะ ขนาดสินค้า และตัวเลือกกำไลแบบสำเร็จรูปหรือแบบ Made-to-Order"}
                         {selectedArchNode === "order" && "บริการจัดการตะกร้าสินค้า ดำเนินการออกคำสั่งสินค้าใหม่ และจัดทำข้อมูลสรุปรายการสั่งเพื่อส่งต่อไปยังผู้ขาย"}
