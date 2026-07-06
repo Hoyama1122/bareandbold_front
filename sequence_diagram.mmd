@@ -1,0 +1,49 @@
+sequenceDiagram
+    autonumber
+    actor Customer as ลูกค้า (Customer)
+    participant Storefront as หน้าร้าน (Storefront UI :3000)
+    participant Backend as ระบบหลังบ้าน (Backend API :8000)
+    participant DB as ฐานข้อมูล Neon (PostgreSQL)
+    participant Omise as Omise Payment Gateway
+    actor Staff as พนักงาน (Staff)
+    participant Backoffice as ระบบจัดการ (Backoffice UI :3001)
+
+    %% 1. Customization and Ordering
+    Customer->>Storefront: เลือกคัสตอมกำไลข้อเท้า/ข้อมือ
+    Customer->>Storefront: เพิ่มสินค้าลงตะกร้า & กดสั่งซื้อสินค้า
+    Storefront->>Backend: Request: POST /api/orders (สร้างคำสั่งซื้อ)
+    Backend->>DB: บันทึกออเดอร์สถานะ "Pending"
+    DB-->>Backend: ยืนยันการบันทึก
+    Backend-->>Storefront: Response: Order ID & Payment Session
+
+    %% 2. Payment Flow (Omise Gateway)
+    Customer->>Storefront: กรอกข้อมูลและยืนยันการชำระเงิน
+    Storefront->>Omise: ข้อมูล PromptPay ผ่าน SDK
+    Omise-->>Storefront: ส่งกลับ Token / QR Code
+    Storefront->>Backend: POST /api/payments (ชำระเงินด้วย Token/QR)
+    Backend->>Omise: เรียก API Charge (ส่ง Charge Request)
+    Omise-->>Backend: Charge Success (ชำระเงินสำเร็จ)
+    Backend->>DB: อัปเดตสถานะออเดอร์เป็น "Paid" (ชำระเงินแล้ว)
+    Backend->>DB: อัปเดตสต็อกวัตถุดิบและอะไหล่สินค้า
+    Backend-->>Storefront: แสดงหน้าสั่งซื้อสำเร็จ
+    Storefront-->>Customer: แสดงข้อมูลใบเสร็จและสถานะการสั่งซื้อ
+
+    %% 3. Fulfillment Flow
+    Staff->>Backoffice: เข้าสู่ระบบดูรายการคำสั่งซื้อใหม่
+    Backoffice->>Backend: GET /api/orders (ดึงรายการออเดอร์)
+    Backend->>DB: ค้นหาคำสั่งซื้อที่สถานะ "Paid"
+    DB-->>Backend: ส่งกลับรายการออเดอร์
+    Backend-->>Backoffice: แสดงรายการออเดอร์ที่ชำระเงินแล้ว
+    Staff->>Backoffice: อัปเดตสถานะเป็น "Shipping" (กำลังจัดส่ง)
+    Backoffice->>Backend: PUT /api/orders/:id/shipping
+    Backend->>DB: บันทึกเลขพัสดุและสถานะการจัดส่ง
+    Backend->>Backend: เชื่อมโยง Mock Shipping API (จำลองพัสดุ)
+    Backend-->>Backoffice: อัปเดตสถานะพัสดุสำเร็จ
+    
+    %% 4. Order Tracking Flow
+    Customer->>Storefront: ตรวจสอบสถานะการจัดส่ง (Order Tracking)
+    Storefront->>Backend: GET /api/orders/:id/tracking
+    Backend->>DB: ดึงข้อมูลเลขพัสดุและ Mock Shipping Status
+    DB-->>Backend: ส่งกลับข้อมูลการติดตาม
+    Backend-->>Storefront: ส่งกลับข้อมูลสถานะพัสดุ (เช่น จัดเตรียม -> ระหว่างส่ง -> สำเร็จ)
+    Storefront-->>Customer: แสดงสถานะการนำส่งพัสดุแบบเรียลไทม์

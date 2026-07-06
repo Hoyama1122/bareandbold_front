@@ -252,28 +252,31 @@ export default function DocsPage() {
               </table>
             </div>
           </section>
-          {/* Section: Objectives */}
           <section id="objectives" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
             <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">03 // เป้าหมายโครงการ</span>
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-6">วัตถุประสงค์โครงการ</h2>
+            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-6">วัตถุประสงค์โครงการตามกระบวนการ SDLC</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[
                 {
-                  label: "01 / ระบบร้านค้าออนไลน์",
-                  desc: "สร้างระบบ e-Commerce ของแบรนด์ Bare & Bold สำหรับวางจำหน่ายกำไลข้อมือและกำไลข้อเท้าออนไลน์",
+                  label: "01 / Requirement Analysis & Planning",
+                  desc: "วิเคราะห์ความต้องการและกำหนดขอบเขตระบบร้านค้าออนไลน์และการคัสตอมสร้อยข้อมือเฉพาะบุคคลของแบรนด์ Bare & Bold เพื่อตอบสนองความต้องการของผู้ใช้ในระบบได้ครบถ้วน",
                 },
                 {
-                  label: "02 / การคัสตอมสินค้าพิเศษ",
-                  desc: "รองรับการสั่งทำแบบพิเศษ (Custom / Made-to-Order) โดยเปิดให้ลูกค้าเลือกอะไหล่ตกแต่งได้เองตามใจชอบ",
+                  label: "02 / System & Database Design",
+                  desc: "ออกแบบสถาปัตยกรรมระบบ โครงสร้างฐานข้อมูลเชิงสัมพันธ์ (PostgreSQL) และออกแบบประสบการณ์ผู้ใช้งาน (UI/UX) ทั้งส่วนหน้าร้าน (Storefront) และระบบหลังบ้าน (Backoffice)",
                 },
                 {
-                  label: "03 / การจัดการที่มีประสิทธิภาพ",
-                  desc: "มีระบบหลังบ้านสำหรับจัดการสต็อกสินค้า คำสั่งซื้อ ตรวจสอบการจัดส่งสินค้า และจัดการชำระเงินอย่างเป็นระบบ",
+                  label: "03 / System Development",
+                  desc: "พัฒนาระบบด้วย Next.js และ Hono API ที่มีประสิทธิภาพ เชื่อมต่อระบบชำระเงิน Omise Payment Gateway และจำลองระบบขนส่งพัสดุด้วย Mock Shipping API ได้อย่างถูกต้องปลอดภัย",
                 },
                 {
-                  label: "04 / ระบบรายงานยอดขายเรียลไทม์",
-                  desc: "แสดงยอดขาย รายรับรวม และสถิติที่สำคัญต่างๆ ในรูปแบบ Dashboard แบบเรียลไทม์",
+                  label: "04 / System Testing",
+                  desc: "ดำเนินการทดสอบฟังก์ชันการทำงานหลัก (Functional Testing) และทดสอบ UAT ร่วมกับผู้ใช้งาน เพื่อป้องกันข้อผิดพลาดและความไม่ปลอดภัยของข้อมูลธุรกรรมการซื้อขาย",
+                },
+                {
+                  label: "05 / Deployment & Maintenance",
+                  desc: "ติดตั้งระบบซอฟต์แวร์บนสภาพแวดล้อมจริงเพื่อเปิดบริการ และทำเอกสารข้อมูลจำเพาะเชิงเทคนิค (System Specification Doc) สำหรับนำมาใช้อ้างอิงเพื่อบำรุงรักษาและพัฒนาต่อยอดได้ง่าย",
                 },
               ].map((obj, i) => (
                 <div
