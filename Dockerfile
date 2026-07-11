@@ -11,6 +11,8 @@ RUN npm install
 # คัดลอกไฟล์โปรเจกต์ทั้งหมดและสร้างหน้าเว็บ (Build)
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
 # Stage สำหรับรัน Production
@@ -23,6 +25,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # คัดลอกข้อมูลเฉพาะที่จำเป็นในการรันระบบ
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
