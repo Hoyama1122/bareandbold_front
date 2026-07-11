@@ -15,21 +15,20 @@ ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
-# Stage สำหรับรัน Production
-FROM node:20-alpine AS runner
+# Stage สำหรับรัน Production (เปลี่ยนไปใช้ Nginx ขนาดเบาสำหรับเว็บสถิต)
+FROM nginx:alpine AS runner
 
-WORKDIR /app
+WORKDIR /usr/share/nginx/html
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+# ลบไฟล์เริ่มต้นของ Nginx
+RUN rm -rf ./*
 
-# คัดลอกข้อมูลเฉพาะที่จำเป็นในการรันระบบ
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/next.config.mjs ./
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
+# คัดลอกโฟลเดอร์ที่บิลด์เสร็จแล้ว (out) จาก builder มาเสิร์ฟ
+COPY --from=builder /app/out ./
+
+# ตั้งค่าพอร์ต Nginx ภายในคอนเทนเนอร์ให้เป็นพอร์ต 3005 ตามข้อกำหนดเดิม
+RUN sed -i 's/listen       80;/listen       3005;/g' /etc/nginx/conf.d/default.conf
 
 EXPOSE 3005
 
-CMD ["npm", "run", "start", "--", "-p", "3005"]
+CMD ["nginx", "-g", "daemon off;"]
