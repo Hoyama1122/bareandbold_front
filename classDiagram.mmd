@@ -1,0 +1,111 @@
+classDiagram
+    direction TB
+
+    %% Entities / Models
+    class User {
+        +String id
+        +String email
+        +String firstName
+        +String lastName
+        +String role
+    }
+
+    class Product {
+        +String id
+        +String brand
+        +String name
+        +Number price
+        +Number originalPrice
+        +String type
+        +String imageUrl
+        +String description
+        +DateTime createdAt
+    }
+
+    %% Services
+    class AuthService {
+        <<service>>
+        +register(email, password, firstName, lastName) Promise
+        +login(email, password) Promise
+        +registerBackoffice(email, password, firstName, lastName) Promise
+        +loginBackoffice(email, password) Promise
+        +getProfile(token) Promise
+        +logout() Promise
+    }
+
+    class ProductService {
+        <<service>>
+        +getProducts() Promise
+        +getProductById(id) Promise
+    }
+
+    %% Hooks
+    class UseAuth {
+        <<hook>>
+        +User user
+        +Boolean loading
+        +String error
+        +login(email, password) Promise
+        +logout() Promise
+        +refreshProfile() Promise
+    }
+
+    %% Components
+    class StorefrontPage {
+        <<component>>
+        -String activeTab
+        -Boolean isLoggedIn
+        -List~Product~ products
+        -Boolean loading
+        +fetchProducts()
+        +getFilteredProducts() List~Product~
+    }
+
+    class Header {
+        <<component>>
+        +Boolean isLoggedIn
+        +Function onAuthStatusChange
+        -Boolean isAuthModalOpen
+        -String authMode
+    }
+
+    class AuthModal {
+        <<component>>
+        +Boolean isOpen
+        +Function onClose
+        +String initialMode
+        +Function onAuthSuccess
+        -String mode
+        -String email
+        -String password
+        -String firstName
+        -String lastName
+        -String error
+        -Boolean loading
+        +handleSubmit(e)
+    }
+
+    class ProductCard {
+        <<component>>
+        +Product product
+    }
+
+    %% UML Relationships & Multiplicities
+    
+    %% Composition: Components that are strictly nested within parent lifecycles
+    StorefrontPage "1" *--> "1" Header : contains
+    Header "1" *--> "1" AuthModal : contains
+
+    %% Aggregation: Components/objects stored as list or parts, but can exist independently
+    StorefrontPage "1" o--> "*" ProductCard : renders list of
+    StorefrontPage "1" o--> "*" Product : manages state list of
+
+    %% Association: Direct reference to a model/entity
+    ProductCard "1" --> "1" Product : displays details of
+    UseAuth "1" --> "0..1" User : manages state of
+
+    %% Dependency: Calls/uses services or hooks
+    StorefrontPage ..> ProductService : fetches data from
+    Header ..> UseAuth : invokes for authentication state
+    AuthModal ..> UseAuth : invokes for authentication actions
+    UseAuth ..> AuthService : relies on for API requests
