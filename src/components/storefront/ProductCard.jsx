@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { StarIcon } from "hugeicons-react";
+import Link from "next/link";
 
 export default function ProductCard({ product }) {
   // Extract values with fallbacks to support both mock and backend API models

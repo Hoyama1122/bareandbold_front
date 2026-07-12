@@ -9,7 +9,7 @@ import CartDrawer from "./CartDrawer";
 
 const NAV_LINKS = [
   { label: "หน้าแรก", href: "/" },
-  { label: "ร้านค้า", href: "/#shop" },
+  { label: "ร้านค้า", href: "/products" },
   { label: "หน้าเพจ", href: "/#pages" },
   { label: "บทความ", href: "/#blog" },
   { label: "ติดต่อเรา", href: "/#contact" },
