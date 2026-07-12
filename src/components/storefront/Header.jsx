@@ -80,7 +80,7 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
             href="/"
             className="text-2xl font-extrabold tracking-tight text-earth-dark hover:text-earth-olive transition"
           >
-            Destry
+            Bare & Bold
           </Link>
 
           {/* Nav links */}

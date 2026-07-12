@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "DESTRY | ร้านค้าออนไลน์สไตล์มินิมอล",
-  description: "พบกับสินค้าแฟชั่นและเครื่องประดับพรีเมียม สไตล์ Earth Tone และมินิมอล",
+  title: "BARE & BOLD | ร้านค้าออนไลน์สไตล์มินิมอล",
+  description: "พบกับสินค้าแฟชั่น เครื่องประดับ และสร้อยข้อมือแฮนด์เมดพรีเมียมจาก BARE & BOLD",
 };
 
 export default function RootLayout({ children }) {
