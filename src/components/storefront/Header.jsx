@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search01Icon, FavouriteIcon, ShoppingBag01Icon, UserIcon } from "hugeicons-react";
 import AuthModal from "./AuthModal";
+import CartDrawer from "./CartDrawer";
 
 const NAV_LINKS = [
   { label: "หน้าแรก", href: "/" },
@@ -19,6 +20,8 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     setIsLoggedIn(initialIsLoggedIn);
@@ -29,6 +32,34 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
     if (token) {
       setIsLoggedIn(true);
     }
+  }, []);
+
+  const updateCartCount = () => {
+    if (typeof window !== "undefined") {
+      const localCart = localStorage.getItem("bare_cart");
+      if (localCart) {
+        try {
+          const parsed = JSON.parse(localCart);
+          if (Array.isArray(parsed)) {
+            const count = parsed.reduce((acc, item) => acc + (item.quantity || 1), 0);
+            setCartCount(count);
+            return;
+          }
+        } catch (e) {}
+      }
+      // If no cart found, set default mock items count (2 items: 1 + 1 = 2)
+      setCartCount(2);
+    }
+  };
+
+  useEffect(() => {
+    updateCartCount();
+    window.addEventListener("cartUpdated", updateCartCount);
+    window.addEventListener("storage", updateCartCount);
+    return () => {
+      window.removeEventListener("cartUpdated", updateCartCount);
+      window.removeEventListener("storage", updateCartCount);
+    };
   }, []);
 
   const handleAuthSuccess = (user) => {
@@ -80,11 +111,16 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
             <button className="hover:text-earth-olive transition">
               <FavouriteIcon size={20} strokeWidth={2} />
             </button>
-            <button className="relative hover:text-earth-olive transition">
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              className="relative hover:text-earth-olive transition cursor-pointer"
+            >
               <ShoppingBag01Icon size={20} strokeWidth={2} />
-              <span className="absolute -top-1 -right-1.5 w-4 h-4 bg-earth-walnut text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                1
-              </span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1.5 w-4 h-4 bg-earth-walnut text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
             </button>
 
             <button
@@ -112,6 +148,12 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
         isOpen={isAuthOpen} 
         onClose={() => setIsAuthOpen(false)} 
         onAuthSuccess={handleAuthSuccess}
+      />
+
+      {/* Cart Drawer */}
+      <CartDrawer 
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
       />
     </>
   );
