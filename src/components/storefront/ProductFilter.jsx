@@ -16,7 +16,6 @@ const categories = [
     label: "กำไลข้อเท้า",
   },
 ];
-
 const productTypes = [
   {
     value: "all",
