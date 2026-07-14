@@ -7,53 +7,6 @@ import TrustBadges from "@/components/storefront/TrustBadges";
 import ProductCard from "@/components/storefront/ProductCard";
 import { productService } from "@/services/product.service";
 
-// Mock products catalog in Destry style
-const PRODUCTS = [
-  {
-    id: 1,
-    brand: "Studio Design",
-    name: "เสื้อฮู้ดสีเทา",
-    rating: 5,
-    price: "$35.00",
-    oldPrice: "$49.00",
-    imageUrl:
-      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=600&auto=format&fit=crop",
-    badge: null,
-  },
-  {
-    id: 2,
-    brand: "Studio Design",
-    name: "ผ้าพันคอทอลายเรียบหรู",
-    rating: 4,
-    price: "$45.00",
-    oldPrice: "$60.00",
-    imageUrl:
-      "https://images.unsplash.com/photo-1605050604139-38e91aa795bb?q=80&w=600&auto=format&fit=crop",
-    badge: "มาใหม่",
-  },
-  {
-    id: 3,
-    brand: "Leather Design",
-    name: "รองเท้าสนีกเกอร์หนังสุดเท่",
-    rating: 5,
-    price: "$85.00",
-    oldPrice: null,
-    imageUrl:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop",
-    badge: null,
-  },
-  {
-    id: 4,
-    brand: "Design Source",
-    name: "กระเป๋าสะพายแฮนด์เมด",
-    rating: 5,
-    price: "$95.00",
-    oldPrice: "$120.00",
-    imageUrl:
-      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop",
-    badge: null,
-  },
-];
 
 export default function Storefront() {
   const [activeTab, setActiveTab] = useState("new"); // new, best, sale
