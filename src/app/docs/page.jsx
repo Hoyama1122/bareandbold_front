@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Header from "@/components/storefront/Header";
-import Footer from "@/components/storefront/Footer";
 
 // Simple custom SVG icons
 const SearchIcon = () => (
@@ -72,9 +70,6 @@ export default function DocsPage() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#3C322A] font-anuphan antialiased flex flex-col">
-      {/* Navigation Header */}
-      <Header isLoggedIn={false} />
-
       {/* Nike-Style Minimal Hero */}
       <section className="bg-[#FDFBF7] pt-14 pb-8 px-6 md:px-12 border-b border-[#EADECC]/60">
         <div className="max-w-[1400px] mx-auto">
@@ -573,9 +568,6 @@ export default function DocsPage() {
 
         </main>
       </div>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

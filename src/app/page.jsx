@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Header from "@/components/storefront/Header";
 import Hero from "@/components/storefront/Hero";
 import PromoBanners from "@/components/storefront/PromoBanners";
 import TrustBadges from "@/components/storefront/TrustBadges";
 import ProductCard from "@/components/storefront/ProductCard";
-import Footer from "@/components/storefront/Footer";
 import { productService } from "@/services/product.service";
 
 // Mock products catalog in Destry style
@@ -59,15 +57,10 @@ const PRODUCTS = [
 
 export default function Storefront() {
   const [activeTab, setActiveTab] = useState("new"); // new, best, sale
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("bare_auth_token");
-    if (token) {
-      setIsLoggedIn(true);
-    }
     fetchProducts();
   }, []);
 
@@ -103,9 +96,6 @@ export default function Storefront() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#3C322A] font-sans antialiased">
-      {/* 1. Header (Utility & Navigation) */}
-      <Header isLoggedIn={isLoggedIn} onAuthStatusChange={(status) => setIsLoggedIn(status)} />
-
       {/* 2. Hero Section */}
       <Hero />
 
@@ -169,9 +159,6 @@ export default function Storefront() {
           </div>
         )}
       </section>
-
-      {/* 7. Footer */}
-      <Footer />
     </div>
   );
 }
