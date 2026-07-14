@@ -1,23 +1,10 @@
 import { productService } from "@/services/product.service";
 import ProductDetailClient from "./ProductDetailClient";
 
-export async function generateStaticParams() {
-  try {
-    const data = await productService.getProducts();
-    if (data.success && data.products) {
-      return data.products.map((product) => ({
-        id: encodeURIComponent(product.name),
-      }));
-    }
-  } catch (err) {
-    console.error("Failed to generate static params from API:", err);
-  }
-  return [];
-}
-
 export default async function ProductDetailPage({ params }) {
   const resolvedParams = await params;
-  const decodedName = decodeURIComponent(resolvedParams.id);
+  // Convert hyphens back to spaces to match product name
+  const decodedName = decodeURIComponent(resolvedParams.id).replace(/-/g, " ");
 
   let product = null;
   let recommended = [];

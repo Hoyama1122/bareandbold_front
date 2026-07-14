@@ -51,7 +51,7 @@ export default function ProductGrid({ products }) {
         {products.map((product) => (
           <Link
             key={product.id}
-            href={`/products/${encodeURIComponent(product.name)}`}
+            href={`/products/${product.name.replace(/\s+/g, "-")}`}
             className="group"
           >
             <ProductCard product={product} />

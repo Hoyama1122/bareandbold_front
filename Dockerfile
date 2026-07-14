@@ -15,20 +15,20 @@ ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
-# Stage สำหรับรัน Production (เปลี่ยนไปใช้ Nginx ขนาดเบาสำหรับเว็บสถิต)
-FROM nginx:alpine AS runner
+# Stage สำหรับรัน Production (ใช้ Node.js รันเซิร์ฟเวอร์แบบไดนามิก)
+FROM node:20-alpine AS runner
 
-WORKDIR /usr/share/nginx/html
+WORKDIR /app
 
-# ลบไฟล์เริ่มต้นของ Nginx
-RUN rm -rf ./*
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# คัดลอกโฟลเดอร์ที่บิลด์เสร็จแล้ว (out) จาก builder มาเสิร์ฟ
-COPY --from=builder /app/out ./
-
-# คัดลอกการตั้งค่า Nginx สำหรับ Next.js Static Routing
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# คัดลอกเฉพาะไฟล์ที่จำเป็นสำหรับการรัน
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
 
 EXPOSE 3005
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "run", "start"]
