@@ -26,8 +26,8 @@ RUN rm -rf ./*
 # คัดลอกโฟลเดอร์ที่บิลด์เสร็จแล้ว (out) จาก builder มาเสิร์ฟ
 COPY --from=builder /app/out ./
 
-# ตั้งค่าพอร์ต Nginx ภายในคอนเทนเนอร์ให้เป็นพอร์ต 3005 ตามข้อกำหนดเดิม
-RUN sed -i 's/listen       80;/listen       3005;/g' /etc/nginx/conf.d/default.conf
+# คัดลอกการตั้งค่า Nginx สำหรับ Next.js Static Routing
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 3005
 
