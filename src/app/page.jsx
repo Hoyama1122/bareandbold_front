@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import Hero from "@/components/storefront/Hero";
 import PromoBanners from "@/components/storefront/PromoBanners";
 import TrustBadges from "@/components/storefront/TrustBadges";
@@ -107,7 +108,13 @@ export default function Storefront() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {filteredProducts.map((prod) => (
-              <ProductCard key={prod.id} product={prod} />
+              <Link
+                key={prod.id}
+                href={`/products/${encodeURIComponent(prod.name)}`}
+                className="group"
+              >
+                <ProductCard product={prod} />
+              </Link>
             ))}
           </div>
         )}
