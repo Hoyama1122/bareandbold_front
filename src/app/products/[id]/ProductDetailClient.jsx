@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import ProductCard from "@/components/storefront/ProductCard";
 
-export default function ProductDetailClient({ product }) {
+export default function ProductDetailClient({ product, recommendedProducts = [] }) {
   const images =
     product.images && product.images.length > 0
       ? product.images.map(img => typeof img === "object" ? img.url : img)
@@ -157,6 +159,26 @@ export default function ProductDetailClient({ product }) {
           </div>
         </div>
       </div>
+
+      {/* Recommended Products Section */}
+      {recommendedProducts.length > 0 && (
+        <div className="mt-24 border-t border-earth-beige pt-16 font-anuphan">
+          <h3 className="text-2xl font-bold text-earth-dark mb-8">
+            สินค้าแนะนำสำหรับคุณ
+          </h3>
+          <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {recommendedProducts.map((prod) => (
+              <Link
+                key={prod.id}
+                href={`/products/${encodeURIComponent(prod.name)}`}
+                className="group"
+              >
+                <ProductCard product={prod} />
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
