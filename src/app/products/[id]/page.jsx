@@ -1,18 +1,44 @@
-import products from "@/data/products";
+import { productService } from "@/services/product.service";
 import ProductDetailClient from "./ProductDetailClient";
 
 export async function generateStaticParams() {
-  return products.map((product) => ({
-    id: product.name,
-  }));
+  try {
+    const data = await productService.getProducts();
+    if (data.success && data.products) {
+      return data.products.map((product) => ({
+        id: encodeURIComponent(product.name),
+      }));
+    }
+  } catch (err) {
+    console.error("Failed to generate static params from API:", err);
+  }
+  return [];
 }
 
 export default async function ProductDetailPage({ params }) {
   const resolvedParams = await params;
   const decodedName = decodeURIComponent(resolvedParams.id);
-  const product = products.find(
-    (p) => p.name.toLowerCase() === decodedName.toLowerCase()
-  );
+
+  let product = null;
+  let recommended = [];
+
+  try {
+    const data = await productService.getProducts();
+    if (data.success && data.products) {
+      product = data.products.find(
+        (p) => p.name.toLowerCase() === decodedName.toLowerCase()
+      );
+
+      if (product) {
+        const recData = await productService.getProductRecommendations(product.id);
+        if (recData.success) {
+          recommended = recData.products;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch product or recommendations:", err);
+  }
 
   if (!product) {
     return (
@@ -21,27 +47,6 @@ export default async function ProductDetailPage({ params }) {
       </div>
     );
   }
-
-  // แนะนำสินค้า 10 ชิ้น โดยเรียงจาก ประเภทเดียวกัน (category), ชนิดสินค้า (type) และราคาใกล้เคียงกันที่สุดก่อน
-  const recommended = products
-    .filter((p) => p.id !== product.id)
-    .sort((a, b) => {
-      // 1. หมวดหมู่เดียวกันก่อน (category: เช่น bracelet, anklet)
-      const aSameCat = a.category.toLowerCase() === product.category.toLowerCase() ? 0 : 1;
-      const bSameCat = b.category.toLowerCase() === product.category.toLowerCase() ? 0 : 1;
-      if (aSameCat !== bSameCat) return aSameCat - bSameCat;
-
-      // 2. รูปแบบเดียวกัน (type: READY_TO_SHIP หรือ MADE_TO_ORDER)
-      const aSameType = a.type === product.type ? 0 : 1;
-      const bSameType = b.type === product.type ? 0 : 1;
-      if (aSameType !== bSameType) return aSameType - bSameType;
-
-      // 3. ช่วงราคาใกล้เคียงกันที่สุด
-      const aPriceDiff = Math.abs(a.price - product.price);
-      const bPriceDiff = Math.abs(b.price - product.price);
-      return aPriceDiff - bPriceDiff;
-    })
-    .slice(0, 10);
 
   return <ProductDetailClient product={product} recommendedProducts={recommended} />;
 }

@@ -3,9 +3,15 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import useEmblaCarousel from "embla-carousel-react";
 import ProductCard from "@/components/storefront/ProductCard";
 
 export default function ProductDetailClient({ product, recommendedProducts = [] }) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", dragFree: true });
+
+  const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
+  const scrollNext = () => emblaApi && emblaApi.scrollNext();
+
   const images =
     product.images && product.images.length > 0
       ? product.images.map(img => typeof img === "object" ? img.url : img)
@@ -163,19 +169,47 @@ export default function ProductDetailClient({ product, recommendedProducts = [] 
       {/* Recommended Products Section */}
       {recommendedProducts.length > 0 && (
         <div className="mt-24 border-t border-earth-beige pt-16 font-anuphan">
-          <h3 className="text-2xl font-bold text-earth-dark mb-8">
-            สินค้าแนะนำสำหรับคุณ
-          </h3>
-          <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {recommendedProducts.map((prod) => (
-              <Link
-                key={prod.id}
-                href={`/products/${encodeURIComponent(prod.name)}`}
-                className="group"
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-2xl font-bold text-earth-dark">
+              สินค้าแนะนำสำหรับคุณ
+            </h3>
+            <div className="flex gap-2">
+              <button
+                onClick={scrollPrev}
+                className="w-10 h-10 rounded-full border border-earth-border flex items-center justify-center hover:bg-earth-beige/40 transition active:scale-95 cursor-pointer"
+                aria-label="Previous slide"
               >
-                <ProductCard product={prod} />
-              </Link>
-            ))}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 text-zinc-700">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+              <button
+                onClick={scrollNext}
+                className="w-10 h-10 rounded-full border border-earth-border flex items-center justify-center hover:bg-earth-beige/40 transition active:scale-95 cursor-pointer"
+                aria-label="Next slide"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 text-zinc-700">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div className="overflow-hidden w-full cursor-grab active:cursor-grabbing" ref={emblaRef}>
+            <div className="flex gap-7">
+              {recommendedProducts.map((prod) => (
+                <div
+                  key={prod.id}
+                  className="flex-[0_0_85%] sm:flex-[0_0_45%] md:flex-[0_0_30%] lg:flex-[0_0_23%]"
+                >
+                  <Link
+                    href={`/products/${encodeURIComponent(prod.name)}`}
+                    className="group block"
+                  >
+                    <ProductCard product={prod} />
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
