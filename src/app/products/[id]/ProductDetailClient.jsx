@@ -5,23 +5,68 @@ import Image from "next/image";
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import ProductCard from "@/components/storefront/ProductCard";
+import { productService } from "@/services/product.service";
 
-export default function ProductDetailClient({ product, recommendedProducts = [] }) {
+export default function ProductDetailClient({ nameSlug }) {
+  const [product, setProduct] = useState(null);
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", dragFree: true });
 
   const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
   const scrollNext = () => emblaApi && emblaApi.scrollNext();
 
-  const images =
-    product.images && product.images.length > 0
+  const images = product
+    ? product.images && product.images.length > 0
       ? product.images.map(img => typeof img === "object" ? img.url : img)
-      : [product.imageUrl];
+      : [product.imageUrl]
+    : [];
 
-  const [currentImage, setCurrentImage] = useState(images[0]);
+  const [currentImage, setCurrentImage] = useState(null);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [qty, setQty] = useState(1);
 
+  const [material, setMaterial] = useState("Silver");
+  const [size, setSize] = useState("16 cm");
+
+  useEffect(() => {
+    const loadProductData = async () => {
+      try {
+        setLoading(true);
+        const decodedName = decodeURIComponent(nameSlug).replace(/-/g, " ");
+        const data = await productService.getProducts();
+        if (data.success && data.products) {
+          const matched = data.products.find(
+            (p) => p.name.toLowerCase() === decodedName.toLowerCase()
+          );
+          if (matched) {
+            setProduct(matched);
+            const imgs = matched.images && matched.images.length > 0
+              ? matched.images.map(img => typeof img === "object" ? img.url : img)
+              : [matched.imageUrl];
+            setCurrentImage(imgs[0]);
+
+            // Fetch recommendations
+            const recData = await productService.getProductRecommendations(matched.id);
+            if (recData.success) {
+              setRecommendedProducts(recData.products);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error loading product data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (nameSlug) {
+      loadProductData();
+    }
+  }, [nameSlug]);
+
   const handlePrevImage = () => {
+    if (images.length === 0) return;
     const idx = images.indexOf(currentImage);
     if (idx > 0) {
       setCurrentImage(images[idx - 1]);
@@ -31,6 +76,7 @@ export default function ProductDetailClient({ product, recommendedProducts = [] 
   };
 
   const handleNextImage = () => {
+    if (images.length === 0) return;
     const idx = images.indexOf(currentImage);
     if (idx < images.length - 1) {
       setCurrentImage(images[idx + 1]);
@@ -48,10 +94,7 @@ export default function ProductDetailClient({ product, recommendedProducts = [] 
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isZoomOpen, currentImage]);
-
-  const [material, setMaterial] = useState("Silver");
-  const [size, setSize] = useState("16 cm");
+  }, [isZoomOpen, currentImage, images]);
 
   const addToCart = () => {
     let cart = JSON.parse(localStorage.getItem("bare_cart") || "[]");
@@ -73,6 +116,45 @@ export default function ProductDetailClient({ product, recommendedProducts = [] 
 
     alert("เพิ่มลงตะกร้าแล้ว");
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-6 py-14 animate-pulse">
+        <div className="grid md:grid-cols-2 gap-16">
+          {/* LEFT - Image Skeleton */}
+          <div>
+            <div className="w-full aspect-square rounded-2xl bg-zinc-100" />
+            <div className="flex gap-4 mt-5">
+              <div className="w-20 h-20 rounded-xl bg-zinc-100" />
+              <div className="w-20 h-20 rounded-xl bg-zinc-100" />
+              <div className="w-20 h-20 rounded-xl bg-zinc-100" />
+            </div>
+          </div>
+          {/* RIGHT - Content Skeleton */}
+          <div className="space-y-6">
+            <div className="h-4 bg-zinc-100 rounded w-1/4" />
+            <div className="h-10 bg-zinc-100 rounded w-3/4" />
+            <div className="h-8 bg-zinc-100 rounded w-1/3" />
+            <div className="space-y-3 pt-6 border-t border-zinc-100">
+              <div className="h-4 bg-zinc-100 rounded w-full" />
+              <div className="h-4 bg-zinc-100 rounded w-full" />
+              <div className="h-4 bg-zinc-100 rounded w-2/3" />
+            </div>
+            <div className="h-12 bg-zinc-100 rounded-xl w-full mt-10" />
+            <div className="h-12 bg-zinc-100 rounded-xl w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="max-w-7xl mx-auto py-20 text-center text-xl font-bold font-anuphan">
+        ไม่พบสินค้า
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-14">
