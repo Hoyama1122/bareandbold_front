@@ -14,6 +14,15 @@ export default function ProductsPage() {
   const [type, setType] = useState("all");
 
   useEffect(() => {
+    // Read category and type from URL parameters if present
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlCategory = params.get("category");
+      const urlType = params.get("type");
+      if (urlCategory) setCategory(urlCategory);
+      if (urlType) setType(urlType);
+    }
+
     const fetchProducts = async () => {
       try {
         setLoading(true);
