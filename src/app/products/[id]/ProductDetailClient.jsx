@@ -364,6 +364,7 @@ export default function ProductDetailClient({ nameSlug }) {
                   <Link
                     href={`/products/${prod.name.replace(/\s+/g, "-")}`}
                     className="group block"
+                    prefetch={false}
                   >
                     <ProductCard product={prod} />
                   </Link>

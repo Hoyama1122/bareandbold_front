@@ -53,6 +53,7 @@ export default function ProductGrid({ products }) {
             key={product.id}
             href={`/products/${product.name.replace(/\s+/g, "-")}`}
             className="group"
+            prefetch={false}
           >
             <ProductCard product={product} />
           </Link>
