@@ -79,6 +79,7 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
           <Link
             href="/"
             className="text-2xl font-extrabold tracking-tight text-earth-dark hover:text-earth-olive transition"
+            prefetch={false}
           >
             Bare & Bold
           </Link>
@@ -96,6 +97,7 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
                       ? "text-earth-olive border-b-2 border-earth-olive pb-1"
                       : "text-earth-dark hover:text-earth-olive"
                   }`}
+                  prefetch={false}
                 >
                   {link.label}
                 </Link>

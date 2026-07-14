@@ -10,6 +10,7 @@ export default function PromoBanners() {
       <Link 
         href="/products?category=bracelet" 
         className="bg-earth-beige border border-earth-border p-6 rounded-xl flex items-center justify-between group cursor-pointer hover:shadow-md transition duration-300 block decoration-none"
+        prefetch={false}
       >
         <div className="space-y-3">
           <span className="text-[12px] font-bold text-earth-olive uppercase tracking-widest block">หินธรรมชาติ (Stone)</span>
@@ -25,6 +26,7 @@ export default function PromoBanners() {
       <Link 
         href="/products?category=anklet" 
         className="bg-earth-beige border border-earth-border p-6 rounded-xl flex items-center justify-between group cursor-pointer hover:shadow-md transition duration-300 block decoration-none"
+        prefetch={false}
       >
         <div className="space-y-3">
           <span className="text-[12px] font-bold text-earth-olive uppercase tracking-widest block">แฮนด์เมด (Handmade)</span>
@@ -40,6 +42,7 @@ export default function PromoBanners() {
       <Link 
         href="/products" 
         className="bg-earth-beige border border-earth-border p-6 rounded-xl flex items-center justify-between group cursor-pointer hover:shadow-md transition duration-300 block decoration-none"
+        prefetch={false}
       >
         <div className="space-y-3">
           <span className="text-[12px] font-bold text-earth-olive uppercase tracking-widest block">ของขวัญ (Gift Set)</span>

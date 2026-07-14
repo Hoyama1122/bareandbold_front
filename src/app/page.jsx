@@ -110,8 +110,9 @@ export default function Storefront() {
             {filteredProducts.map((prod) => (
               <Link
                 key={prod.id}
-                href={`/products/${encodeURIComponent(prod.name)}`}
+                href={`/products/${prod.name.replace(/\s+/g, "-")}`}
                 className="group"
+                prefetch={false}
               >
                 <ProductCard product={prod} />
               </Link>
