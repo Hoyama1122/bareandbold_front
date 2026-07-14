@@ -3,7 +3,7 @@ import ProductDetailClient from "./ProductDetailClient";
 
 export async function generateStaticParams() {
   return products.map((product) => ({
-    id: encodeURIComponent(product.name),
+    id: product.name,
   }));
 }
 
