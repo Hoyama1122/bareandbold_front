@@ -5,42 +5,34 @@ import Link from "next/link";
 import { ShoppingBag01Icon } from "hugeicons-react";
 
 export default function CartDrawer({ isOpen, onClose }) {
-  // Mock items or load from localStorage if exists
-  const [cartItems, setCartItems] = useState([
-    {
-      id: "mock-1",
-      name: "สร้อยข้อมือหินนิลดำ (Ready-to-Ship)",
-      price: 890,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=300",
-      accessories: ["Charm เงินแท้ 925", "จี้หินเทอร์ควอยส์"]
-    },
-    {
-      id: "mock-2",
-      name: "Custom Cord Bracelet",
-      price: 1250,
-      quantity: 1,
-      image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=300",
-      accessories: ["ตัวคั่นทองเหลือง", "กระดุมมุก"]
-    }
-  ]);
-
+  const [cartItems, setCartItems] = useState([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Load real cart if any
-    const localCart = localStorage.getItem("bare_cart");
-    if (localCart) {
-      try {
-        const parsed = JSON.parse(localCart);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCartItems(parsed);
+    
+    const loadCart = () => {
+      const localCart = localStorage.getItem("bare_cart");
+      if (localCart) {
+        try {
+          const parsed = JSON.parse(localCart);
+          if (Array.isArray(parsed)) {
+            setCartItems(parsed);
+            return;
+          }
+        } catch (e) {
+          console.error("Error parsing cart from localStorage", e);
         }
-      } catch (e) {
-        console.error("Error parsing cart from localStorage", e);
       }
-    }
+      setCartItems([]);
+    };
+
+    loadCart();
+
+    window.addEventListener("cartUpdated", loadCart);
+    return () => {
+      window.removeEventListener("cartUpdated", loadCart);
+    };
   }, [isOpen]);
 
   if (!mounted) return null;
@@ -51,7 +43,6 @@ export default function CartDrawer({ isOpen, onClose }) {
     const updated = cartItems.filter(item => item.id !== id);
     setCartItems(updated);
     localStorage.setItem("bare_cart", JSON.stringify(updated));
-    // Trigger custom event so header updates or anything
     window.dispatchEvent(new Event("cartUpdated"));
   };
 
