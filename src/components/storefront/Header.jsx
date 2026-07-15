@@ -47,8 +47,8 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
           }
         } catch (e) {}
       }
-      // If no cart found, set default mock items count (2 items: 1 + 1 = 2)
-      setCartCount(2);
+      // If no cart found, set default count to 0
+      setCartCount(0);
     }
   };
 
@@ -119,7 +119,7 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
             >
               <ShoppingBag01Icon size={20} strokeWidth={2} />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1.5 w-4 h-4 bg-earth-walnut text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 w-4 h-4 bg-earth-walnut text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
