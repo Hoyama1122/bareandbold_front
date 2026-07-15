@@ -73,29 +73,29 @@ graph LR
     %% ==========================================
     %% 4. ACTOR TO USE CASE CONNECTIONS
     %% ==========================================
-    Guest --> UC_Browse
-    Guest --> UC_Search
-    Guest --> UC_ViewDetail
+    Guest --- UC_Browse
+    Guest --- UC_Search
+    Guest --- UC_ViewDetail
 
-    Customer --> UC_Register
-    Customer --> UC_Login
-    Customer --> UC_Profile
-    Customer --> UC_Custom
-    Customer --> UC_Cart
-    Customer --> UC_Checkout
-    Customer --> UC_Track
-    Customer --> UC_Wishlist
-    Customer --> UC_Contact
+    Customer --- UC_Register
+    Customer --- UC_Login
+    Customer --- UC_Profile
+    Customer --- UC_Custom
+    Customer --- UC_Cart
+    Customer --- UC_Checkout
+    Customer --- UC_Track
+    Customer --- UC_Wishlist
+    Customer --- UC_Contact
 
-    Staff --> UC_ManageStock
-    Staff --> UC_ManageCategory
-    Staff --> UC_ManageOrder
-    Staff --> UC_ManageShipping
+    Staff --- UC_ManageStock
+    Staff --- UC_ManageCategory
+    Staff --- UC_ManageOrder
+    Staff --- UC_ManageShipping
 
-    Manager --> UC_ManageProduct
-    Manager --> UC_ManageUsers
-    Manager --> UC_Dashboard
-    Manager --> UC_Settings
+    Manager --- UC_ManageProduct
+    Manager --- UC_ManageUsers
+    Manager --- UC_Dashboard
+    Manager --- UC_Settings
 
     %% ==========================================
     %% 5. EXTERNAL SYSTEMS (Secondary Actors)
@@ -103,6 +103,6 @@ graph LR
     Omise["ระบบชำระเงิน (Omise Gateway)"]
     ShippingAPI["ระบบขนส่งจำลอง (Mock Shipping API)"]
 
-    UC_Payment --> Omise
-    UC_Track --> ShippingAPI
-    UC_ManageShipping --> ShippingAPI
+    UC_Payment --- Omise
+    UC_Track --- ShippingAPI
+    UC_ManageShipping --- ShippingAPI
