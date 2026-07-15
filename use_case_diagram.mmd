@@ -50,7 +50,7 @@ graph LR
             UC_CancelOrder["ยกเลิกคำสั่งซื้อ"]
             UC_ManageShipping["จัดการสถานะจัดส่ง"]
             UC_ManageProduct["จัดการข้อมูลสินค้า (เพิ่ม/แก้ไข/ลบ)"]
-            UC_CropImage["ครอบตัดรูปภาพสินค้า 1:1"]
+           
             UC_ManageUsers["จัดการผู้ใช้งานและพนักงาน"]
             UC_Dashboard["ดูรายงานสรุปยอดขาย (Dashboard)"]
             UC_Settings["ตั้งค่าระบบ"]
@@ -66,7 +66,6 @@ graph LR
     UC_Checkout -.->|"<<include>>"| UC_PayMethod
     UC_Checkout -.->|"<<include>>"| UC_Payment
     
-    UC_ManageProduct -.->|"<<include>>"| UC_CropImage
     UC_ManageOrder -.->|"<<include>>"| UC_ConfirmOrder
     UC_ManageOrder -.->|"<<include>>"| UC_CancelOrder
 

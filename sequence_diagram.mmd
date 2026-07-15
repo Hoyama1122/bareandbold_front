@@ -5,6 +5,7 @@ sequenceDiagram
     participant Backend as ระบบหลังบ้าน (Backend API :8000)
     participant DB as ฐานข้อมูล Neon (PostgreSQL)
     participant Omise as Omise Payment Gateway
+    participant ShippingAPI as ระบบขนส่งจำลอง (Mock Shipping API)
     actor Staff as พนักงาน (Staff)
     participant Backoffice as ระบบจัดการ (Backoffice UI :3001)
 
@@ -36,14 +37,17 @@ sequenceDiagram
     Backend-->>Backoffice: แสดงรายการออเดอร์ที่ชำระเงินแล้ว
     Staff->>Backoffice: อัปเดตสถานะเป็น "Shipping" (กำลังจัดส่ง)
     Backoffice->>Backend: PUT /api/orders/:id/shipping
+    Backend->>ShippingAPI: POST /api/mock-shipping/ship (ส่งข้อมูลจำลองการส่ง)
+    ShippingAPI-->>Backend: ส่งกลับ Tracking Number จำลอง
     Backend->>DB: บันทึกเลขพัสดุและสถานะการจัดส่ง
-    Backend->>Backend: เชื่อมโยง Mock Shipping API (จำลองพัสดุ)
     Backend-->>Backoffice: อัปเดตสถานะพัสดุสำเร็จ
     
     %% 4. Order Tracking Flow
     Customer->>Storefront: ตรวจสอบสถานะการจัดส่ง (Order Tracking)
     Storefront->>Backend: GET /api/orders/:id/tracking
     Backend->>DB: ดึงข้อมูลเลขพัสดุและ Mock Shipping Status
-    DB-->>Backend: ส่งกลับข้อมูลการติดตาม
-    Backend-->>Storefront: ส่งกลับข้อมูลสถานะพัสดุ (เช่น จัดเตรียม -> ระหว่างส่ง -> สำเร็จ)
+    DB-->>Backend: ส่งกลับข้อมูลเลขพัสดุ
+    Backend->>ShippingAPI: GET /api/mock-shipping/track/:trackingNumber (ตรวจสอบสถานะพัสดุจำลอง)
+    ShippingAPI-->>Backend: ส่งกลับข้อมูลสถานะ (เช่น จัดเตรียม -> ระหว่างจัดส่ง -> สำเร็จ)
+    Backend-->>Storefront: ส่งกลับข้อมูลสถานะพัสดุ
     Storefront-->>Customer: แสดงสถานะการนำส่งพัสดุแบบเรียลไทม์
