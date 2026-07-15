@@ -38,7 +38,7 @@ export default function ProductDetailClient({ nameSlug }) {
         const data = await productService.getProducts();
         if (data.success && data.products) {
           const matched = data.products.find(
-            (p) => p.name.toLowerCase() === decodedName.toLowerCase()
+            (p) => p.name.toLowerCase() === decodedName.toLowerCase() || p.id === nameSlug
           );
           if (matched) {
             setProduct(matched);

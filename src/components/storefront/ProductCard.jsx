@@ -72,7 +72,7 @@ export default function ProductCard({ product }) {
           </div>
 
           <Link
-            href={`/products/${product.id}`}
+            href={`/products/${product.name.replace(/\s+/g, "-")}`}
             className="w-full text-center py-2.5 bg-white border-2 border-[#6A5242] text-[#6A5242] hover:bg-[#6A5242] hover:text-white font-bold text-xs rounded-xl transition duration-300 inline-block cursor-pointer shadow-sm"
           >
             ดูรายละเอียดสินค้า
