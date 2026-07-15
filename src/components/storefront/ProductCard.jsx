@@ -1,86 +1,83 @@
 import React from "react";
 import Image from "next/image";
-import { StarIcon } from "hugeicons-react";
 import Link from "next/link";
 
 export default function ProductCard({ product }) {
-  // Extract values with fallbacks to support both mock and backend API models
-  const imageUrl = product.imageUrl || (product.images && product.images[0]?.url) || "https://images.unsplash.com/photo-1611085583191-a3b1a20fdb44?q=80&w=600&auto=format&fit=crop";
-  const name = product.name;
-  const brand = product.brand || "Bare & Bold";
-  const rating = product.rating || 5;
+  // 📸 ดึงรูปภาพแรกจาก Array (images[0].url) 
+  const mainImage = product.images && product.images.length > 0 
+    ? product.images[0].url 
+    : "/images/placeholder.jpg"; 
 
-  const displayPrice = typeof product.price === "string" 
-    ? product.price 
-    : `฿${parseFloat(product.price).toLocaleString()}`;
+  // 🏷️ เช็คประเภทสินค้าเพื่อแสดงป้าย Made to Order
+  const isMadeToOrder = product.type === "MADE_TO_ORDER";
 
-  const displayOldPrice = product.oldPrice 
-    ? product.oldPrice 
-    : product.originalPrice 
-      ? `฿${parseFloat(product.originalPrice).toLocaleString()}` 
-      : null;
-
-  // Show "มาใหม่" badge if it's new (or let's say MADE_TO_ORDER has custom badge)
-  const badge = product.badge || (product.type === "MADE_TO_ORDER" ? "สั่งทำพิเศษ" : null);
+  // 💰 ฟังก์ชันแปลงราคาส่งกลับเป็นตัวเลขอย่างปลอดภัย รองรับทั้งแบบ String, Number และ null
+  const formatPrice = (priceValue) => {
+    if (priceValue === null || priceValue === undefined) return 0;
+    const parsed = Number(priceValue);
+    return isNaN(parsed) ? 0 : parsed;
+  };
 
   return (
-    <div className="group flex flex-col bg-white border border-earth-beige rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-      {/* Product preview image container */}
-      <div className="relative aspect-square w-full bg-earth-cream flex items-center justify-center overflow-hidden border-b border-earth-beige">
-        <Image
-          src={imageUrl}
-          alt={name}
-          fill
-          className="object-cover"
-        />
-
-        {badge && (
-          <span className="absolute top-4 left-4 px-2 py-0.5 rounded bg-earth-olive text-earth-cream text-[9px] font-bold uppercase tracking-wider">
-            {badge}
-          </span>
+    <div className="bg-white border border-[#EFE9DC] rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full group">
+      
+      {/* 🖼️ ส่วนรูปภาพหน้าปกสินค้า */}
+      <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#F5F0E6]/30">
+        
+        {/* 🟢 ป้ายแท็กสั่งทำพิเศษ (แสดงเฉพาะสินค้าที่เป็น MADE_TO_ORDER) */}
+        {isMadeToOrder && (
+          <div className="absolute top-4 left-4 bg-[#6A5242] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg z-10 shadow-sm font-anuphan">
+            สั่งทำพิเศษ
+          </div>
         )}
+
+        <Image
+          src={mainImage}
+          alt={product.name || "Product Image"}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+        />
       </div>
 
-      {/* Product info details */}
-      <div className="p-5 flex flex-col flex-1 gap-1 bg-white">
-        <span className="text-[12px] font-bold text-earth-olive uppercase tracking-wider">
-          {brand}
-        </span>
-        <h4 className="text-[14px] font-anuphan font-bold text-earth-dark hover:text-earth-walnut transition-colors leading-snug">
-          {name}
-        </h4>
-
-        {/* Rating stars */}
-        <div className="flex gap-0.5 mt-1">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <StarIcon
-              key={i}
-              size={14}
-              strokeWidth={2}
-              className={
-                i < rating
-                  ? "text-amber-400 fill-amber-400"
-                  : "text-zinc-200"
-              }
-            />
-          ))}
-        </div>
-
-        <div className="flex items-baseline gap-2 mt-2">
-          <span className="text-base font-extrabold text-earth-walnut">
-            {displayPrice}
+      {/* 📝 ส่วนข้อมูลรายละเอียดสินค้า */}
+      <div className="p-5 flex flex-col flex-grow justify-between font-anuphan">
+        <div className="space-y-2">
+          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+            {product.brand || "BARE & BOLD"}
           </span>
-          {displayOldPrice && (
-            <span className="text-[11px] text-zinc-400 line-through">
-              {displayOldPrice}
-            </span>
-          )}
+          
+          <h3 className="text-base font-extrabold text-[#3C322A] line-clamp-2 min-h-[3rem] leading-snug">
+            {product.name}
+          </h3>
+
+          {/* 🌟 แสดงดาวรีวิวคงที่ตามโครงสร้างแบรนด์ */}
+          <div className="flex text-amber-500 text-xs">
+            {"★".repeat(product.rating || 5)}
+          </div>
         </div>
 
-        {/* Add to Cart button */}
-        <button className="w-full font-anuphan text-[14px] mt-4 py-2 border border-earth-walnut hover:bg-earth-walnut hover:text-earth-cream text-earth-walnut font-bold uppercase tracking-wider rounded-lg transition duration-300 cursor-pointer">
-          เพิ่มลงตะกร้า
-        </button>
+        {/* 💰 ราคาสินค้าและปุ่มแอคชัน */}
+        <div className="mt-4 pt-3 border-t border-[#F5F0E6] flex flex-col gap-3">
+          <div className="flex items-baseline gap-2">
+            {/* 🛠️ เปลี่ยนมาเรียกใช้ฟังก์ชันแปลงราคาอย่างปลอดภัย */}
+            <span className="text-lg font-black text-[#3C322A]">
+              {formatPrice(product.price).toLocaleString()} บาท
+            </span>
+            {product.originalPrice && (
+              <span className="text-xs text-zinc-400 line-through">
+                {formatPrice(product.originalPrice).toLocaleString()}
+              </span>
+            )}
+          </div>
+
+          <Link
+            href={`/products/${product.id}`}
+            className="w-full text-center py-2.5 bg-white border-2 border-[#6A5242] text-[#6A5242] hover:bg-[#6A5242] hover:text-white font-bold text-xs rounded-xl transition duration-300 inline-block cursor-pointer shadow-sm"
+          >
+            ดูรายละเอียดสินค้า
+          </Link>
+        </div>
       </div>
     </div>
   );
