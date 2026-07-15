@@ -1,28 +1,105 @@
 classDiagram
     direction TB
 
-    %% Entities / Models
+    %% ==========================================
+    %% 1. ENTITIES / MODELS (Database Schema)
+    %% ==========================================
     class User {
         +String id
         +String email
+        +String password
+        +String firstName
+        +String lastName
+        +String phone
+        +String address
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class Employee {
+        +String id
+        +String email
+        +String password
         +String firstName
         +String lastName
         +String role
+        +Boolean isDeleted
+        +DateTime createdAt
     }
 
     class Product {
         +String id
-        +String brand
         +String name
-        +Number price
-        +Number originalPrice
-        +String type
-        +String imageUrl
         +String description
+        +Decimal price
+        +Decimal originalPrice
+        +String type
+        +String category
+        +Int stock
+        +Boolean isDeleted
         +DateTime createdAt
     }
 
-    %% Services
+    class ProductImage {
+        +String id
+        +String productId
+        +String url
+        +Int position
+    }
+
+    class CustomOption {
+        +String id
+        +String productId
+        +String name
+        +Boolean isRequired
+    }
+
+    class CustomOptionValue {
+        +String id
+        +String optionId
+        +String value
+        +Decimal priceAdjustment
+    }
+
+    class Category {
+        +String id
+        +String name
+        +String description
+        +Boolean isDeleted
+    }
+
+    class CartItem {
+        +String id
+        +String productId
+        +String name
+        +Decimal price
+        +Int quantity
+        +String image
+        +List~String~ accessories
+    }
+
+    class Order {
+        +String id
+        +String userId
+        +String status
+        +Decimal totalAmount
+        +String shippingAddress
+        +String trackingNumber
+        +DateTime createdAt
+    }
+
+    class OrderItem {
+        +String id
+        +String orderId
+        +String productId
+        +Int quantity
+        +Decimal price
+        +List~String~ accessories
+    }
+
+    %% ==========================================
+    %% 2. SERVICES & HOOKS (API & State)
+    %% ==========================================
     class AuthService {
         <<service>>
         +register(email, password, firstName, lastName) Promise
@@ -37,52 +114,81 @@ classDiagram
         <<service>>
         +getProducts() Promise
         +getProductById(id) Promise
+        +getProductRecommendations(id) Promise
     }
 
-    %% Hooks
     class UseAuth {
         <<hook>>
         +User user
         +Boolean loading
-        +String error
         +login(email, password) Promise
         +logout() Promise
-        +refreshProfile() Promise
+        +fetchProfile() Promise
     }
 
-    %% Components
-    class StorefrontPage {
+    %% ==========================================
+    %% 3. FRONTEND COMPONENTS (React/Next.js)
+    %% ==========================================
+    class ProductsPage {
         <<component>>
-        -String activeTab
-        -Boolean isLoggedIn
         -List~Product~ products
         -Boolean loading
+        -String search
+        -String category
+        -String type
         +fetchProducts()
-        +getFilteredProducts() List~Product~
+    }
+
+    class ProductDetailPage {
+        <<component>>
+        +Object params
+    }
+
+    class ProductDetailClient {
+        <<component>>
+        +String nameSlug
+        -Product product
+        -List~Product~ recommendedProducts
+        -Int qty
+        -String size
+        +addToCart()
     }
 
     class Header {
         <<component>>
-        +Boolean isLoggedIn
-        +Function onAuthStatusChange
         -Boolean isAuthModalOpen
-        -String authMode
+        -Boolean isCartOpen
+    }
+
+    class CartDrawer {
+        <<component>>
+        +Boolean isOpen
+        +Function onClose
+        -List~CartItem~ cartItems
+        +removeItem(id)
     }
 
     class AuthModal {
         <<component>>
         +Boolean isOpen
         +Function onClose
-        +String initialMode
-        +Function onAuthSuccess
         -String mode
         -String email
         -String password
-        -String firstName
-        -String lastName
-        -String error
-        -Boolean loading
         +handleSubmit(e)
+    }
+
+    class ProductGrid {
+        <<component>>
+        +List~Product~ products
+    }
+
+    class ProductFilter {
+        <<component>>
+        +String search
+        +Function setSearch
+        +String category
+        +Function setCategory
     }
 
     class ProductCard {
@@ -90,22 +196,31 @@ classDiagram
         +Product product
     }
 
-    %% UML Relationships & Multiplicities
+    %% ==========================================
+    %% 4. UML RELATIONSHIPS
+    %% ==========================================
     
-    %% Composition: Components that are strictly nested within parent lifecycles
-    StorefrontPage "1" *--> "1" Header : contains
+    %% Database Relations
+    Product "1" *--> "*" ProductImage : has
+    Product "1" *--> "*" CustomOption : has
+    CustomOption "1" *--> "*" CustomOptionValue : has
+    Order "1" *--> "*" OrderItem : contains
+    User "1" o--> "*" Order : places
+
+    %% Component Composition (Storefront)
+    ProductsPage "1" *--> "1" ProductFilter : includes
+    ProductsPage "1" *--> "1" ProductGrid : includes
+    ProductGrid "1" o--> "*" ProductCard : renders list of
     Header "1" *--> "1" AuthModal : contains
+    Header "1" *--> "1" CartDrawer : contains
 
-    %% Aggregation: Components/objects stored as list or parts, but can exist independently
-    StorefrontPage "1" o--> "*" ProductCard : renders list of
-    StorefrontPage "1" o--> "*" Product : manages state list of
+    %% Data Associations
+    ProductCard "1" --> "1" Product : displays
+    ProductDetailClient "1" --> "1" Product : displays
+    CartDrawer "1" o--> "*" CartItem : displays
 
-    %% Association: Direct reference to a model/entity
-    ProductCard "1" --> "1" Product : displays details of
-    UseAuth "1" --> "0..1" User : manages state of
-
-    %% Dependency: Calls/uses services or hooks
-    StorefrontPage ..> ProductService : fetches data from
-    Header ..> UseAuth : invokes for authentication state
-    AuthModal ..> UseAuth : invokes for authentication actions
-    UseAuth ..> AuthService : relies on for API requests
+    %% Service Dependencies
+    ProductsPage ..> ProductService : uses
+    ProductDetailClient ..> ProductService : uses
+    AuthModal ..> UseAuth : invokes
+    UseAuth ..> AuthService : relies on
