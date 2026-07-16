@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import ProductGrid from "@/components/storefront/ProductGrid";
-import ProductFilter from "@/components/storefront/ProductFilter";
+import ProductGrid from "@/components/product/ProductGrid";
+import ProductFilter from "@/components/product/ProductFilter";
 import { productService } from "@/services/product.service";
 
 export default function ProductsPage() {

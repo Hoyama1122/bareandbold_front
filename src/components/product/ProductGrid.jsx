@@ -19,14 +19,9 @@ export default function ProductGrid({ products }) {
       {/* Product Grid */}
       <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {products.map((product) => (
-          <Link
-            key={product.id}
-            href={`/products/${product.name.replace(/\s+/g, "-")}`}
-            className="group"
-            prefetch={false}
-          >
+          <div key={product.id}>
             <ProductCard product={product} />
-          </Link>
+          </div>
         ))}
       </div>
     </>

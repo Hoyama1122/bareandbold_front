@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Hero from "@/components/storefront/Hero";
-import PromoBanners from "@/components/storefront/PromoBanners";
-import TrustBadges from "@/components/storefront/TrustBadges";
-import ProductCard from "@/components/storefront/ProductCard";
+import Hero from "@/components/home/Hero";
+import PromoBanners from "@/components/home/PromoBanners";
+import TrustBadges from "@/components/home/TrustBadges";
+import ProductCard from "@/components/product/ProductCard";
 import { productService } from "@/services/product.service";
 
 

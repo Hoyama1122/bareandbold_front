@@ -1,6 +1,6 @@
 import "./globals.css";
-import Header from "@/components/storefront/Header";
-import Footer from "@/components/storefront/Footer";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
 export const metadata = {
   title: "BARE & BOLD | ร้านค้าออนไลน์สไตล์มินิมอล",

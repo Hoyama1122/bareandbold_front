@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search01Icon, FavouriteIcon, ShoppingBag01Icon, UserIcon } from "hugeicons-react";
-import AuthModal from "./AuthModal";
-import CartDrawer from "./CartDrawer";
+import AuthModal from "../auth/AuthModal";
+import CartDrawer from "../cart/CartDrawer";
 
 const NAV_LINKS = [
   { label: "หน้าแรก", href: "/" },
