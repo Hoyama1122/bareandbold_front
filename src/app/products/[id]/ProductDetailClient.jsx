@@ -1,0 +1,176 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import { productService } from "@/services/product.service";
+import ProductSkeleton from "@/components/product-detail/ProductSkeleton";
+import ProductImageGallery from "@/components/product-detail/ProductImageGallery";
+import ProductInfo from "@/components/product-detail/ProductInfo";
+import RecommendedProducts from "@/components/product-detail/RecommendedProducts";
+import ImageZoomModal from "@/components/product-detail/ImageZoomModal";
+
+export default function ProductDetailClient({ nameSlug }) {
+  const [product, setProduct] = useState(null);
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", dragFree: true });
+
+  const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
+  const scrollNext = () => emblaApi && emblaApi.scrollNext();
+
+  const images = product
+    ? product.images && product.images.length > 0
+      ? product.images.map(img => typeof img === "object" ? img.url : img)
+      : [product.imageUrl]
+    : [];
+
+  const [currentImage, setCurrentImage] = useState(null);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [qty, setQty] = useState(1);
+
+  const [material, setMaterial] = useState("Silver");
+  const [size, setSize] = useState("16 cm");
+
+  useEffect(() => {
+    const loadProductData = async () => {
+      try {
+        setLoading(true);
+        const decodedName = decodeURIComponent(nameSlug).replace(/-/g, " ");
+        const data = await productService.getProducts();
+        if (data.success && data.products) {
+          const matched = data.products.find(
+            (p) => p.name.toLowerCase() === decodedName.toLowerCase() || p.id === nameSlug
+          );
+          if (matched) {
+            setProduct(matched);
+            const imgs = matched.images && matched.images.length > 0
+              ? matched.images.map(img => typeof img === "object" ? img.url : img)
+              : [matched.imageUrl];
+            setCurrentImage(imgs[0]);
+
+            // Fetch recommendations
+            const recData = await productService.getProductRecommendations(matched.id);
+            if (recData.success) {
+              setRecommendedProducts(recData.products);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error loading product data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (nameSlug) {
+      loadProductData();
+    }
+  }, [nameSlug]);
+
+  const handlePrevImage = () => {
+    if (images.length === 0) return;
+    const idx = images.indexOf(currentImage);
+    if (idx > 0) {
+      setCurrentImage(images[idx - 1]);
+    } else {
+      setCurrentImage(images[images.length - 1]);
+    }
+  };
+
+  const handleNextImage = () => {
+    if (images.length === 0) return;
+    const idx = images.indexOf(currentImage);
+    if (idx < images.length - 1) {
+      setCurrentImage(images[idx + 1]);
+    } else {
+      setCurrentImage(images[0]);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isZoomOpen) return;
+      if (e.key === "Escape") setIsZoomOpen(false);
+      if (e.key === "ArrowLeft") handlePrevImage();
+      if (e.key === "ArrowRight") handleNextImage();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isZoomOpen, currentImage, images]);
+
+  const addToCart = () => {
+    let cart = JSON.parse(localStorage.getItem("bare_cart") || "[]");
+
+    cart.push({
+      id: Date.now(),
+      productId: product.id,
+      name: product.name,
+      image: currentImage,
+      price: product.price,
+      quantity: qty,
+      material,
+      size,
+    });
+
+    localStorage.setItem("bare_cart", JSON.stringify(cart));
+
+    window.dispatchEvent(new Event("cartUpdated"));
+
+    alert("เพิ่มลงตะกร้าแล้ว");
+  };
+
+  if (loading) {
+    return <ProductSkeleton />;
+  }
+
+  if (!product) {
+    return (
+      <div className="max-w-7xl mx-auto py-20 text-center text-xl font-bold font-anuphan">
+        ไม่พบสินค้า
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-14">
+      <div className="grid md:grid-cols-2 gap-16">
+        <ProductImageGallery
+          images={images}
+          currentImage={currentImage}
+          setCurrentImage={setCurrentImage}
+          setIsZoomOpen={setIsZoomOpen}
+          productName={product.name}
+        />
+        <ProductInfo
+          product={product}
+          material={material}
+          setMaterial={setMaterial}
+          size={size}
+          setSize={setSize}
+          qty={qty}
+          setQty={setQty}
+          addToCart={addToCart}
+        />
+      </div>
+
+      <RecommendedProducts
+        recommendedProducts={recommendedProducts}
+        emblaRef={emblaRef}
+        scrollPrev={scrollPrev}
+        scrollNext={scrollNext}
+      />
+
+      {isZoomOpen && (
+        <ImageZoomModal
+          images={images}
+          currentImage={currentImage}
+          setCurrentImage={setCurrentImage}
+          setIsZoomOpen={setIsZoomOpen}
+          handlePrevImage={handlePrevImage}
+          handleNextImage={handleNextImage}
+          productName={product.name}
+        />
+      )}
+    </div>
+  );
+}

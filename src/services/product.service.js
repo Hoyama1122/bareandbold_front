@@ -32,4 +32,10 @@ export const productService = {
       method: "GET",
     });
   },
+
+  getProductRecommendations: async (id) => {
+    return apiFetch(`/products/${id}/recommendations`, {
+      method: "GET",
+    });
+  },
 };

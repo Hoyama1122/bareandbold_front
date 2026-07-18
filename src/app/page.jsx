@@ -1,73 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Header from "@/components/storefront/Header";
-import Hero from "@/components/storefront/Hero";
-import PromoBanners from "@/components/storefront/PromoBanners";
-import TrustBadges from "@/components/storefront/TrustBadges";
-import ProductCard from "@/components/storefront/ProductCard";
-import Footer from "@/components/storefront/Footer";
+import Link from "next/link";
+import Hero from "@/components/home/Hero";
+import PromoBanners from "@/components/home/PromoBanners";
+import TrustBadges from "@/components/home/TrustBadges";
+import ProductCard from "@/components/product/ProductCard";
 import { productService } from "@/services/product.service";
 
-// Mock products catalog in Destry style
-const PRODUCTS = [
-  {
-    id: 1,
-    brand: "Studio Design",
-    name: "เสื้อฮู้ดสีเทา",
-    rating: 5,
-    price: "$35.00",
-    oldPrice: "$49.00",
-    imageUrl:
-      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=600&auto=format&fit=crop",
-    badge: null,
-  },
-  {
-    id: 2,
-    brand: "Studio Design",
-    name: "ผ้าพันคอทอลายเรียบหรู",
-    rating: 4,
-    price: "$45.00",
-    oldPrice: "$60.00",
-    imageUrl:
-      "https://images.unsplash.com/photo-1605050604139-38e91aa795bb?q=80&w=600&auto=format&fit=crop",
-    badge: "มาใหม่",
-  },
-  {
-    id: 3,
-    brand: "Leather Design",
-    name: "รองเท้าสนีกเกอร์หนังสุดเท่",
-    rating: 5,
-    price: "$85.00",
-    oldPrice: null,
-    imageUrl:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop",
-    badge: null,
-  },
-  {
-    id: 4,
-    brand: "Design Source",
-    name: "กระเป๋าสะพายแฮนด์เมด",
-    rating: 5,
-    price: "$95.00",
-    oldPrice: "$120.00",
-    imageUrl:
-      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop",
-    badge: null,
-  },
-];
 
 export default function Storefront() {
   const [activeTab, setActiveTab] = useState("new"); // new, best, sale
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("bare_auth_token");
-    if (token) {
-      setIsLoggedIn(true);
-    }
     fetchProducts();
   }, []);
 
@@ -103,9 +50,6 @@ export default function Storefront() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#3C322A] font-sans antialiased">
-      {/* 1. Header (Utility & Navigation) */}
-      <Header isLoggedIn={isLoggedIn} onAuthStatusChange={(status) => setIsLoggedIn(status)} />
-
       {/* 2. Hero Section */}
       <Hero />
 
@@ -164,14 +108,18 @@ export default function Storefront() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {filteredProducts.map((prod) => (
-              <ProductCard key={prod.id} product={prod} />
+              <Link
+                key={prod.id}
+                href={`/products/${prod.name.replace(/\s+/g, "-")}`}
+                className="group"
+                prefetch={false}
+              >
+                <ProductCard product={prod} />
+              </Link>
             ))}
           </div>
         )}
       </section>
-
-      {/* 7. Footer */}
-      <Footer />
     </div>
   );
 }

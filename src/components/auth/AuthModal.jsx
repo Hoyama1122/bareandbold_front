@@ -50,6 +50,26 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
+
+    // Validate Thai characters for first name and last name
+    const thaiRegex = /^[ก-๙]+$/;
+    if (!firstName.trim()) {
+      setErrorMsg("กรุณากรอกชื่อ");
+      return;
+    }
+    if (!lastName.trim()) {
+      setErrorMsg("กรุณากรอกนามสกุล");
+      return;
+    }
+    if (!thaiRegex.test(firstName.trim())) {
+      setErrorMsg("ชื่อต้องเป็นภาษาไทยเท่านั้น");
+      return;
+    }
+    if (!thaiRegex.test(lastName.trim())) {
+      setErrorMsg("นามสกุลต้องเป็นภาษาไทยเท่านั้น");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -238,7 +258,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                     <label className="text-[11px] md:text-xs uppercase font-extrabold tracking-widest text-[#556B2F]">ชื่อ</label>
                     <input
                       type="text"
-                      placeholder="John"
+                      required
+                      placeholder="สมชาย"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       className="w-full bg-[#FFFFFF] border border-[#F5F0E6] focus:border-[#6A5242] outline-none rounded-lg px-4 py-2.5 text-sm text-[#3C322A] transition"
@@ -248,7 +269,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                     <label className="text-[11px] md:text-xs uppercase font-extrabold tracking-widest text-[#556B2F]">นามสกุล</label>
                     <input
                       type="text"
-                      placeholder="Doe"
+                      required
+                      placeholder="ใจดี"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       className="w-full bg-[#FFFFFF] border border-[#F5F0E6] focus:border-[#6A5242] outline-none rounded-lg px-4 py-2.5 text-sm text-[#3C322A] transition"
