@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -24,13 +24,12 @@ const BORDER = "#E1D8C0";
 const MUTED = "#8C8577";
 const WHITE = "#FFFFFF";
 
-const ORDER_ITEMS = [
-  { id: 1, name: "สร้อยคอ", variant: "สีเบจ · ไซส์ L", qty: 1, price: 890, swatch: "#D8C8A8" },
-  { id: 2, name: "สร้อยข้อมือ", variant: "สีดำ · ไซส์ 32", qty: 1, price: 1290, swatch: "#2A2A28" },
-  { id: 3, name: "สร้อยข้อดเท้า", variant: "สีครีม · ไซส์ M", qty: 2, price: 1590, swatch: "#E7DCC2" },
-];
 
-const PROVINCES = ["กรุงเทพมหานคร", "นนทบุรี", "ปทุมธานี", "เชียงใหม่", "ชลบุรี", "ขอนแก่น"];
+
+const PROVINCES = ["กระบี่","กรุงเทพมหานคร","กาญจนบุรี","กาฬสินธุ์","กำแพงเพชร","ขอนแก่น","จันทบุรี","ฉะเชิงเทรา","ชลบุรี","ชัยนาท","ชัยภูมิ","ชุมพร","เชียงราย","เชียงใหม่","ตรัง","ตราด","ตาก","นครนายก","นครปฐม","นครพนม","นครราชสีมา",
+"นครศรีธรรมราช","นครสวรรค์","นนทบุรี","นราธิวาส","น่าน","บึงกาฬ","บุรีรัมย์","ปทุมธานี","ประจวบคีรีขันธ์","ปราจีนบุรี","ปัตตานี","พระนครศรีอยุธยา","พังงา","พัทลุง","พิจิตร","พิษณุโลก","เพชรบุรี","เพชรบูรณ์","แพร่","พะเยา","ภูเก็ต","มหาสารคาม",
+"มุกดาหาร","แม่ฮ่องสอน","ยโสธร","ยะลา","ร้อยเอ็ด","ระนอง","ระยอง","ราชบุรี","ลพบุรี","ลำปาง","ลำพูน","เลย","ศรีสะเกษ","สกลนคร","สงขลา","สตูล","สมุทรปราการ","สมุทรสงคราม","สมุทรสาคร","สระแก้ว","สระบุรี","สิงห์บุรี","สุโขทัย",
+"สุพรรณบุรี","สุราษฎร์ธานี","สุรินทร์","หนองคาย","หนองบัวลำภู","อ่างทอง","อำนาจเจริญ","อุดรธานี","อุตรดิตถ์","อุทัยธานี","อุบลราชธานี"];
 
 const PAYMENT_METHODS = [
   { id: "card", label: "บัตรเครดิต / เดบิต", desc: "Visa, Mastercard, JCB", icon: CreditCard },
@@ -185,11 +184,18 @@ export default function CheckoutPage() {
   const [saveInfo, setSaveInfo] = useState(true);
   const [placed, setPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState(null);
+  const [orderItems, setOrderItems] = useState([]);
 
-  const subtotal = useMemo(() => ORDER_ITEMS.reduce((s, it) => s + it.price * it.qty, 0), []);
+  useEffect(() => {
+  const cart = localStorage.getItem("bare_cart");
+
+  if (cart) {
+    setOrderItems(JSON.parse(cart));}}, []);
+
+  const subtotal = useMemo(() =>orderItems.reduce((s, it) => s + it.price * it.quantity,0),[orderItems]);
   const shipping = subtotal >= 2000 ? 0 : 90;
   const total = subtotal + shipping;
-  const itemCount = ORDER_ITEMS.reduce((s, it) => s + it.qty, 0);
+  const itemCount = orderItems.reduce((s, it) => s + it.quantity,0);
 
   const handleConfirm = (e) => {
     e.preventDefault();
@@ -347,22 +353,25 @@ export default function CheckoutPage() {
             <div className="rounded-xl p-6 sticky top-6 flex flex-col gap-5" style={{ background: WHITE, border: `1px solid ${BORDER}` }}>
               <h2 className="kanit text-lg font-semibold">คำสั่งซื้อของคุณ</h2>
               <div className="flex flex-col gap-3">
-                {ORDER_ITEMS.map((it) => (
+                {orderItems.map((it) => (
                   <div key={it.id} className="flex items-center gap-3">
                     <div className="relative flex-shrink-0">
-                      <div className="w-12 h-14 rounded-md" style={{ background: it.swatch }} />
+                      <img
+                        src={it.image}
+                        alt={it.name}
+                        className="w-12 h-14 rounded-md object-cover"/>
                       <span
                         className="absolute -top-1.5 -right-1.5 text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center"
                         style={{ background: OLIVE, color: WHITE }}
                       >
-                        {it.qty}
+                        {it.quantity}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm truncate">{it.name}</p>
-                      <p className="text-xs" style={{ color: MUTED }}>{it.variant}</p>
+                      <p className="text-xs" style={{ color: MUTED }}>{it.variant || ""}</p>
                     </div>
-                    <p className="text-sm font-medium flex-shrink-0">฿{baht(it.price * it.qty)}</p>
+                    <p className="text-sm font-medium flex-shrink-0">฿{baht(it.price * it.quantity)}</p>
                   </div>
                 ))}
               </div>

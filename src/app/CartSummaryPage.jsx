@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, X, ChevronLeft, ShoppingBag, Truck, Tag, Heart } 
 from "lucide-react";
@@ -15,61 +15,34 @@ const MUTED = "#8C8577";
 
 const FREE_SHIP_THRESHOLD = 2000;
 
-const INITIAL_ITEMS = [
-  {
-    id: 1,
-    name: "สร้อยคอ",
-    variant: "สีเบจ · ไซส์ L",
-    price: 890,
-    originalPrice: 1290,
-    qty: 1,
-    swatch: "#D8C8A8",
-  },
-  {
-    id: 2,
-    name: "สร้อยข้อมือ",
-    variant: "สีดำ · ไซส์ 32",
-    price: 1290,
-    originalPrice: null,
-    qty: 1,
-    swatch: "#2A2A28",
-  },
-  {
-    id: 3,
-    name: "สร้อยข้อเท้า",
-    variant: "สีครีม · ไซส์ M",
-    price: 1590,
-    originalPrice: 1890,
-    qty: 1,
-    swatch: "#E7DCC2",
-  },
-];
-
 function baht(n) {
   return n.toLocaleString("th-TH");
 }
 
 export default function CartSummaryPage() {
   const router = useRouter();
-  const [items, setItems] = useState(INITIAL_ITEMS);
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+  const cart = localStorage.getItem("bare_cart");
+if (cart) {setItems(JSON.parse(cart));}}, []);
   const [promo, setPromo] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
 
   const updateQty = (id, delta) => {
     setItems((prev) =>
       prev
-        .map((it) => (it.id === id ? { ...it, qty: Math.max(0, it.qty + delta) } : it))
-        .filter((it) => it.qty > 0)
+        .map((it) => (it.id === id ? { ...it, quantity: Math.max(0, it.quantity + delta) } : it))
+        .filter((it) => it.quantity > 0)
     );
   };
 
   const removeItem = (id) => setItems((prev) => prev.filter((it) => it.id !== id));
 
-  const subtotal = useMemo(() => items.reduce((s, it) => s + it.price * it.qty, 0), [items]);
+  const subtotal = useMemo(() => items.reduce((s, it) => s + it.price * it.quantity, 0), [items]);
   const savings = useMemo(
     () =>
       items.reduce(
-        (s, it) => s + (it.originalPrice ? (it.originalPrice - it.price) * it.qty : 0),
+        (s, it) => s + (it.originalPrice ? (it.originalPrice - it.price) * it.quantity : 0),
         0
       ),
     [items]
@@ -79,7 +52,7 @@ export default function CartSummaryPage() {
   const total = Math.max(0, subtotal - promoDiscount + shipping);
   const remainingForFreeShip = Math.max(0, FREE_SHIP_THRESHOLD - subtotal);
   const shipProgress = Math.min(100, (subtotal / FREE_SHIP_THRESHOLD) * 100);
-  const itemCount = items.reduce((s, it) => s + it.qty, 0);
+  const itemCount = items.reduce((s, it) => s + it.quantity, 0);
 
   const applyPromo = () => {
     if (promo.trim().length > 0) setPromoApplied(true);
@@ -157,17 +130,17 @@ export default function CartSummaryPage() {
                   className="flex gap-4 rounded-xl p-4"
                   style={{ background: "#FFFFFF", border: `1px solid ${BORDER}` }}
                 >
-                  <div
-                    className="w-20 h-24 rounded-lg flex-shrink-0"
-                    style={{ background: it.swatch }}
-                  />
-                  <div className="flex-1 flex flex-col justify-between min-w-0">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-medium truncate">{it.name}</p>
-                        <p className="text-sm" style={{ color: MUTED }}>
-                          {it.variant}
-                        </p>
+                <img
+                  src={it.image}
+                  alt={it.name}
+                  className="w-20 h-24 rounded-lg flex-shrink-0 object-cover"/>
+                <div className="flex-1 flex flex-col justify-between min-w-0">
+                <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                <p className="font-medium truncate">{it.name}</p>
+                <p className="text-sm" style={{ color: MUTED }}>
+                  {it.variant || ""}
+                </p>
                       </div>
                       <button onClick={() => removeItem(it.id)} aria-label="ลบสินค้า" style={{ color: MUTED }}>
                         <X size={18} />
@@ -186,7 +159,7 @@ export default function CartSummaryPage() {
                         >
                           <Minus size={14} />
                         </button>
-                        <span className="w-6 text-center text-sm">{it.qty}</span>
+                        <span className="w-6 text-center text-sm">{it.quantity}</span>
                         <button
                           onClick={() => updateQty(it.id, 1)}
                           className="w-8 h-8 flex items-center justify-center"
@@ -199,10 +172,10 @@ export default function CartSummaryPage() {
                       <div className="text-right">
                         {it.originalPrice && (
                           <p className="text-xs line-through" style={{ color: MUTED }}>
-                            ฿{baht(it.originalPrice * it.qty)}
+                            ฿{baht(it.originalPrice * it.quantity)}
                           </p>
                         )}
-                        <p className="font-semibold">฿{baht(it.price * it.qty)}</p>
+                        <p className="font-semibold">฿{baht(it.price * it.quantity)}</p>
                       </div>
                     </div>
                   </div>
