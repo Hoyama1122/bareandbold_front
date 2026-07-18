@@ -91,25 +91,7 @@ export default function CartSummaryPage() {
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Sarabun:wght@400;500;600&display=swap');
         .kanit { font-family: 'Kanit', sans-serif; }
       `}</style>
-
-      {/* Header */}
-      <header style={{ background: "#FFFFFF", borderBottom: `1px solid ${BORDER}` }}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <span className="kanit text-xl font-semibold" style={{ color: INK }}>
-            Bare &amp; Bold
-          </span>
-          <nav className="hidden md:flex items-center gap-8 text-sm" style={{ color: INK }}>
-            <span>หน้าแรก</span>
-            <span>ร้านค้า</span>
-            <span>บทความ</span>
-            <span>ติดต่อเรา</span>
-          </nav>
-            <div className="relative">
-              
-            </div>
-          
-        </div>
-      </header>
+    
 
       <main className="max-w-6xl mx-auto px-6 py-10">
         {/* Breadcrumb + back */}

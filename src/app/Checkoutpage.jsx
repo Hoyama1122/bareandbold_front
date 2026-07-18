@@ -214,34 +214,6 @@ export default function CheckoutPage() {
         input::placeholder { color: ${MUTED}; opacity: 0.8; }
       `}</style>
 
-      <header style={{ background: WHITE, borderBottom: `1px solid ${BORDER}` }}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <button 
-          onClick={() => router.push("/")} 
-          className="kanit text-xl font-semibold" 
-          style={{ color: INK }}>
-            Bare &amp; Bold
-          </button>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-xs" style={{ color: MUTED }}>
-              <Lock size={13} />
-              การชำระเงินปลอดภัย
-            </div>
-            <button 
-            onClick={() => 
-            router.push("/cart")} 
-            className="relative" aria-label="ไปที่ตะกร้าสินค้า">
-              <ShoppingBag size={20} style={{ color: INK }} />
-              <span
-                className="absolute -top-2 -right-2 text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center"
-                style={{ background: OLIVE, color: WHITE }}
-              >
-                {itemCount}
-              </span>
-            </button>
-          </div>
-        </div>
-      </header>
 
       <main className="max-w-6xl mx-auto px-6 py-10">
         <button 
