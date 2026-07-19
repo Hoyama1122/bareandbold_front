@@ -307,13 +307,6 @@ export default function CheckoutPage() {
                 <Field required label="เบอร์โทรศัพท์" placeholder="08X-XXX-XXXX" />
                 <Field required label="อีเมล" placeholder="name@email.com" type="email" />
                 <Field span2 required label="ที่อยู่" placeholder="บ้านเลขที่ ซอย ถนน" />
-                <Field
-                  required
-                  label="รหัสไปรษณีย์"
-                  placeholder="10XXX"
-                  value={zipCode}
-                  onChange={handleZipCodeChange}
-                />
                 <label className="flex flex-col gap-1.5 text-sm">
                   <span>จังหวัด <span style={{ color: OLIVE_DEEP }}> *</span></span>
                   <select
@@ -377,6 +370,13 @@ export default function CheckoutPage() {
                     onChange={(e) => setSubDistrict(e.target.value)}
                   />
                 )}
+                <Field
+                  required
+                  label="รหัสไปรษณีย์"
+                  placeholder="10XXX"
+                  value={zipCode}
+                  onChange={handleZipCodeChange}
+                />
                 <Field span2 label="หมายเหตุถึงผู้จัดส่ง (ถ้ามี)" placeholder="เช่น ฝากไว้ที่นิติบุคคล" />
               </div>
               <label className="flex items-center gap-2 mt-4 text-sm cursor-pointer select-none">
