@@ -188,39 +188,107 @@ export default function CheckoutPage() {
   const [orderNumber, setOrderNumber] = useState(null);
   const [orderItems, setOrderItems] = useState([]);
 
-  const [zipCode, setZipCode] = useState("");
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
   const [subDistrict, setSubDistrict] = useState("");
+  const [zipCode, setZipCode] = useState("");
 
   const [availableDistricts, setAvailableDistricts] = useState([]);
   const [availableSubDistricts, setAvailableSubDistricts] = useState([]);
+  const [availableZipCodes, setAvailableZipCodes] = useState([]);
 
-  const handleZipCodeChange = (e) => {
-    const val = e.target.value.replace(/\D/g, "").slice(0, 5);
-    setZipCode(val);
-    
-    if (val.length === 5) {
-      const match = thailandAddresses.find(item => item.zipCode === val);
-      if (match) {
-        const provinces = match.provinceList.map(p => p.provinceName);
-        const districts = match.districtList.map(d => d.districtName);
-        const subDistricts = match.subDistrictList.map(sd => sd.subDistrictName);
-        
-        setAvailableDistricts(districts);
-        setAvailableSubDistricts(subDistricts);
-        
-        setProvince(provinces[0] || "");
-        setDistrict(districts[0] || "");
-        setSubDistrict(subDistricts[0] || "");
-      } else {
-        setAvailableDistricts([]);
-        setAvailableSubDistricts([]);
-      }
-    } else {
+  const handleProvinceChange = (provinceVal) => {
+    setProvince(provinceVal);
+    setDistrict("");
+    setSubDistrict("");
+    setZipCode("");
+    setAvailableSubDistricts([]);
+    setAvailableZipCodes([]);
+
+    if (!provinceVal) {
       setAvailableDistricts([]);
-      setAvailableSubDistricts([]);
+      return;
     }
+
+    const districts = [];
+    const districtIds = new Set();
+    thailandAddresses.forEach((item) => {
+      const hasProv = item.provinceList.some((p) => p.provinceName === provinceVal);
+      if (hasProv) {
+        item.districtList.forEach((d) => {
+          if (!districtIds.has(d.districtId)) {
+            districtIds.add(d.districtId);
+            districts.push(d.districtName);
+          }
+        });
+      }
+    });
+    districts.sort();
+    setAvailableDistricts(districts);
+  };
+
+  const handleDistrictChange = (districtVal) => {
+    setDistrict(districtVal);
+    setSubDistrict("");
+    setZipCode("");
+    setAvailableZipCodes([]);
+
+    if (!districtVal) {
+      setAvailableSubDistricts([]);
+      return;
+    }
+
+    const subdistricts = [];
+    const subdistrictIds = new Set();
+    thailandAddresses.forEach((item) => {
+      const hasProv = item.provinceList.some((p) => p.provinceName === province);
+      const hasDist = item.districtList.some((d) => d.districtName === districtVal);
+      if (hasProv && hasDist) {
+        const distMatch = item.districtList.find((d) => d.districtName === districtVal);
+        item.subDistrictList.forEach((sd) => {
+          if (distMatch && sd.districtId === distMatch.districtId) {
+            if (!subdistrictIds.has(sd.subDistrictId)) {
+              subdistrictIds.add(sd.subDistrictId);
+              subdistricts.push(sd.subDistrictName);
+            }
+          }
+        });
+      }
+    });
+    subdistricts.sort();
+    setAvailableSubDistricts(subdistricts);
+  };
+
+  const handleSubDistrictChange = (subDistrictVal) => {
+    setSubDistrict(subDistrictVal);
+    setZipCode("");
+
+    if (!subDistrictVal) {
+      setAvailableZipCodes([]);
+      return;
+    }
+
+    const zipcodes = [];
+    thailandAddresses.forEach((item) => {
+      const hasProv = item.provinceList.some((p) => p.provinceName === province);
+      const hasDist = item.districtList.some((d) => d.districtName === district);
+      const hasSub = item.subDistrictList.some((sd) => sd.subDistrictName === subDistrictVal);
+      if (hasProv && hasDist && hasSub) {
+        if (!zipcodes.includes(item.zipCode)) {
+          zipcodes.push(item.zipCode);
+        }
+      }
+    });
+    setAvailableZipCodes(zipcodes);
+
+    // Auto-select if there is only 1 zipcode
+    if (zipcodes.length === 1) {
+      setZipCode(zipcodes[0]);
+    }
+  };
+
+  const handleZipCodeChange = (zipCodeVal) => {
+    setZipCode(zipCodeVal);
   };
 
   useEffect(() => {
@@ -311,7 +379,7 @@ export default function CheckoutPage() {
                   <span>จังหวัด <span style={{ color: OLIVE_DEEP }}> *</span></span>
                   <select
                     value={province}
-                    onChange={(e) => setProvince(e.target.value)}
+                    onChange={(e) => handleProvinceChange(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none"
                     style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
                     required
@@ -322,61 +390,54 @@ export default function CheckoutPage() {
                     ))}
                   </select>
                 </label>
-                {availableDistricts.length > 0 ? (
-                  <label className="flex flex-col gap-1.5 text-sm">
-                    <span>เขต / อำเภอ <span style={{ color: OLIVE_DEEP }}> *</span></span>
-                    <select
-                      value={district}
-                      onChange={(e) => setDistrict(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none"
-                      style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
-                      required
-                    >
-                      {availableDistricts.map((d) => (
-                        <option key={d} value={d}>{d}</option>
-                      ))}
-                    </select>
-                  </label>
-                ) : (
-                  <Field
-                    required
-                    label="เขต / อำเภอ"
-                    placeholder="ระบุเขตหรืออำเภอ"
+                <label className="flex flex-col gap-1.5 text-sm">
+                  <span>เขต / อำเภอ <span style={{ color: OLIVE_DEEP }}> *</span></span>
+                  <select
                     value={district}
-                    onChange={(e) => setDistrict(e.target.value)}
-                  />
-                )}
-                {availableSubDistricts.length > 0 ? (
-                  <label className="flex flex-col gap-1.5 text-sm">
-                    <span>แขวง / ตำบล <span style={{ color: OLIVE_DEEP }}> *</span></span>
-                    <select
-                      value={subDistrict}
-                      onChange={(e) => setSubDistrict(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none"
-                      style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
-                      required
-                    >
-                      {availableSubDistricts.map((sd) => (
-                        <option key={sd} value={sd}>{sd}</option>
-                      ))}
-                    </select>
-                  </label>
-                ) : (
-                  <Field
+                    onChange={(e) => handleDistrictChange(e.target.value)}
+                    disabled={!province}
+                    className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none disabled:opacity-60"
+                    style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
                     required
-                    label="แขวง / ตำบล"
-                    placeholder="ระบุแขวงหรือตำบล"
+                  >
+                    <option value="">{province ? "เลือกเขตหรืออำเภอ" : "กรุณาเลือกจังหวัดก่อน"}</option>
+                    {availableDistricts.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm">
+                  <span>แขวง / ตำบล <span style={{ color: OLIVE_DEEP }}> *</span></span>
+                  <select
                     value={subDistrict}
-                    onChange={(e) => setSubDistrict(e.target.value)}
-                  />
-                )}
-                <Field
-                  required
-                  label="รหัสไปรษณีย์"
-                  placeholder="10XXX"
-                  value={zipCode}
-                  onChange={handleZipCodeChange}
-                />
+                    onChange={(e) => handleSubDistrictChange(e.target.value)}
+                    disabled={!district}
+                    className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none disabled:opacity-60"
+                    style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
+                    required
+                  >
+                    <option value="">{district ? "เลือกแขวงหรือตำบล" : "กรุณาเลือกอำเภอก่อน"}</option>
+                    {availableSubDistricts.map((sd) => (
+                      <option key={sd} value={sd}>{sd}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm">
+                  <span>รหัสไปรษณีย์ <span style={{ color: OLIVE_DEEP }}> *</span></span>
+                  <select
+                    value={zipCode}
+                    onChange={(e) => handleZipCodeChange(e.target.value)}
+                    disabled={!subDistrict}
+                    className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none disabled:opacity-60"
+                    style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
+                    required
+                  >
+                    <option value="">{subDistrict ? "เลือกรหัสไปรษณีย์" : "กรุณาเลือกตำบลก่อน"}</option>
+                    {availableZipCodes.map((z) => (
+                      <option key={z} value={z}>{z}</option>
+                    ))}
+                  </select>
+                </label>
                 <Field span2 label="หมายเหตุถึงผู้จัดส่ง (ถ้ามี)" placeholder="เช่น ฝากไว้ที่นิติบุคคล" />
               </div>
               <label className="flex items-center gap-2 mt-4 text-sm cursor-pointer select-none">
