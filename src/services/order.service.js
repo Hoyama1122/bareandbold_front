@@ -34,8 +34,11 @@ export const orderService = {
     });
   },
 
+  getOrderHistory: async () => {
+    return await apiFetch("/orders");
+  },
+
   getOrderById: async (orderId) => {
-    // Wait, let's see if getOrderHistory exists, we can find the specific order from history
     const data = await apiFetch("/orders");
     if (data.success && data.orders) {
       return data.orders.find(o => o.id === orderId);
