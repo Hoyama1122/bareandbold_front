@@ -229,7 +229,7 @@ export default function OrderHistoryPage() {
       `}</style>
 
       {/* Earth Theme Status Tabs */}
-      <div className="sticky top-0 z-20 border-b bg-white" style={{ borderColor: BORDER }}>
+      <div className="sticky top-0 z-20 " style={{ borderColor: BORDER }}>
         <div className="max-w-5xl mx-auto flex justify-between overflow-x-auto">
           {TABS.map((tab) => (
             <button
@@ -274,7 +274,7 @@ export default function OrderHistoryPage() {
                   <div className="flex items-center gap-2">
                     <Store size={16} style={{ color: WALNUT }} />
                     <span className="font-bold text-sm tracking-wide" style={{ color: DARK }}>BARE & BOLD</span>
-                    <span className="text-xs ml-3 text-zinc-400 font-mono">ID: {order.id}</span>
+                    <span className="text-xs ml-3 text-zinc-400 font-mono">ORDER: {order.id}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span
