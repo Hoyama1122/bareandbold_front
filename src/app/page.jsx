@@ -108,14 +108,7 @@ export default function Storefront() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {filteredProducts.map((prod) => (
-              <Link
-                key={prod.id}
-                href={`/products/${prod.name.replace(/\s+/g, "-")}`}
-                className="group"
-                prefetch={false}
-              >
-                <ProductCard product={prod} />
-              </Link>
+              <ProductCard key={prod.id} product={prod} />
             ))}
           </div>
         )}

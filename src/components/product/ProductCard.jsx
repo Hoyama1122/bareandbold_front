@@ -19,7 +19,10 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div className="bg-white border border-[#EFE9DC] rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full group">
+    <Link
+      href={`/products/${product.name.replace(/\s+/g, "-")}`}
+      className="bg-white border border-[#EFE9DC] rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full group block"
+    >
       
       {/* 🖼️ ส่วนรูปภาพหน้าปกสินค้า */}
       <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#F5F0E6]/30">
@@ -71,14 +74,13 @@ export default function ProductCard({ product }) {
             )}
           </div>
 
-          <Link
-            href={`/products/${product.name.replace(/\s+/g, "-")}`}
-            className="w-full text-center py-2.5 bg-white border-2 border-[#6A5242] text-[#6A5242] hover:bg-[#6A5242] hover:text-white font-bold text-xs rounded-xl transition duration-300 inline-block cursor-pointer shadow-sm"
+          <div
+            className="w-full text-center py-2.5 bg-white border-2 border-[#6A5242] text-[#6A5242] group-hover:bg-[#6A5242] group-hover:text-white font-bold text-xs rounded-xl transition duration-300 inline-block cursor-pointer shadow-sm"
           >
             ดูรายละเอียดสินค้า
-          </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
