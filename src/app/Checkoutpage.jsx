@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cartService } from "@/services/cart.service";
+import thailandAddresses from "../data/thailand-address.json";
 import {
   ChevronLeft,
   ShoppingBag,
@@ -187,6 +188,41 @@ export default function CheckoutPage() {
   const [orderNumber, setOrderNumber] = useState(null);
   const [orderItems, setOrderItems] = useState([]);
 
+  const [zipCode, setZipCode] = useState("");
+  const [province, setProvince] = useState("");
+  const [district, setDistrict] = useState("");
+  const [subDistrict, setSubDistrict] = useState("");
+
+  const [availableDistricts, setAvailableDistricts] = useState([]);
+  const [availableSubDistricts, setAvailableSubDistricts] = useState([]);
+
+  const handleZipCodeChange = (e) => {
+    const val = e.target.value.replace(/\D/g, "").slice(0, 5);
+    setZipCode(val);
+    
+    if (val.length === 5) {
+      const match = thailandAddresses.find(item => item.zipCode === val);
+      if (match) {
+        const provinces = match.provinceList.map(p => p.provinceName);
+        const districts = match.districtList.map(d => d.districtName);
+        const subDistricts = match.subDistrictList.map(sd => sd.subDistrictName);
+        
+        setAvailableDistricts(districts);
+        setAvailableSubDistricts(subDistricts);
+        
+        setProvince(provinces[0] || "");
+        setDistrict(districts[0] || "");
+        setSubDistrict(subDistricts[0] || "");
+      } else {
+        setAvailableDistricts([]);
+        setAvailableSubDistricts([]);
+      }
+    } else {
+      setAvailableDistricts([]);
+      setAvailableSubDistricts([]);
+    }
+  };
+
   useEffect(() => {
     const loadCart = () => {
       const cart = localStorage.getItem("bare_cart");
@@ -271,21 +307,76 @@ export default function CheckoutPage() {
                 <Field required label="เบอร์โทรศัพท์" placeholder="08X-XXX-XXXX" />
                 <Field required label="อีเมล" placeholder="name@email.com" type="email" />
                 <Field span2 required label="ที่อยู่" placeholder="บ้านเลขที่ ซอย ถนน" />
+                <Field
+                  required
+                  label="รหัสไปรษณีย์"
+                  placeholder="10XXX"
+                  value={zipCode}
+                  onChange={handleZipCodeChange}
+                />
                 <label className="flex flex-col gap-1.5 text-sm">
-                  <span>จังหวัด</span>
+                  <span>จังหวัด <span style={{ color: OLIVE_DEEP }}> *</span></span>
                   <select
-                    defaultValue={PROVINCES[0]}
+                    value={province}
+                    onChange={(e) => setProvince(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none"
                     style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
+                    required
                   >
+                    <option value="">เลือกจังหวัด</option>
                     {PROVINCES.map((p) => (
-                      <option key={p}>{p}</option>
+                      <option key={p} value={p}>{p}</option>
                     ))}
                   </select>
                 </label>
-                <Field required label="เขต / อำเภอ" placeholder="ระบุเขตหรืออำเภอ" />
-                <Field required label="แขวง / ตำบล" placeholder="ระบุแขวงหรือตำบล" />
-                <Field required label="รหัสไปรษณีย์" placeholder="10XXX" />
+                {availableDistricts.length > 0 ? (
+                  <label className="flex flex-col gap-1.5 text-sm">
+                    <span>เขต / อำเภอ <span style={{ color: OLIVE_DEEP }}> *</span></span>
+                    <select
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none"
+                      style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
+                      required
+                    >
+                      {availableDistricts.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </label>
+                ) : (
+                  <Field
+                    required
+                    label="เขต / อำเภอ"
+                    placeholder="ระบุเขตหรืออำเภอ"
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                  />
+                )}
+                {availableSubDistricts.length > 0 ? (
+                  <label className="flex flex-col gap-1.5 text-sm">
+                    <span>แขวง / ตำบล <span style={{ color: OLIVE_DEEP }}> *</span></span>
+                    <select
+                      value={subDistrict}
+                      onChange={(e) => setSubDistrict(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none"
+                      style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
+                      required
+                    >
+                      {availableSubDistricts.map((sd) => (
+                        <option key={sd} value={sd}>{sd}</option>
+                      ))}
+                    </select>
+                  </label>
+                ) : (
+                  <Field
+                    required
+                    label="แขวง / ตำบล"
+                    placeholder="ระบุแขวงหรือตำบล"
+                    value={subDistrict}
+                    onChange={(e) => setSubDistrict(e.target.value)}
+                  />
+                )}
                 <Field span2 label="หมายเหตุถึงผู้จัดส่ง (ถ้ามี)" placeholder="เช่น ฝากไว้ที่นิติบุคคล" />
               </div>
               <label className="flex items-center gap-2 mt-4 text-sm cursor-pointer select-none">
