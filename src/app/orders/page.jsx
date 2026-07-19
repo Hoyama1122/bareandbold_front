@@ -270,7 +270,7 @@ export default function OrderHistoryPage() {
               <div key={order.id} className="bg-white rounded-2xl border overflow-hidden shadow-sm" style={{ borderColor: BORDER }}>
                 
                 {/* 1. Header (Store + Status) */}
-                <div className="px-6 py-4 flex justify-between items-center border-b" style={{ borderColor: BORDER, background: `${BEIGE}15` }}>
+                <div className="px-6 py-4 flex justify-between items-center border-b" style={{ borderColor: `${BORDER}40`, background: `${BEIGE}15` }}>
                   <div className="flex items-center gap-2">
                     <Store size={16} style={{ color: WALNUT }} />
                     <span className="font-bold text-sm tracking-wide" style={{ color: DARK }}>BARE & BOLD</span>
@@ -284,7 +284,7 @@ export default function OrderHistoryPage() {
                       {getStatusText(order.status)}
                     </span>
                     {order.shipping?.status === "IN_TRANSIT" && (
-                      <span className="text-xs text-zinc-400 border-l pl-3 flex items-center gap-1" style={{ borderColor: BORDER }}>
+                      <span className="text-xs text-zinc-400 border-l pl-3 flex items-center gap-1" style={{ borderColor: `${BORDER}40` }}>
                         <Truck size={13} /> กำลังจัดส่ง
                       </span>
                     )}
@@ -292,7 +292,7 @@ export default function OrderHistoryPage() {
                 </div>
 
                 {/* 2. Items List */}
-                <div className="divide-y" style={{ borderColor: BORDER }}>
+                <div className="divide-y divide-[#EADECC]/40">
                   {order.items?.map((it) => {
                     const image = it.product?.images?.[0]?.url || "/images/placeholder.jpg";
                     return (
@@ -300,8 +300,8 @@ export default function OrderHistoryPage() {
                         <img
                           src={image}
                           alt={it.product?.name || "Product"}
-                          className="w-20 h-20 rounded-lg border object-cover flex-shrink-0"
-                          style={{ borderColor: BORDER }}
+                          className="w-20 h-20 rounded-lg  object-cover flex-shrink-0"
+                          
                         />
                         <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-base truncate" style={{ color: DARK }}>{it.product?.name}</h4>
@@ -325,7 +325,7 @@ export default function OrderHistoryPage() {
                 </div>
 
                 {/* 3. Footer Summary & Actions */}
-                <div className="px-6 py-5 flex flex-col gap-4 border-t" style={{ background: `${CREAM}30`, borderColor: BORDER }}>
+                <div className="px-6 py-5 flex flex-col gap-4 border-t" style={{ background: `${CREAM}30`, borderColor: `${BORDER}40` }}>
                   {/* Shipping Info Expandable */}
                   <div>
                     <button
@@ -339,7 +339,7 @@ export default function OrderHistoryPage() {
                     </button>
 
                     {expandedOrders[order.id] && (
-                      <div className="mt-3 p-4 rounded-lg border text-xs leading-relaxed space-y-1.5" style={{ background: CREAM, borderColor: BORDER, color: DARK }}>
+                      <div className="mt-3 p-4 rounded-lg border text-xs leading-relaxed space-y-1.5" style={{ background: CREAM, borderColor: `${BORDER}40`, color: DARK }}>
                         <p><span className="font-bold">ผู้รับ:</span> {order.recipientName}</p>
                         <p><span className="font-bold">เบอร์โทรศัพท์:</span> {order.recipientPhone}</p>
                         <p><span className="font-bold">ที่อยู่จัดส่ง:</span> {order.shippingAddress}</p>
