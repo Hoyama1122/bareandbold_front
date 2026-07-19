@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cartService } from "@/services/cart.service";
-import thailandAddresses from "@/data/thailand-address.json";
+import thailandAddresses from "../../data/thailand-address.json";
 import {
   ChevronLeft,
   ShoppingBag,
