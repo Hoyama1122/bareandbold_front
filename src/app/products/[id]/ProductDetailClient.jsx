@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { productService } from "@/services/product.service";
+import { cartService } from "@/services/cart.service";
 import ProductSkeleton from "@/components/product-detail/ProductSkeleton";
 import ProductImageGallery from "@/components/product-detail/ProductImageGallery";
 import ProductInfo from "@/components/product-detail/ProductInfo";
@@ -98,25 +99,18 @@ export default function ProductDetailClient({ nameSlug }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isZoomOpen, currentImage, images]);
 
-  const addToCart = () => {
-    let cart = JSON.parse(localStorage.getItem("bare_cart") || "[]");
-
-    cart.push({
-      id: Date.now(),
-      productId: product.id,
-      name: product.name,
-      image: currentImage,
-      price: product.price,
-      quantity: qty,
-      material,
-      size,
-    });
-
-    localStorage.setItem("bare_cart", JSON.stringify(cart));
-
-    window.dispatchEvent(new Event("cartUpdated"));
-
-    alert("เพิ่มลงตะกร้าแล้ว");
+  const addToCart = async () => {
+    try {
+      await cartService.addToCart(product.id, qty, material, size, {
+        name: product.name,
+        image: currentImage,
+        price: product.price,
+      });
+      alert("เพิ่มลงตะกร้าแล้ว");
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      alert("ไม่สามารถเพิ่มสินค้าลงในตะกร้าได้");
+    }
   };
 
   if (loading) {

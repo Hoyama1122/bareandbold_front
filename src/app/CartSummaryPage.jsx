@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, X, ChevronLeft, ShoppingBag, Truck, Tag, Heart } 
 from "lucide-react";
+import { cartService } from "@/services/cart.service";
 
 const INK = "#2B2118";
 const CREAM = "#F2ECDD";
@@ -22,21 +23,54 @@ function baht(n) {
 export default function CartSummaryPage() {
   const router = useRouter();
   const [items, setItems] = useState([]);
+
   useEffect(() => {
-  const cart = localStorage.getItem("bare_cart");
-if (cart) {setItems(JSON.parse(cart));}}, []);
+    const loadCart = () => {
+      const cart = localStorage.getItem("bare_cart");
+      if (cart) {
+        setItems(JSON.parse(cart));
+      } else {
+        setItems([]);
+      }
+    };
+
+    loadCart();
+    cartService.fetchCart();
+
+    window.addEventListener("cartUpdated", loadCart);
+    return () => {
+      window.removeEventListener("cartUpdated", loadCart);
+    };
+  }, []);
+
   const [promo, setPromo] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
 
-  const updateQty = (id, delta) => {
-    setItems((prev) =>
-      prev
-        .map((it) => (it.id === id ? { ...it, quantity: Math.max(0, it.quantity + delta) } : it))
-        .filter((it) => it.quantity > 0)
-    );
+  const updateQty = async (id, delta) => {
+    const item = items.find((it) => it.id === id);
+    if (!item) return;
+    const newQty = Math.max(0, item.quantity + delta);
+    
+    if (newQty === 0) {
+      await removeItem(id);
+    } else {
+      try {
+        await cartService.updateCartItem(item.productId, newQty, item.material, item.size, id);
+      } catch (err) {
+        console.error("Failed to update item quantity:", err);
+      }
+    }
   };
 
-  const removeItem = (id) => setItems((prev) => prev.filter((it) => it.id !== id));
+  const removeItem = async (id) => {
+    const item = items.find((it) => it.id === id);
+    if (!item) return;
+    try {
+      await cartService.removeCartItem(item.productId, id);
+    } catch (err) {
+      console.error("Failed to remove item:", err);
+    }
+  };
 
   const subtotal = useMemo(() => items.reduce((s, it) => s + it.price * it.quantity, 0), [items]);
   const savings = useMemo(

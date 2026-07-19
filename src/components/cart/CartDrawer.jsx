@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ShoppingBag01Icon } from "hugeicons-react";
+import { cartService } from "@/services/cart.service";
 
 export default function CartDrawer({ isOpen, onClose }) {
   const [cartItems, setCartItems] = useState([]);
@@ -29,6 +30,10 @@ export default function CartDrawer({ isOpen, onClose }) {
 
     loadCart();
 
+    if (isOpen) {
+      cartService.fetchCart();
+    }
+
     window.addEventListener("cartUpdated", loadCart);
     return () => {
       window.removeEventListener("cartUpdated", loadCart);
@@ -39,11 +44,15 @@ export default function CartDrawer({ isOpen, onClose }) {
 
   const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const removeItem = (id) => {
-    const updated = cartItems.filter(item => item.id !== id);
-    setCartItems(updated);
-    localStorage.setItem("bare_cart", JSON.stringify(updated));
-    window.dispatchEvent(new Event("cartUpdated"));
+  const removeItem = async (id) => {
+    const item = cartItems.find(it => it.id === id);
+    if (item) {
+      try {
+        await cartService.removeCartItem(item.productId, id);
+      } catch (err) {
+        console.error("Failed to remove item:", err);
+      }
+    }
   };
 
   return (

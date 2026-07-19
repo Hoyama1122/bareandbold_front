@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { cartService } from "@/services/cart.service";
 import {
   ChevronLeft,
   ShoppingBag,
@@ -187,21 +188,39 @@ export default function CheckoutPage() {
   const [orderItems, setOrderItems] = useState([]);
 
   useEffect(() => {
-  const cart = localStorage.getItem("bare_cart");
+    const loadCart = () => {
+      const cart = localStorage.getItem("bare_cart");
+      if (cart) {
+        setOrderItems(JSON.parse(cart));
+      } else {
+        setOrderItems([]);
+      }
+    };
 
-  if (cart) {
-    setOrderItems(JSON.parse(cart));}}, []);
+    loadCart();
+    cartService.fetchCart();
+
+    window.addEventListener("cartUpdated", loadCart);
+    return () => {
+      window.removeEventListener("cartUpdated", loadCart);
+    };
+  }, []);
 
   const subtotal = useMemo(() =>orderItems.reduce((s, it) => s + it.price * it.quantity,0),[orderItems]);
   const shipping = subtotal >= 2000 ? 0 : 90;
   const total = subtotal + shipping;
   const itemCount = orderItems.reduce((s, it) => s + it.quantity,0);
 
-  const handleConfirm = (e) => {
+  const handleConfirm = async (e) => {
     e.preventDefault();
     setOrderNumber(generateOrderNumber());
     setPlaced(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    try {
+      await cartService.clearCart();
+    } catch (err) {
+      console.error("Failed to clear cart after placing order:", err);
+    }
   };
 
   if (placed) {
