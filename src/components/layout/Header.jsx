@@ -3,20 +3,26 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search01Icon, FavouriteIcon, ShoppingBag01Icon, UserIcon } from "hugeicons-react";
+import {
+  Search01Icon,
+  FavouriteIcon,
+  ShoppingBag01Icon,
+  UserIcon,
+} from "hugeicons-react";
 import AuthModal from "../auth/AuthModal";
 import CartDrawer from "../cart/CartDrawer";
 
 const NAV_LINKS = [
   { label: "หน้าแรก", href: "/" },
   { label: "ร้านค้า", href: "/products" },
-  { label: "หน้าเพจ", href: "/#pages" },
-  { label: "บทความ", href: "/#blog" },
-  { label: "ติดต่อเรา", href: "/#contact" },
+  { label: "ติดต่อเรา", href: "/contact" },
   { label: "เอกสารระบบ", href: "/docs" },
 ];
 
-export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthStatusChange }) {
+export default function Header({
+  isLoggedIn: initialIsLoggedIn = false,
+  onAuthStatusChange,
+}) {
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -28,7 +34,10 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
   }, [initialIsLoggedIn]);
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("bare_auth_token") : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("bare_auth_token")
+        : null;
     if (token) {
       setIsLoggedIn(true);
     }
@@ -41,7 +50,10 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
         try {
           const parsed = JSON.parse(localCart);
           if (Array.isArray(parsed)) {
-            const count = parsed.reduce((acc, item) => acc + (item.quantity || 1), 0);
+            const count = parsed.reduce(
+              (acc, item) => acc + (item.quantity || 1),
+              0,
+            );
             setCartCount(count);
             return;
           }
@@ -113,7 +125,7 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
             <button className="hover:text-earth-olive transition">
               <FavouriteIcon size={20} strokeWidth={2} />
             </button>
-            <button 
+            <button
               onClick={() => setIsCartOpen(true)}
               className="relative hover:text-earth-olive transition cursor-pointer"
             >
@@ -136,7 +148,11 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
                 </>
               ) : (
                 <>
-                  <UserIcon size={14} strokeWidth={2.5} className="text-zinc-600" />
+                  <UserIcon
+                    size={14}
+                    strokeWidth={2.5}
+                    className="text-zinc-600"
+                  />
                   เข้าสู่ระบบ
                 </>
               )}
@@ -146,17 +162,14 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
       </header>
 
       {/* Auth Modal */}
-      <AuthModal 
-        isOpen={isAuthOpen} 
-        onClose={() => setIsAuthOpen(false)} 
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
         onAuthSuccess={handleAuthSuccess}
       />
 
       {/* Cart Drawer */}
-      <CartDrawer 
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-      />
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );
 }

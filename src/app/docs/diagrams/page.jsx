@@ -913,75 +913,28 @@ export default function DiagramsPage() {
                     </p>
                   </div>
 
-                  {/* Mock Customizer */}
-                  <div className="border border-dashed border-[#6A5242] rounded-xl p-4 space-y-3">
-                    <span className="text-[10px] font-black px-2 py-0.5 bg-[#556B2F] text-white rounded">
-                      UI: CUSTOMIZER STUDIO (หน้าออกแบบคัสตอมกำไล)
-                    </span>
-                    <div className="bg-gray-100 p-3 rounded-lg font-mono text-[10px] text-gray-500 space-y-3">
-                      <div className="border border-gray-300 p-2 text-center bg-white font-bold">
-                        [ Header Menu ] BARE & BOLD | Homepage | Customizer |
-                        Cart
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="col-span-2 border border-gray-300 h-48 flex items-center justify-center bg-white">
-                          [ 2D/3D Bracelet Canvas Preview Area ]
-                        </div>
-                        <div className="border border-gray-300 p-2 bg-white space-y-2">
-                          <div className="font-bold text-gray-800">
-                            [ ตัวเลือกคัสตอม ]
-                          </div>
-                          <div>- ขนาดความยาวข้อมือ</div>
-                          <div>- เลือกหินมงคล</div>
-                          <div className="font-bold border-t pt-1">
-                            รวม: ฿1,290
-                          </div>
-                          <div className="bg-zinc-800 text-white text-center py-1 text-[9px] rounded font-bold">
-                            เพิ่มลงตะกร้า
-                          </div>
-                        </div>
-                      </div>
+                  {/* Real Wireframe Images */}
+                  <div className="space-y-6">
+                    <div className="border border-[#EADECC]/60 rounded-xl overflow-hidden bg-white p-4">
+                      <h4 className="text-xs font-black text-[#556B2F] uppercase tracking-wider mb-3">
+                        หน้าจอระบบสั่งซื้อและคัสตอมกำไลข้อมือ (Storefront Store)
+                      </h4>
+                      <img 
+                        src="/wireframe/1.png" 
+                        alt="Storefront Wireframe" 
+                        className="w-full h-auto rounded-lg shadow-sm border border-[#EADECC]/45"
+                      />
                     </div>
-                  </div>
 
-                  {/* Mock Dashboard */}
-                  <div className="border border-dashed border-[#6A5242] rounded-xl p-4 space-y-3">
-                    <span className="text-[10px] font-black px-2 py-0.5 bg-[#3C322A] text-white rounded">
-                      UI: BACKOFFICE PRODUCTS (ตารางคุมสต็อกพนักงาน)
-                    </span>
-                    <div className="bg-gray-100 p-3 rounded-lg font-mono text-[10px] text-gray-500 space-y-3">
-                      <div className="flex gap-3">
-                        <div className="w-24 border border-gray-300 p-2 bg-white text-[9px]">
-                          <strong>Sidebar Navigation</strong>
-                          <div className="bg-gray-150 p-1 font-bold">
-                            • สินค้าทั้งหมด
-                          </div>
-                          <div>• สต็อกวัสดุ</div>
-                          <div>• ตารางออเดอร์</div>
-                        </div>
-                        <div className="flex-1 border border-gray-300 p-2 bg-white space-y-2">
-                          <div className="font-bold text-gray-800">
-                            ตารางคลังสินค้า [ + เพิ่มของใหม่ ]
-                          </div>
-                          <div className="border border-gray-100 p-1">
-                            <div className="bg-gray-50 p-1 flex justify-between font-bold">
-                              <span>สินค้า</span>
-                              <span>สต็อก</span>
-                              <span>ราคา</span>
-                            </div>
-                            <div className="p-1 flex justify-between">
-                              <span>กำไล Onyx</span>
-                              <span>15 ชิ้น</span>
-                              <span>฿890</span>
-                            </div>
-                            <div className="p-1 flex justify-between">
-                              <span>กำไลมุก</span>
-                              <span>0 ชิ้น</span>
-                              <span>฿1,490</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="border border-[#EADECC]/60 rounded-xl overflow-hidden bg-white p-4">
+                      <h4 className="text-xs font-black text-[#6A5242] uppercase tracking-wider mb-3">
+                        หน้าจอระบบบริหารจัดการหลังบ้าน (Backoffice Management)
+                      </h4>
+                      <img 
+                        src="/wireframe/2.png" 
+                        alt="Backoffice Wireframe" 
+                        className="w-full h-auto rounded-lg shadow-sm border border-[#EADECC]/45"
+                      />
                     </div>
                   </div>
                 </div>
