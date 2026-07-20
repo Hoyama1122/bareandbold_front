@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {Search01Icon,FavouriteIcon,ShoppingBag01Icon,UserCircleIcon,PackageIcon,Logout01Icon,Settings02Icon,} from "hugeicons-react";
 import AuthModal from "../auth/AuthModal";
 import CartDrawer from "../cart/CartDrawer";
@@ -18,6 +18,7 @@ const NAV_LINKS = [
 
 export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthStatusChange }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -161,12 +162,15 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
         ตะกร้าสินค้า
       </button>
       <button
-        onClick={() => window.location.href="/account/orders"}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE]"
-      >
-        <PackageIcon size={18}/>
-        ประวัติคำสั่งซื้อ
-      </button>
+  onClick={() => {
+    setIsProfileOpen(false);
+    router.push("/orders");
+  }}
+  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE]"
+>
+  <PackageIcon size={18} />
+  ประวัติคำสั่งซื้อ
+</button>
       <button
   onClick={() => {
     setIsProfileOpen(false); // ปิด Dropdown
