@@ -84,9 +84,20 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSent, setIsSent] = useState(false);
 
+  const formatPhoneNumber = (value) => {
+    const cleaned = value.replace(/\D/g, "");
+    if (cleaned.length <= 3) return cleaned;
+    if (cleaned.length <= 6) return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "phone") {
+      setFormData((prev) => ({ ...prev, [name]: formatPhoneNumber(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e) => {
@@ -223,7 +234,8 @@ export default function ContactPage() {
                       <input
                         type="tel"
                         name="phone"
-                        placeholder="08X-XXX-XXXX"
+                        placeholder="000-000-0000"
+                        maxLength="12"
                         value={formData.phone}
                         onChange={handleChange}
                         className="w-full bg-[#FDFBF7] border border-[#EADECC]/80 rounded-lg px-3 py-2 text-sm font-bold text-[#3C322A] focus:outline-none focus:border-[#556B2F] focus:ring-1 focus:ring-[#556B2F]/30 transition"
