@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { cartService } from "@/services/cart.service";
 import { orderService } from "@/services/order.service";
 import { paymentService } from "@/services/payment.service";
+import { authService } from "@/services/auth.service";
 import { ChevronLeft, QrCode } from "lucide-react";
 
 import { CREAM, INK, MUTED, WHITE, BORDER, OLIVE } from "@/components/checkout/constants";
@@ -33,6 +34,20 @@ export default function CheckoutPage() {
   const [placed, setPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState(null);
   const [orderItems, setOrderItems] = useState([]);
+  const [savedTotal, setSavedTotal] = useState(0);
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    authService.getProfile()
+      .then((res) => {
+        if (res.success && res.user) {
+          setProfile(res.user);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load user profile in checkout:", err);
+      });
+  }, []);
 
   // Address Selection States
   const [province, setProvince] = useState("");
@@ -231,6 +246,7 @@ export default function CheckoutPage() {
 
       setOrderId(orderRes.orderId);
       setOrderNumber(orderRes.orderId); // Use orderId as order number or custom format
+      setSavedTotal(total);
 
       // 2. Process checkout payment
       const paymentMethodMapped = payment === "promptpay" ? "PROMPTPAY" : (payment === "card" ? "CREDIT_CARD" : payment.toUpperCase());
@@ -268,7 +284,7 @@ export default function CheckoutPage() {
   };
 
   if (placed) {
-    return <OrderSuccess orderNumber={orderNumber} total={total} router={router} baht={baht} />;
+    return <OrderSuccess orderNumber={orderNumber} total={savedTotal || total} router={router} baht={baht} />;
   }
 
   if (showQR) {
@@ -342,6 +358,7 @@ export default function CheckoutPage() {
         <form onSubmit={handleConfirm} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 flex flex-col gap-6">
             <ShippingForm
+              profile={profile}
               province={province}
               district={district}
               subDistrict={subDistrict}

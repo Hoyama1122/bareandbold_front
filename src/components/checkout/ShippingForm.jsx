@@ -1,5 +1,16 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { INK, CREAM, BORDER, MUTED, OLIVE, OLIVE_DEEP, WHITE, PROVINCES } from "./constants";
+
+const formatPhoneNumber = (value) => {
+  if (!value) return value;
+  const phoneNumber = value.replace(/[^\d]/g, "");
+  const phoneNumberLength = phoneNumber.length;
+  if (phoneNumberLength < 4) return phoneNumber;
+  if (phoneNumberLength < 7) {
+    return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3)}`;
+  }
+  return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+};
 
 export function Field({ label, span2, required, ...props }) {
   return (
@@ -21,6 +32,7 @@ export function Field({ label, span2, required, ...props }) {
 }
 
 export default function ShippingForm({
+  profile,
   province,
   district,
   subDistrict,
@@ -35,6 +47,25 @@ export default function ShippingForm({
   saveInfo,
   setSaveInfo,
 }) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    if (profile) {
+      setFirstName(profile.firstName || "");
+      setLastName(profile.lastName || "");
+      setPhone(profile.phone ? formatPhoneNumber(profile.phone) : "");
+      setEmail(profile.email || "");
+    }
+  }, [profile]);
+
+  const handlePhoneChange = (e) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
+  };
+
   return (
     <section className="rounded-xl p-6" style={{ background: WHITE, border: `1px solid ${BORDER}` }}>
       <h2 className="kanit text-lg font-semibold mb-1">ที่อยู่สำหรับจัดส่ง</h2>
@@ -42,10 +73,39 @@ export default function ShippingForm({
         กรอกข้อมูลผู้รับให้ครบถ้วนเพื่อความรวดเร็วในการจัดส่ง
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field name="firstName" required label="ชื่อ" placeholder="กรอกชื่อจริง" />
-        <Field name="lastName" required label="นามสกุล" placeholder="กรอกนามสกุล" />
-        <Field name="phone" required label="เบอร์โทรศัพท์" placeholder="08X-XXX-XXXX" />
-        <Field name="email" required label="อีเมล" placeholder="name@email.com" type="email" />
+        <Field 
+          name="firstName" 
+          required 
+          label="ชื่อ" 
+          placeholder="กรอกชื่อจริง" 
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+        />
+        <Field 
+          name="lastName" 
+          required 
+          label="นามสกุล" 
+          placeholder="กรอกนามสกุล" 
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+        />
+        <Field 
+          name="phone" 
+          required 
+          label="เบอร์โทรศัพท์" 
+          placeholder="08X-XXX-XXXX" 
+          value={phone}
+          onChange={handlePhoneChange}
+        />
+        <Field 
+          name="email" 
+          required 
+          label="อีเมล" 
+          placeholder="name@email.com" 
+          type="email" 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
         <Field name="address" span2 required label="ที่อยู่" placeholder="บ้านเลขที่ ซอย ถนน" />
         
         <label className="flex flex-col gap-1.5 text-sm">
