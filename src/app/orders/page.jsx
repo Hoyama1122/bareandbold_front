@@ -39,7 +39,10 @@ function baht(n) {
 }
  
 function StatusBadge({ status }) {
-  const s = STATUS_STYLES[status];
+  const s =
+    STATUS_STYLES[(status || "").toLowerCase()] ||
+    STATUS_STYLES.pending;
+
   return (
     <span
       className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full"
@@ -123,7 +126,7 @@ export default function OrderHistoryPage() {
                   <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
                     <div className="flex flex-wrap items-center gap-3">
                       <p className="kanit font-semibold">{order.id}</p>
-                      <StatusBadge status={order.status} />
+                      <StatusBadge status={(order.status || "").toLowerCase()}/>
                     </div>
                     <p className="text-xs" style={{ color: MUTED }}>{new Date(order.createdAt).toLocaleString("th-TH")}</p>
                   </div>
