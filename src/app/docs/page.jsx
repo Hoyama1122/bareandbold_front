@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 
 // Simple custom SVG icons
 const SearchIcon = () => (
@@ -9,64 +10,51 @@ const SearchIcon = () => (
   </svg>
 );
 
-const SECTIONS = [
-  { id: "project-info", title: "ข้อมูลโครงการ" },
-  { id: "group-info", title: "รายชื่อสมาชิกและบทบาท" },
-  { id: "objectives", title: "วัตถุประสงค์โครงการ" },
-  { id: "scope-actors", title: "ผู้ใช้งานในระบบ (Actors)" },
-  { id: "scope-functions", title: "ความสามารถหลักของระบบ" },
-  { id: "architecture", title: "สถาปัตยกรรมระบบ" },
-  { id: "technologies", title: "เครื่องมือและเทคโนโลยี" },
-  { id: "testing", title: "แนวทางการทดสอบระบบ" },
-  { id: "outcomes", title: "ผลลัพธ์ที่คาดว่าจะได้รับ" },
-  { id: "timeline", title: "แผนการดำเนินงาน (Timeline)" }
-];
-
 export default function DocsPage() {
-  const [activeSection, setActiveSection] = useState("project-info");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedArchNode, setSelectedArchNode] = useState("buyer-ui");
+  const [mermaidLoaded, setMermaidLoaded] = useState(false);
 
+  // Load Mermaid dynamically from CDN
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY + 180;
+    if (typeof window === "undefined") return;
 
-      for (const section of SECTIONS) {
-        const element = document.getElementById(section.id);
-        if (element) {
-          const offsetTop = element.offsetTop;
-          const offsetHeight = element.offsetHeight;
+    if (window.mermaid) {
+      setMermaidLoaded(true);
+      return;
+    }
 
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveSection(section.id);
-            break;
-          }
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js";
+    script.async = true;
+    script.onload = () => {
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: "neutral",
+        securityLevel: "loose",
+        themeVariables: {
+          primaryColor: "#EADECC",
+          edgeLabelBackground: "#FDFBF7",
+          lineColor: "#6A5242"
         }
-      }
+      });
+      setMermaidLoaded(true);
     };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    document.body.appendChild(script);
   }, []);
 
-  const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const offsetTop = element.offsetTop - 100;
-      window.scrollTo({
-        top: offsetTop,
-        behavior: "smooth"
-      });
-      setActiveSection(id);
-      setIsSidebarOpen(false);
+  // Trigger rendering when mermaid is loaded
+  useEffect(() => {
+    if (mermaidLoaded && window.mermaid) {
+      try {
+        setTimeout(() => {
+          window.mermaid.run();
+        }, 50);
+      } catch (e) {
+        console.error("Mermaid render error:", e);
+      }
     }
-  };
-
-  const filteredSections = SECTIONS.filter(section =>
-    section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    section.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  }, [mermaidLoaded]);
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#3C322A] font-anuphan antialiased flex flex-col">
@@ -77,7 +65,7 @@ export default function DocsPage() {
             CSI204 // SYSTEM SPECIFICATION
           </div>
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-black uppercase tracking-tight leading-none text-[#3C322A]">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tight leading-none text-[#3C322A]">
               REQUIREMENT<br />SPECIFICATION
             </h1>
             
@@ -94,7 +82,7 @@ export default function DocsPage() {
                   <SearchIcon />
                 </div>
               </div>
-              <span className="hidden sm:inline text-sm font-bold text-[#6A5242]/70">เวอร์ชัน 1.0 (อนุมัติแล้ว)</span>
+              <span className="hidden sm:inline text-sm font-bold text-[#6A5242]/70">เวอร์ชัน 1.1</span>
             </div>
           </div>
         </div>
@@ -121,27 +109,32 @@ export default function DocsPage() {
           <div className="sticky top-28 space-y-6">
             <div>
               <h3 className="text-xs font-black tracking-[0.2em] text-[#3C322A] mb-4">
-                สารบัญเอกสาร
+                เอกสารระบบ
               </h3>
               <nav className="space-y-3.5">
-                {filteredSections.map((section) => (
-                  <button
-                    key={section.id}
-                    onClick={() => scrollToSection(section.id)}
-                    className="group w-full text-left flex items-center justify-between cursor-pointer"
-                  >
-                    <span className={`text-[13px] font-black tracking-wider transition-all duration-200 ${
-                      activeSection === section.id
-                        ? "text-[#556B2F] translate-x-1"
-                        : "text-[#6A5242]/70 hover:text-[#3C322A] hover:translate-x-0.5"
-                    }`}>
-                      {section.title}
-                    </span>
-                    <span className={`w-1.5 h-1.5 rounded-full transition-all ${
-                      activeSection === section.id ? "bg-[#556B2F] scale-125" : "bg-transparent"
-                    }`} />
-                  </button>
-                ))}
+                <Link
+                  href="/docs"
+                  className="group w-full text-left flex items-center justify-between cursor-pointer text-[13px] font-black tracking-wider text-[#556B2F] translate-x-1 transition-all duration-200"
+                >
+                  <span>ข้อมูลโครงการ</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#556B2F] scale-125" />
+                </Link>
+
+                <Link
+                  href="/docs/api"
+                  className="group w-full text-left flex items-center justify-between cursor-pointer text-[13px] font-black tracking-wider text-[#6A5242]/70 hover:text-[#3C322A] hover:translate-x-0.5 transition-all duration-200"
+                >
+                  <span>เอกสาร API References</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-transparent" />
+                </Link>
+
+                <Link
+                  href="/docs/diagrams"
+                  className="group w-full text-left flex items-center justify-between cursor-pointer text-[13px] font-black tracking-wider text-[#6A5242]/70 hover:text-[#3C322A] hover:translate-x-0.5 transition-all duration-200"
+                >
+                  <span>แผนภาพระบบ & Wireframe</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-transparent" />
+                </Link>
               </nav>
             </div>
 
@@ -164,7 +157,6 @@ export default function DocsPage() {
 
         {/* Document Sections */}
         <main className="flex-1 space-y-16 pb-24">
-
           {/* Section: Project Title */}
           <section id="project-info" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
             <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">01 // บทนำโครงการ</span>
@@ -247,6 +239,8 @@ export default function DocsPage() {
               </table>
             </div>
           </section>
+
+          {/* Section: Objectives */}
           <section id="objectives" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
             <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">03 // เป้าหมายโครงการ</span>
             <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-6">วัตถุประสงค์โครงการ</h2>
@@ -272,22 +266,16 @@ export default function DocsPage() {
                 {
                   label: "05 / Deployment & Maintenance",
                   desc: "ติดตั้งระบบซอฟต์แวร์บนสภาพแวดล้อมจริงเพื่อเปิดบริการ และทำเอกสารข้อมูลจำเพาะเชิงเทคนิค (System Specification Doc) สำหรับนำมาใช้อ้างอิงเพื่อบำรุงรักษาและพัฒนาต่อยอดได้ง่าย",
-                },
+                }
               ].map((obj, i) => (
-                <div
-                  key={i}
-                  className="border-l-2 border-[#3C322A] pl-4 space-y-1"
-                >
-                  <h4 className="text-xs font-black tracking-wider text-[#556B2F]">
-                    {obj.label}
-                  </h4>
-                  <p className="text-sm font-bold text-[#3C322A] leading-relaxed">
-                    {obj.desc}
-                  </p>
+                <div key={i} className="border-l-2 border-[#3C322A] pl-4 space-y-1">
+                  <h4 className="text-xs font-black tracking-wider text-[#556B2F]">{obj.label}</h4>
+                  <p className="text-sm font-bold text-[#3C322A] leading-relaxed">{obj.desc}</p>
                 </div>
               ))}
             </div>
           </section>
+
           {/* Section: Actors */}
           <section id="scope-actors" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
             <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">04 // ผู้ใช้ระบบ</span>
@@ -310,7 +298,6 @@ export default function DocsPage() {
                   <li>สั่งซื้อสินค้า (Place Order)</li>
                   <li>ชำระเงิน (Payment)</li>
                   <li>ติดตามคำสั่งซื้อ (Order Tracking)</li>
-                 
                   <li>รายการโปรด (Wishlist)</li>
                   <li>ติดต่อสอบถาม</li>
                 </ul>
@@ -339,7 +326,6 @@ export default function DocsPage() {
                 <ul className="space-y-2.5 text-xs text-[#6A5242] font-bold list-disc pl-4">
                   <li className="list-none -ml-4 text-[#556B2F] font-black">★ ครอบคลุมสิทธิ์การทำงานทั้งหมดของพนักงาน (Staff)</li>
                   <li>จัดการลูกค้า (Customer Management)</li>
-                  <li>จัดการการชำระเงิน (Payment Management)</li>
                   <li>ดูรายงานและสถิติ (Reports & Analytics Dashboard)</li>
                   <li>ตั้งค่าระบบ (System Settings)</li>
                 </ul>
@@ -371,109 +357,12 @@ export default function DocsPage() {
             </div>
           </section>
 
-          {/* Section: Architecture */}
-          <section id="architecture" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
-            <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">06 // สถาปัตยกรรม</span>
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-3">สถาปัตยกรรมระบบ</h2>
-            <p className="text-xs text-[#6A5242]/70 mb-6 font-bold">
-              คลิกเลือกส่วนประกอบสถาปัตยกรรมเพื่อดูบทบาทการรับส่งข้อมูลในเชิงลึก
-            </p>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 grid grid-cols-3 gap-3">
-                {/* Column: Frontend */}
-                <div className="space-y-3">
-                  <h4 className="text-[10px] font-black text-[#6A5242] tracking-wider mb-1">FRONTEND LAYERS</h4>
-                  {["buyer-ui", "backoffice-ui"].map((node) => (
-                    <button
-                      key={node}
-                      onClick={() => setSelectedArchNode(node)}
-                      className={`w-full p-3.5 text-left border text-xs font-black uppercase tracking-wider transition cursor-pointer ${
-                        selectedArchNode === node
-                          ? "bg-[#3C322A] text-[#FDFBF7] border-[#3C322A]"
-                          : "bg-transparent border-[#EADECC] text-[#3C322A] hover:border-[#3C322A]"
-                      }`}
-                    >
-                      {node.replace("-", " ")}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Column: Services */}
-                <div className="space-y-3">
-                  <h4 className="text-[10px] font-black text-[#6A5242] tracking-wider mb-1">API SERVICES</h4>
-                  {["auth", "product", "order", "payment", "shipping"].map((node) => (
-                    <button
-                      key={node}
-                      onClick={() => setSelectedArchNode(node)}
-                      className={`w-full p-2.5 text-left border text-xs font-black uppercase tracking-wider transition cursor-pointer ${
-                        selectedArchNode === node
-                          ? "bg-[#556B2F] text-[#FDFBF7] border-[#556B2F]"
-                          : "bg-transparent border-[#EADECC] text-[#3C322A] hover:border-[#556B2F]"
-                      }`}
-                    >
-                      {node} service
-                    </button>
-                  ))}
-                </div>
-
-                {/* Column: Storage / DB */}
-                <div className="space-y-3">
-                  <h4 className="text-[10px] font-black text-[#6A5242] tracking-wider mb-1">INFRASTRUCTURE</h4>
-                  {["db", "storage", "omise"].map((node) => (
-                    <button
-                      key={node}
-                      onClick={() => setSelectedArchNode(node)}
-                      className={`w-full p-3.5 text-left border text-xs font-black uppercase tracking-wider transition cursor-pointer ${
-                        selectedArchNode === node
-                          ? "bg-[#6A5242] text-[#FDFBF7] border-[#6A5242]"
-                          : "bg-transparent border-[#EADECC] text-[#3C322A] hover:border-[#6A5242]"
-                      }`}
-                    >
-                      {node === "db" ? "Postgres (Neon)" : node === "storage" ? "R2 Cloud" : "Omise Gateway"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Node explanation panel */}
-              <div className="border-t-2 lg:border-t-0 lg:border-l-2 border-[#3C322A] pt-6 lg:pt-0 lg:pl-6 flex flex-col justify-center">
-                <h4 className="text-[10px] font-black uppercase text-[#556B2F] tracking-widest mb-1.5">
-                  ข้อมูลการทำงานของโหนด
-                </h4>
-                <div className="min-h-36 text-xs">
-                  {selectedArchNode ? (
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-black uppercase text-[#3C322A]">
-                        {selectedArchNode.replace("-", " ")}
-                      </h3>
-                      <p className="text-xs text-[#6A5242] leading-relaxed font-bold">
-                        {selectedArchNode === "buyer-ui" && "หน้าเว็บส่วนของลูกค้า (Storefront) สำหรับเลือกชมสินค้า ค้นหา ออกแบบและสั่งทำกำไลคัสตอม รวมถึงชำระเงินออนไลน์ผ่านระบบ"}
-                        {selectedArchNode === "backoffice-ui" && "หน้าเว็บระบบหลังบ้าน (Backoffice) สำหรับพนักงาน (Staff) ในการจัดการคำสั่งซื้อ การจัดส่ง และสต็อกสินค้า และสำหรับผู้จัดการ (Manager) ในการดูแลข้อมูลสินค้าและดูแดชบอร์ดรายงานยอดขาย"}
-                        {selectedArchNode === "auth" && "บริการบริหารระบบความปลอดภัยและเข้าสู่ระบบ สมัครสมาชิก ตรวจสอบ Token (JWT/Session) เพื่อแยกบทบาทความรับผิดชอบในการใช้งาน"}
-                        {selectedArchNode === "product" && "บริการจัดการคลังสินค้า รับ-ส่งข้อมูลคุณลักษณะ ขนาดสินค้า และตัวเลือกกำไลแบบสำเร็จรูปหรือแบบ Made-to-Order"}
-                        {selectedArchNode === "order" && "บริการจัดการตะกร้าสินค้า ดำเนินการออกคำสั่งสินค้าใหม่ และจัดทำข้อมูลสรุปรายการสั่งเพื่อส่งต่อไปยังผู้ขาย"}
-                        {selectedArchNode === "payment" && "บริการเชื่อมต่อธุรกรรมทางการเงินภายนอก ในการชำระผ่าน PromptPay QR code และ บัตรเครดิต"}
-                        {selectedArchNode === "shipping" && "ระบบจำลองสถานะเลขขนส่งพัสดุ (Mock Data) สำหรับอัปเดตการติดตามการจัดส่งให้แก่ฝั่งลูกค้าได้รับรู้"}
-                        {selectedArchNode === "db" && "ฐานข้อมูลแบบคลาวด์ PostgreSQL (Neon) ในการจัดเก็บข้อมูลแบบ Relational เช่น ตารางบัญชีสินค้า รายชื่อลูกค้า และประวัติการทำรายการซื้อขาย"}
-                        {selectedArchNode === "storage" && "บริการเก็บข้อมูลรูปภาพไฟล์ขนาดใหญ่แบบ URL (Cloudflare R2 Object Storage) เช่น ภาพหลักฐานการจ่ายเงินและภาพถ่ายตัวอย่างสินค้า"}
-                        {selectedArchNode === "omise" && "ตัวกลางธุรกรรมทางกฎหมายการเงิน (Omise Payment Gateway) เชื่อมต่อ API เพื่อยืนยันการตัดบัตรอย่างเป็นสากลและปลอดภัย"}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-[#6A5242] italic">เลือกส่วนประกอบทางซ้ายเพื่อแสดงข้อมูล</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </section>
-
           {/* Section: Technologies */}
           <section id="technologies" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
-            <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">07 // เครื่องมือ</span>
+            <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">06 // เครื่องมือ</span>
             <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-6">เครื่องมือและเทคโนโลยี</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs font-bold">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs font-bold mb-8">
               <div className="space-y-3">
                 <h4 className="font-black text-[#3C322A] uppercase tracking-wider border-b-2 border-[#3C322A] pb-1.5 text-sm">FRONTEND LAYER</h4>
                 <ul className="space-y-2">
@@ -498,11 +387,84 @@ export default function DocsPage() {
                 </ul>
               </div>
             </div>
+
+            {/* System Architecture Diagram */}
+            <div className="border-t border-[#EADECC]/45 pt-8 space-y-4">
+              <h3 className="text-base font-black text-[#3C322A] uppercase tracking-tight">System Architecture Diagram</h3>
+              <p className="text-xs text-[#6A5242] font-bold">
+                แผนผังสถาปัตยกรรมระบบ (System Architecture) ของ Bare & Bold แสดงการเชื่อมต่อและการทำงานระหว่าง Frontend, Backend API และ Database
+              </p>
+              
+              <div className="border border-[#EADECC]/30 rounded-xl bg-[#FDFBF7]/30 p-6 overflow-auto flex items-center justify-start min-h-[300px]">
+                {!mermaidLoaded ? (
+                  <div className="text-xs font-bold text-gray-400 animate-pulse">กำลังโหลดระบบวาดแผนผัง...</div>
+                ) : (
+                  <div className="mermaid min-w-[800px] lg:min-w-[1000px] origin-left">
+                    {`graph LR
+    %% Actors
+    Customer["Customer / Buyer"]
+    Admin["Admin / Manager"]
+    Staff["Staff"]
+
+    %% Frontend Layer
+    subgraph Frontend ["Frontend Layer"]
+        Storefront["Storefront Interface (:3000)"]
+        Backoffice["Backoffice Dashboard (:3001)"]
+    end
+
+    %% Backend API Services
+    subgraph Backend ["Backend API Layer (:8000)"]
+        AuthService["Auth Service"]
+        ProductService["Product Service"]
+        OrderService["Order & Cart Service"]
+        CategoryService["Category Service"]
+        UploadService["Upload Service"]
+        PaymentService["Payment Service"]
+        ShippingService["Shipping Service (Mock)"]
+    end
+
+    %% Database & External Gateways
+    subgraph Storage ["Data & Gateways Layer"]
+        Postgres[(PostgreSQL Neon)]
+        R2[(Cloudflare R2)]
+        Omise["Omise Gateway"]
+    end
+
+    %% Connections - Users to UI
+    Customer --> Storefront
+    Admin --> Backoffice
+    Staff --> Backoffice
+
+    %% Connections - UI to API Services
+    Storefront --> AuthService
+    Storefront --> ProductService
+    Storefront --> OrderService
+    Storefront --> PaymentService
+
+    Backoffice --> ProductService
+    Backoffice --> CategoryService
+    Backoffice --> OrderService
+    Backoffice --> UploadService
+
+    %% Connections - API Services to Databases
+    AuthService --> Postgres
+    ProductService --> Postgres
+    CategoryService --> Postgres
+    OrderService --> Postgres
+    PaymentService --> Postgres
+
+    UploadService --> R2
+    PaymentService --> Omise
+    OrderService --> ShippingService`}
+                  </div>
+                )}
+              </div>
+            </div>
           </section>
 
           {/* Section: Testing */}
           <section id="testing" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
-            <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">08 // การรับประกัน</span>
+            <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">07 // การรับประกัน</span>
             <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-6">แนวทางการทดสอบระบบ</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-bold leading-relaxed">
@@ -523,7 +485,7 @@ export default function DocsPage() {
 
           {/* Section: Outcomes */}
           <section id="outcomes" className="scroll-mt-24 border-b border-[#EADECC]/40 pb-12">
-            <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">09 // คาดหวัง</span>
+            <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">08 // คาดหวัง</span>
             <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-6">ผลลัพธ์ที่คาดว่าจะได้รับ</h2>
             
             <div className="space-y-3.5 text-sm font-bold text-[#3C322A]">
@@ -543,7 +505,7 @@ export default function DocsPage() {
 
           {/* Section: Timeline */}
           <section id="timeline" className="scroll-mt-24 pb-12">
-            <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">10 // กำหนดส่ง</span>
+            <span className="text-xs font-black tracking-[0.25em] text-[#556B2F] block mb-2">09 // กำหนดส่ง</span>
             <h2 className="text-2xl md:text-3xl font-black tracking-tight text-[#3C322A] uppercase mb-6">แผนการดำเนินงาน (Timeline)</h2>
 
             <div className="space-y-4">

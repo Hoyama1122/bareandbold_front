@@ -73,7 +73,6 @@
 * **ครอบคลุมสิทธิ์การทำงานทั้งหมดของพนักงาน (Staff)**
 * จัดการลูกค้า (Customer Management) — *ตรวจสอบและจัดการสถานะบัญชีลูกค้า*
 * จัดการโปรโมชั่น / ส่วนลด (Promotion & Discount Management)
-* จัดการการชำระเงิน (Payment Management)
 * ดูรายงานและสถิติ (Reports & Analytics Dashboard) — *แสดงยอดขายและสถิติต่างๆ แบบเรียลไทม์*
 * จัดการเนื้อหาเว็บไซต์ (Content Management System)
 * ตั้งค่าระบบ (System Settings)
@@ -188,7 +187,6 @@
 * **ครอบคลุมสิทธิ์การทำงานทั้งหมดของพนักงาน (Staff)**
 * จัดการลูกค้า (Customer Management) 
 * จัดการโปรโมชั่น / ส่วนลด (Promotion & Discount Management)
-* จัดการการชำระเงิน (Payment Management)
 * ดูรายงานและสถิติ (Reports & Analytics Dashboard) 
 * จัดการเนื้อหาเว็บไซต์ (Content Management System)
 * ตั้งค่าระบบ (System Settings)
