@@ -1,5 +1,5 @@
 "use client";
-
+import { getCart } from "@/services/cart.service";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Package,
 } from "lucide-react";
+import { createOrder } from "@/services/order.service";
 
 const INK = "#2B2118";
 const CREAM = "#F2ECDD";
@@ -40,14 +41,6 @@ const PAYMENT_METHODS = [
 
 function baht(n) {
   return n.toLocaleString("th-TH");
-}
-
-function generateOrderNumber() {
-  const now = new Date();
-  const y = now.getFullYear().toString().slice(-2);
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const rand = Math.floor(10000 + Math.random() * 89999);
-  return `BB${y}${m}-${rand}`;
 }
 
 function Field({ label, span2, required, ...props }) {
@@ -103,8 +96,12 @@ function StepPending({ label, num }) {
 }
 
 function StepLine() {
-  return 
-  <div className="flex-1 h-px max-w-10" style={{ background: BORDER }} />;
+  return (
+    <div
+      className="flex-1 h-px max-w-10"
+      style={{ background: BORDER }}
+    />
+  );
 }
 
 function OrderSuccess({ orderNumber, total, router }) {
@@ -185,32 +182,91 @@ export default function CheckoutPage() {
   const [placed, setPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState(null);
   const [orderItems, setOrderItems] = useState([]);
+  const [form, setForm] = useState({
+  firstName: "",
+  lastName: "",
+  phone: "",
+  email: "",
+  address: "",
+  province: "",
+  district: "",
+  subdistrict: "",
+  postcode: "",
+});
 
   useEffect(() => {
-  const cart = localStorage.getItem("bare_cart");
+  async function loadCart() {
+    const data = await getCart();
 
-  if (cart) {
-    setOrderItems(JSON.parse(cart));}}, []);
+    if (data.success) {
+      setOrderItems(data.cart.items);
+    }
+  }
 
-  const subtotal = useMemo(() =>orderItems.reduce((s, it) => s + it.price * it.quantity,0),[orderItems]);
+  loadCart();
+}, []);
+
+  const subtotal = useMemo(() =>orderItems.reduce((s, it) => s + it.product.price * it.quantity,0),[orderItems]);
   const shipping = subtotal >= 2000 ? 0 : 90;
   const total = subtotal + shipping;
   const itemCount = orderItems.reduce((s, it) => s + it.quantity,0);
 
-  const handleConfirm = (e) => {
+  const handleConfirm = async (e) => {
     e.preventDefault();
-    setOrderNumber(generateOrderNumber());
-    setPlaced(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
-  if (placed) {
-    return <OrderSuccess 
-    orderNumber={orderNumber} 
-    total={total} 
-    router={router}
-     />;
-  }
+try {
+
+    const result = await createOrder({
+
+        recipientName:
+            `${form.firstName} ${form.lastName}`,
+
+        recipientPhone:
+            form.phone,
+
+        shippingAddress:
+            `${form.address}
+            ${form.subdistrict}
+            ${form.district}
+            ${form.province}
+            ${form.postcode}`
+
+    });
+
+    if(result.success){
+
+        setOrderNumber(result.orderId);
+
+        setPlaced(true);
+
+        window.scrollTo({
+            top:0,
+            behavior:"smooth"
+        });
+
+    }else{
+
+        alert(result.error);
+
+    }
+
+}catch(err){
+
+    console.log(err);
+
+    alert("สร้างคำสั่งซื้อไม่สำเร็จ");
+
+}
+};
+if (placed) {
+  return (
+    <OrderSuccess
+      orderNumber={orderNumber}
+      total={total}
+      router={router}
+    />
+  );
+}
 
   return (
     <div style={{ background: CREAM, minHeight: "100vh", fontFamily: "'Sarabun', sans-serif", color: INK }}>
@@ -247,26 +303,115 @@ export default function CheckoutPage() {
                 กรอกข้อมูลผู้รับให้ครบถ้วนเพื่อความรวดเร็วในการจัดส่ง
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field required label="ชื่อ" placeholder="กรอกชื่อจริง" />
-                <Field required label="นามสกุล" placeholder="กรอกนามสกุล" />
-                <Field required label="เบอร์โทรศัพท์" placeholder="08X-XXX-XXXX" />
-                <Field required label="อีเมล" placeholder="name@email.com" type="email" />
-                <Field span2 required label="ที่อยู่" placeholder="บ้านเลขที่ ซอย ถนน" />
+                <Field
+    required
+    label="ชื่อ"
+    placeholder="กรอกชื่อจริง"
+    value={form.firstName}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            firstName:e.target.value
+        })
+    }
+/>
+                <Field
+    required
+    label="นามสกุล"
+    placeholder="กรอกนามสกุล"
+    value={form.lastName}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            lastName:e.target.value
+        })
+    }
+/>
+                <Field
+    required
+    label="เบอร์โทรศัพท์"
+    placeholder="08X-XXX-XXXX"
+    value={form.phone}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            phone:e.target.value
+        })
+    }
+/>
+                <Field
+    required
+    label="อีเมล"
+    placeholder="name@email.com"
+    type="email"
+    value={form.email}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            email:e.target.value
+        })
+    }
+/>
+                <Field
+    span2
+    required
+    label="ที่อยู่"
+    placeholder="บ้านเลขที่ ซอย ถนน"
+    value={form.address}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            address:e.target.value
+        })
+    }
+/>
                 <label className="flex flex-col gap-1.5 text-sm">
                   <span>จังหวัด</span>
                   <select
-                    defaultValue={PROVINCES[0]}
+    value={form.province}
+    onChange={(e)=>setForm({...form,province:e.target.value})}
                     className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none"
                     style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
                   >
+                    <option value="">เลือกจังหวัด</option>
                     {PROVINCES.map((p) => (
                       <option key={p}>{p}</option>
                     ))}
                   </select>
                 </label>
-                <Field required label="เขต / อำเภอ" placeholder="ระบุเขตหรืออำเภอ" />
-                <Field required label="แขวง / ตำบล" placeholder="ระบุแขวงหรือตำบล" />
-                <Field required label="รหัสไปรษณีย์" placeholder="10XXX" />
+                <Field
+    required
+    label="เขต / อำเภอ"
+    value={form.district}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            district:e.target.value
+        })
+    }
+/>
+                <Field
+    required
+    label="แขวง / ตำบล"
+    value={form.subdistrict}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            subdistrict:e.target.value
+        })
+    }
+/>
+                <Field
+    required
+    label="รหัสไปรษณีย์"
+    value={form.postcode}
+    onChange={(e)=>
+    setForm({
+        ...form,
+        postcode: e.target.value
+    })
+}
+/>
                 <Field span2 label="หมายเหตุถึงผู้จัดส่ง (ถ้ามี)" placeholder="เช่น ฝากไว้ที่นิติบุคคล" />
               </div>
               <label className="flex items-center gap-2 mt-4 text-sm cursor-pointer select-none">
@@ -357,8 +502,8 @@ export default function CheckoutPage() {
                   <div key={it.id} className="flex items-center gap-3">
                     <div className="relative flex-shrink-0">
                       <img
-                        src={it.image}
-                        alt={it.name}
+                        src={it.product.images?.[0]?.url || it.product.images?.[0] || "/placeholder.jpg"}
+                        alt={it.product.name}
                         className="w-12 h-14 rounded-md object-cover"/>
                       <span
                         className="absolute -top-1.5 -right-1.5 text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center"
@@ -368,10 +513,12 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate">{it.name}</p>
-                      <p className="text-xs" style={{ color: MUTED }}>{it.variant || ""}</p>
+                      <p className="text-sm truncate">{it.product.name}</p>
+                      <p className="text-xs" style={{ color: MUTED }}>
+  {it.customDetails?.material} {it.customDetails?.size}
+</p>
                     </div>
-                    <p className="text-sm font-medium flex-shrink-0">฿{baht(it.price * it.quantity)}</p>
+                    <p className="text-sm font-medium flex-shrink-0">฿{baht(it.product.price * it.quantity)}</p>
                   </div>
                 ))}
               </div>

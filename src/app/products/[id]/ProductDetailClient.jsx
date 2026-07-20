@@ -8,6 +8,7 @@ import ProductImageGallery from "@/components/product-detail/ProductImageGallery
 import ProductInfo from "@/components/product-detail/ProductInfo";
 import RecommendedProducts from "@/components/product-detail/RecommendedProducts";
 import ImageZoomModal from "@/components/product-detail/ImageZoomModal";
+import { addToCart as addCartAPI } from "@/services/cart.service";
 
 export default function ProductDetailClient({ nameSlug }) {
   const [product, setProduct] = useState(null);
@@ -98,26 +99,23 @@ export default function ProductDetailClient({ nameSlug }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isZoomOpen, currentImage, images]);
 
-  const addToCart = () => {
-    let cart = JSON.parse(localStorage.getItem("bare_cart") || "[]");
-
-    cart.push({
-      id: Date.now(),
-      productId: product.id,
-      name: product.name,
-      image: currentImage,
-      price: product.price,
-      quantity: qty,
+const addToCart = async () => {
+  const result = await addCartAPI({
+    productId: product.id,
+    quantity: qty,
+    customDetails: {
       material,
       size,
-    });
+    },
+    accessories: [],
+  });
 
-    localStorage.setItem("bare_cart", JSON.stringify(cart));
-
-    window.dispatchEvent(new Event("cartUpdated"));
-
+  if (result.success) {
     alert("เพิ่มลงตะกร้าแล้ว");
-  };
+  } else {
+    alert(result.error);
+  }
+};
 
   if (loading) {
     return <ProductSkeleton />;

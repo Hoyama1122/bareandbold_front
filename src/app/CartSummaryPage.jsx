@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, X, ChevronLeft, ShoppingBag, Truck, Tag, Heart } 
 from "lucide-react";
+import { getCart } from "@/services/cart.service";
 
 const INK = "#2B2118";
 const CREAM = "#F2ECDD";
@@ -23,8 +24,16 @@ export default function CartSummaryPage() {
   const router = useRouter();
   const [items, setItems] = useState([]);
   useEffect(() => {
-  const cart = localStorage.getItem("bare_cart");
-if (cart) {setItems(JSON.parse(cart));}}, []);
+  async function loadCart() {
+    const data = await getCart();
+
+    if (data.success) {
+      setItems(data.cart.items);
+    }
+  }
+
+  loadCart();
+}, []);
   const [promo, setPromo] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
 
@@ -38,11 +47,18 @@ if (cart) {setItems(JSON.parse(cart));}}, []);
 
   const removeItem = (id) => setItems((prev) => prev.filter((it) => it.id !== id));
 
-  const subtotal = useMemo(() => items.reduce((s, it) => s + it.price * it.quantity, 0), [items]);
+  const subtotal = useMemo(
+  () =>
+    items.reduce(
+      (s, it) => s + it.product.price * it.quantity,
+      0
+    ),
+  [items]
+);
   const savings = useMemo(
     () =>
       items.reduce(
-        (s, it) => s + (it.originalPrice ? (it.originalPrice - it.price) * it.quantity : 0),
+        (s, it) => s + (it.product.originalPrice ? (it.product.originalPrice - it.product.price) * it.quantity : 0),
         0
       ),
     [items]
@@ -131,16 +147,20 @@ if (cart) {setItems(JSON.parse(cart));}}, []);
                   style={{ background: "#FFFFFF", border: `1px solid ${BORDER}` }}
                 >
                 <img
-                  src={it.image}
-                  alt={it.name}
-                  className="w-20 h-24 rounded-lg flex-shrink-0 object-cover"/>
+  src={
+    it.product.images?.[0]?.url ||
+    it.product.images?.[0] ||
+    "/placeholder.jpg"
+  }
+  alt={it.product.name}
+  className="w-20 h-24 rounded-lg flex-shrink-0 object-cover"/>
                 <div className="flex-1 flex flex-col justify-between min-w-0">
                 <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                <p className="font-medium truncate">{it.name}</p>
+                <p className="font-medium truncate">{it.product.name}</p>
                 <p className="text-sm" style={{ color: MUTED }}>
-                  {it.variant || ""}
-                </p>
+  {it.customDetails?.material} {it.customDetails?.size}
+</p>
                       </div>
                       <button onClick={() => removeItem(it.id)} aria-label="ลบสินค้า" style={{ color: MUTED }}>
                         <X size={18} />
@@ -170,12 +190,8 @@ if (cart) {setItems(JSON.parse(cart));}}, []);
                       </div>
 
                       <div className="text-right">
-                        {it.originalPrice && (
-                          <p className="text-xs line-through" style={{ color: MUTED }}>
-                            ฿{baht(it.originalPrice * it.quantity)}
-                          </p>
-                        )}
-                        <p className="font-semibold">฿{baht(it.price * it.quantity)}</p>
+                        
+                        <p className="font-semibold">฿{baht(it.product.price * it.quantity)}</p>
                       </div>
                     </div>
                   </div>

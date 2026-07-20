@@ -44,6 +44,21 @@ export default function ProductInfo({
         <div className="mt-8 text-zinc-600 text-sm leading-relaxed border-b border-gray-100 pb-8 font-anuphan">
           {product.description}
         </div>
+        <div className="mt-4 border-b border-gray-100 pb-6">
+  {product.stock === 0 ? (
+  <p className="text-red-600 font-semibold">
+    ❌ สินค้าหมด
+  </p>
+) : product.stock <= 5 ? (
+  <p className="text-orange-500 font-semibold">
+    เหลือเพียง {product.stock} ชิ้น
+  </p>
+) : (
+  <p className="text-green-600 font-semibold">
+    เหลือสินค้า {product.stock} ชิ้น
+  </p>
+)}
+</div>
 
         {/* OPTIONS - MADE TO ORDER */}
         {product.type === "MADE_TO_ORDER" && (
@@ -109,12 +124,17 @@ export default function ProductInfo({
               {qty}
             </span>
             <button
-              type="button"
-              onClick={() => setQty(qty + 1)}
-              className="w-10 h-10 bg-gray-50 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-600 transition active:scale-95 cursor-pointer border-0"
-            >
-              +
-            </button>
+  type="button"
+  disabled={product.stock === 0 || qty >= product.stock}
+  onClick={() => {
+    if (qty < product.stock) {
+      setQty(qty + 1);
+    }
+  }}
+  className="w-10 h-10 bg-gray-50 hover:bg-gray-100 flex items-center justify-center font-bold text-gray-600 transition active:scale-95 border-0 disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  +
+</button>
           </div>
         </div>
       </div>
@@ -122,13 +142,23 @@ export default function ProductInfo({
       {/* Action Buttons */}
       <div className="flex flex-col gap-3 mt-10">
         <button
-          onClick={addToCart}
-          className="w-full py-4 border border-[#7a5b46] text-[#7a5b46] hover:bg-[#7a5b46]/5 rounded-xl font-bold transition duration-200 active:scale-98 cursor-pointer text-center text-sm"
-        >
-          เพิ่มลงตะกร้า
-        </button>
+  onClick={addToCart}
+  disabled={product.stock === 0}
+  className={`w-full py-4 rounded-xl font-bold transition duration-200 text-sm ${
+    product.stock === 0
+      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+      : "border border-[#7a5b46] text-[#7a5b46] hover:bg-[#7a5b46]/5 cursor-pointer"
+  }`}
+>
+  {product.stock === 0 ? "สินค้าหมด" : "เพิ่มลงตะกร้า"}
+</button>
         <button
-          className="w-full py-4 bg-[#7a5b46] text-white hover:bg-[#7a5b46]/90 rounded-xl font-bold transition duration-200 active:scale-98 cursor-pointer text-center text-sm"
+          disabled={product.stock === 0}
+          className={`w-full py-4 rounded-xl font-bold transition duration-200 text-sm ${
+            product.stock === 0
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-[#7a5b46] text-white hover:bg-[#7a5b46]/90 cursor-pointer"
+          }`}
         >
           สั่งซื้อทันที
         </button>
