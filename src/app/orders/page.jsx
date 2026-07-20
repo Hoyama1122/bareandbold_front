@@ -134,8 +134,17 @@ export default function OrderHistoryPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       {previewItems.map((it, idx) => (
-                        <div key={idx} className="w-14 h-16 rounded-lg flex-shrink-0" style={{ background: "#E5E5E5" }} />
-                      ))}
+  <img
+    key={idx}
+    src={
+      it.product.images?.[0]?.url ||
+      it.product.images?.[0] ||
+      "/placeholder.jpg"
+    }
+    alt={it.product.name}
+    className="w-14 h-16 rounded-lg object-cover flex-shrink-0"
+  />
+))}
                       <div className="text-sm min-w-0">
                         <p className="truncate max-w-[220px]">{order.items[0].product.name}</p>
                         <p style={{ color: MUTED }}>
