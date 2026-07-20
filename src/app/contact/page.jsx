@@ -324,9 +324,9 @@ export default function ContactPage() {
                     <p className="text-[#EADECC]/90 leading-relaxed mt-1">
                       โครงการ Bare & Bold (CSI204)
                       <br />
-                      มหาวิทยาลัยธรรมศาสตร์ ศูนย์รังสิต
+                      มหาวิทยาลัยศรีปทุม
                       <br />
-                      ปทุมธานี, ประเทศไทย 12120
+                      กรุงเทพมหานคร 10900
                     </p>
                   </div>
                 </div>
