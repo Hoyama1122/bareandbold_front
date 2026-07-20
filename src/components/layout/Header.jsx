@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Search01Icon, FavouriteIcon, ShoppingBag01Icon, UserIcon } from "hugeicons-react";
+import { usePathname, useRouter } from "next/navigation";
+import {Search01Icon,FavouriteIcon,ShoppingBag01Icon,UserCircleIcon,PackageIcon,Logout01Icon,Settings02Icon,} from "hugeicons-react";
 import AuthModal from "../auth/AuthModal";
 import CartDrawer from "../cart/CartDrawer";
 
@@ -22,6 +22,9 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+  const router = useRouter();
 
   useEffect(() => {
     setIsLoggedIn(initialIsLoggedIn);
@@ -33,6 +36,23 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
       setIsLoggedIn(true);
     }
   }, []);
+
+  useEffect(() => {
+  function handleClickOutside(event) {
+    if (
+      profileMenuRef.current &&
+      !profileMenuRef.current.contains(event.target)
+    ) {
+      setIsProfileOpen(false);
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
 
   const updateCartCount = () => {
     if (typeof window !== "undefined") {
@@ -107,40 +127,62 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
 
           {/* Action Icons & Profile Access */}
           <div className="flex items-center gap-5 text-earth-dark">
-            <button className="hover:text-earth-olive transition">
+            <button className="w-10 h-10 flex items-center justify-center hover:text-earth-olive transition">
               <Search01Icon size={20} strokeWidth={2} />
             </button>
-            <button className="hover:text-earth-olive transition">
-              <FavouriteIcon size={20} strokeWidth={2} />
-            </button>
-            <button 
-              onClick={() => setIsCartOpen(true)}
-              className="relative hover:text-earth-olive transition cursor-pointer"
-            >
-              <ShoppingBag01Icon size={20} strokeWidth={2} />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 w-4 h-4 bg-earth-walnut text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </button>
+
+            <div className="relative" ref={profileMenuRef}>
 
             <button
-              onClick={() => setIsAuthOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-earth-beige hover:bg-earth-border border border-earth-border transition text-xs font-bold text-earth-dark cursor-pointer"
-            >
-              {isLoggedIn ? (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-earth-olive" />
-                  บัญชี
-                </>
-              ) : (
-                <>
-                  <UserIcon size={14} strokeWidth={2.5} className="text-zinc-600" />
-                  เข้าสู่ระบบ
-                </>
-              )}
+  onClick={() => {
+    if (!isLoggedIn) {
+      setIsAuthOpen(true);
+    } else {
+      setIsProfileOpen(!isProfileOpen);
+    }
+  }}
+  className="w-10 h-10 flex items-center justify-center hover:text-earth-olive transition"
+>
+              <UserCircleIcon size={21} strokeWidth={2} />
             </button>
+
+  {isLoggedIn && isProfileOpen && (
+
+    <div className="absolute right-0 mt-3 w-60 rounded-xl bg-white border border-[#E7DDC8] shadow-xl overflow-hidden">
+
+      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE]">
+        <FavouriteIcon size={18}/>
+        รายการโปรด
+      </button>
+      <button
+        onClick={() => setIsCartOpen(true)}
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE]"
+      >
+        <ShoppingBag01Icon size={18}/>
+        ตะกร้าสินค้า
+      </button>
+      <button
+  onClick={() => {
+    setIsProfileOpen(false);
+    router.push("/orders");
+  }}
+  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE]"
+>
+  <PackageIcon size={18} />
+  ประวัติคำสั่งซื้อ
+</button>
+      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE]">
+        <Settings02Icon size={18}/>
+        โปรไฟล์
+      </button>
+      <hr/>
+      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-red-500">
+        <Logout01Icon size={18}/>
+        ออกจากระบบ
+      </button>
+    </div>
+  )}
+</div>
           </div>
         </div>
       </header>
