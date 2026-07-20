@@ -645,6 +645,14 @@ export default function ApiDocsPage() {
                   <span>แผนภาพระบบ & Wireframe</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-transparent" />
                 </Link>
+
+                <Link
+                  href="/docs/uat"
+                  className="group w-full text-left flex items-center justify-between cursor-pointer text-[13px] font-black tracking-wider text-[#6A5242]/70 hover:text-[#3C322A] hover:translate-x-0.5 transition-all duration-200"
+                >
+                  <span>ผลทดสอบ UAT Checklist</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-transparent" />
+                </Link>
               </nav>
             </div>
 
