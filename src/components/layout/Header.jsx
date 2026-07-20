@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {Search01Icon,FavouriteIcon,ShoppingBag01Icon,UserCircleIcon,PackageIcon,Logout01Icon,Settings02Icon,} from "hugeicons-react";
 import AuthModal from "../auth/AuthModal";
 import CartDrawer from "../cart/CartDrawer";
@@ -24,7 +24,6 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
   const [cartCount, setCartCount] = useState(0);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileMenuRef = useRef(null);
-  const router = useRouter();
 
   useEffect(() => {
     setIsLoggedIn(initialIsLoggedIn);
@@ -162,24 +161,23 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
         ตะกร้าสินค้า
       </button>
       <button
+        onClick={() => window.location.href="/account/orders"}
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE]"
+      >
+        <PackageIcon size={18}/>
+        ประวัติคำสั่งซื้อ
+      </button>
+      <button
   onClick={() => {
-    setIsProfileOpen(false);
-    router.push("/orders");
+    setIsProfileOpen(false); // ปิด Dropdown
+    setIsAuthOpen(true);     // เปิด AuthModal
   }}
   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE]"
 >
-  <PackageIcon size={18} />
-  ประวัติคำสั่งซื้อ
+  <Settings02Icon size={18} />
+  โปรไฟล์
 </button>
-      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE]">
-        <Settings02Icon size={18}/>
-        โปรไฟล์
-      </button>
-      <hr/>
-      <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-red-500">
-        <Logout01Icon size={18}/>
-        ออกจากระบบ
-      </button>
+     
     </div>
   )}
 </div>
