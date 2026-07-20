@@ -3,6 +3,9 @@
 import React, { useState } from "react";
 import Header from "@/components/layout/Header";
 
+// Web3Forms Configuration for clean styled email delivery
+const WEB3FORMS_ACCESS_KEY = "88b8fd6b-7615-4101-b456-9b981cbb264e";
+
 // Clean icons
 const MailIcon = () => (
   <svg
@@ -100,7 +103,7 @@ export default function ContactPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
       alert("กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน");
@@ -109,22 +112,26 @@ export default function ContactPage() {
 
     setIsSubmitting(true);
 
-    fetch("https://formsubmit.co/ajax/panupataonta3@gmail.com", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({
-        Name: formData.name,
-        Email: formData.email,
-        Phone: formData.phone || "ไม่ได้ระบุ",
-        Subject: formData.subject || "มีข้อความใหม่จากระบบ Bare & Bold",
-        Message: formData.message
-      })
-    })
-      .then(res => res.json())
-      .then(data => {
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          "ชื่อผู้ติดต่อ": formData.name,
+          "อีเมลติดต่อกลับ": formData.email,
+          "เบอร์โทรศัพท์": formData.phone || "ไม่ได้ระบุ",
+          "หัวข้อข้อความ": formData.subject || "มีข้อความใหม่จากระบบ Bare & Bold",
+          "รายละเอียดข้อความ": formData.message
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
         setIsSubmitting(false);
         setIsSent(true);
         setFormData({
@@ -134,12 +141,15 @@ export default function ContactPage() {
           subject: "",
           message: "",
         });
-      })
-      .catch(err => {
-        console.error("Error sending message:", err);
-        alert("เกิดข้อผิดพลาดในการส่งข้อความ กรุณาลองใหม่อีกครั้ง");
+      } else {
+        alert(data.message || "เกิดข้อผิดพลาดในการส่งข้อความ");
         setIsSubmitting(false);
-      });
+      }
+    } catch (error) {
+      console.error("Error submitting Web3Forms:", error);
+      alert("เกิดข้อผิดพลาดในการส่งข้อความ กรุณาลองใหม่อีกครั้ง");
+      setIsSubmitting(false);
+    }
   };
 
   return (
