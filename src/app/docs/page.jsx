@@ -155,8 +155,8 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#3C322A] font-anuphan antialiased flex flex-col">
       {/* Nike-Style Minimal Hero */}
-      <section className="bg-[#FDFBF7] pt-14 pb-8 px-6 md:px-12 border-b border-[#EADECC]/60">
-        <div className="max-w-[1400px] mx-auto">
+      <section className="bg-[#FDFBF7] pt-14 pb-8 px-6 border-b border-[#EADECC]/60">
+        <div className="max-w-[1440px] mx-auto">
           <div className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-[#556B2F] mb-3">
             CSI204 // SYSTEM SPECIFICATION
           </div>
@@ -185,7 +185,7 @@ export default function DocsPage() {
       </section>
 
       {/* Docs Workspace */}
-      <div className="max-w-[1400px] mx-auto w-full px-6 md:px-12 py-10 flex-1 flex flex-col md:flex-row gap-10 relative">
+      <div className="max-w-[1440px] mx-auto w-full px-6 py-10 flex-1 flex flex-col md:flex-row gap-10 relative">
         
         {/* Floating Mobile Index Toggle */}
         <button

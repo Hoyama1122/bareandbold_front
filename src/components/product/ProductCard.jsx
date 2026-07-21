@@ -46,7 +46,7 @@ export default function ProductCard({ product }) {
     >
       
       {/*  ส่วนรูปภาพหน้าปกสินค้า */}
-      <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#F5F0E6]/30">
+      <div className="relative w-full aspect-square overflow-hidden bg-[#F5F0E6]/30">
         
         {/* ป้ายแท็กสั่งทำพิเศษ (แสดงเฉพาะสินค้าที่เป็น MADE_TO_ORDER) */}
         {isMadeToOrder && (

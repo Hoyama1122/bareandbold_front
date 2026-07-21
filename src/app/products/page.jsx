@@ -77,7 +77,7 @@ export default function ProductsPage() {
     <main className="min-h-screen bg-[#FDFBF7]">
       {/* Hero */}
       <section className="bg-earth-beige border-b border-earth-border">
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="max-w-[1440px] mx-auto px-6 py-16">
           <p className="uppercase tracking-[5px] text-earth-olive font-bold text-xs">
             Bare & Bold
           </p>
@@ -92,7 +92,7 @@ export default function ProductsPage() {
       </section>
 
       {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-6 pt-8 text-sm text-zinc-500">
+      <div className="max-w-[1440px] mx-auto px-6 pt-8 text-sm text-zinc-500">
         <div className="flex items-center gap-2 font-anuphan">
           <Link href="/" className="text-earth-olive font-bold hover:underline">
             หน้าแรก
@@ -102,7 +102,7 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-[1440px] mx-auto px-6 py-10">
         {/* Filter */}
         <ProductFilter
           search={search}
