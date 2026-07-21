@@ -30,7 +30,7 @@ export default function ProductCard({ product }) {
     : "/images/placeholder.jpg"; 
 
   const isMadeToOrder = product.type === "MADE_TO_ORDER";
-  
+
   const isOutOfStock = product.type === "READY_TO_SHIP" && product.stock === 0;
 
   const formatPrice = (priceValue) => {
@@ -45,10 +45,10 @@ export default function ProductCard({ product }) {
       className="bg-white border border-[#EFE9DC] rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full group block"
     >
       
-      {/* 🖼️ ส่วนรูปภาพหน้าปกสินค้า */}
+      {/*  ส่วนรูปภาพหน้าปกสินค้า */}
       <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#F5F0E6]/30">
         
-        {/* 🟢 ป้ายแท็กสั่งทำพิเศษ (แสดงเฉพาะสินค้าที่เป็น MADE_TO_ORDER) */}
+        {/* ป้ายแท็กสั่งทำพิเศษ (แสดงเฉพาะสินค้าที่เป็น MADE_TO_ORDER) */}
         {isMadeToOrder && (
           <div className="absolute top-4 left-4 bg-[#6A5242] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg z-10 shadow-sm font-anuphan">
             สั่งทำพิเศษ
@@ -73,7 +73,7 @@ export default function ProductCard({ product }) {
           </svg>
         </button>
 
-        {/* 🚫 ป้ายกำกับสินค้าหมดระดับพรีเมียม (Out of Stock Overlay) */}
+        {/* ป้ายกำกับสินค้าหมดระดับพรีเมียม (Out of Stock Overlay) */}
         {isOutOfStock && (
           <div className="absolute inset-0 bg-[#3C322A]/40 backdrop-blur-[1.5px] z-10 flex items-center justify-center">
             <span className="bg-[#FFFFFF]/95 text-[#6A5242] border border-[#EFE9DC] text-[11px] font-extrabold px-4 py-2.5 rounded-full shadow-md font-anuphan tracking-wide uppercase">
@@ -104,16 +104,16 @@ export default function ProductCard({ product }) {
             {product.name}
           </h3>
 
-          {/* 🌟 แสดงดาวรีวิวคงที่ตามโครงสร้างแบรนด์ */}
+          {/*  แสดงดาวรีวิวคงที่ตามโครงสร้างแบรนด์ */}
           <div className="flex text-amber-500 text-xs">
             {"★".repeat(product.rating || 5)}
           </div>
         </div>
 
-        {/* 💰 ราคาสินค้าและปุ่มแอคชัน */}
+        {/* ราคาสินค้าและปุ่มแอคชัน */}
         <div className="mt-4 pt-3 border-t border-[#F5F0E6] flex flex-col gap-3">
           <div className="flex items-baseline gap-2">
-            {/* 🛠️ เปลี่ยนมาเรียกใช้ฟังก์ชันแปลงราคาอย่างปลอดภัย */}
+            {/*  เปลี่ยนมาเรียกใช้ฟังก์ชันแปลงราคาอย่างปลอดภัย */}
             <span className="text-lg font-black text-[#3C322A]">
               {formatPrice(product.price).toLocaleString()} บาท
             </span>
