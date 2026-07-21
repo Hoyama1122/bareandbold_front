@@ -25,15 +25,14 @@ export default function ProductCard({ product }) {
     }
   };
 
-  // 📸 ดึงรูปภาพแรกจาก Array (images[0].url) 
   const mainImage = product.images && product.images.length > 0 
     ? product.images[0].url 
     : "/images/placeholder.jpg"; 
 
-  // 🏷️ เช็คประเภทสินค้าเพื่อแสดงป้าย Made to Order
   const isMadeToOrder = product.type === "MADE_TO_ORDER";
+  
+  const isOutOfStock = product.type === "READY_TO_SHIP" && product.stock === 0;
 
-  // 💰 ฟังก์ชันแปลงราคาส่งกลับเป็นตัวเลขอย่างปลอดภัย รองรับทั้งแบบ String, Number และ null
   const formatPrice = (priceValue) => {
     if (priceValue === null || priceValue === undefined) return 0;
     const parsed = Number(priceValue);
@@ -74,11 +73,22 @@ export default function ProductCard({ product }) {
           </svg>
         </button>
 
+        {/* 🚫 ป้ายกำกับสินค้าหมดระดับพรีเมียม (Out of Stock Overlay) */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-[#3C322A]/40 backdrop-blur-[1.5px] z-10 flex items-center justify-center">
+            <span className="bg-[#FFFFFF]/95 text-[#6A5242] border border-[#EFE9DC] text-[11px] font-extrabold px-4 py-2.5 rounded-full shadow-md font-anuphan tracking-wide uppercase">
+              สินค้าหมด (Out of Stock)
+            </span>
+          </div>
+        )}
+
         <Image
           src={mainImage}
           alt={product.name || "Product Image"}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className={`object-cover transition-transform duration-500 ${
+            isOutOfStock ? "" : "group-hover:scale-105"
+          }`}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
         />
       </div>
@@ -115,9 +125,13 @@ export default function ProductCard({ product }) {
           </div>
 
           <div
-            className="w-full text-center py-2.5 bg-white border-2 border-[#6A5242] text-[#6A5242] group-hover:bg-[#6A5242] group-hover:text-white font-bold text-xs rounded-xl transition duration-300 inline-block cursor-pointer shadow-sm"
+            className={`w-full text-center py-2.5 font-bold text-xs rounded-xl transition duration-300 inline-block cursor-pointer shadow-sm border-2 ${
+              isOutOfStock
+                ? "bg-[#F5F0E6]/50 border-zinc-200 text-zinc-400 cursor-not-allowed"
+                : "bg-white border-[#6A5242] text-[#6A5242] group-hover:bg-[#6A5242] group-hover:text-white"
+            }`}
           >
-            ดูรายละเอียดสินค้า
+            {isOutOfStock ? "สินค้าหมด" : "ดูรายละเอียดสินค้า"}
           </div>
         </div>
       </div>
