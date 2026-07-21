@@ -42,7 +42,6 @@ export const wishlistService = {
         if (data.success && data.wishlist) {
           const items = data.wishlist.map(w => w.product).filter(Boolean);
           localStorage.setItem("bare_wishlist", JSON.stringify(items));
-          window.dispatchEvent(new Event("wishlistUpdated"));
           return items;
         }
       } catch (err) {
