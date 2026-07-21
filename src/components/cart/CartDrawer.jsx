@@ -57,6 +57,39 @@ export default function CartDrawer({ isOpen, onClose }) {
     0
   );
 
+  const updateQty = async (productId, delta, item) => {
+    const newQty = Math.max(0, item.quantity + delta);
+    if (newQty === 0) {
+      await removeItem(productId);
+    } else {
+      if (cartService.isLoggedIn()) {
+        try {
+          await cartService.updateCartItem(
+            productId,
+            newQty,
+            item.customDetails?.material || "Silver",
+            item.customDetails?.size || "16 cm",
+            item.id
+          );
+          const data = await getCart();
+          setCartItems(data.cart.items);
+        } catch (err) {
+          console.error("Failed to update item quantity:", err);
+        }
+      } else {
+        const localItems = JSON.parse(localStorage.getItem("bare_cart") || "[]");
+        const updated = localItems.map((it) => {
+          if (it.productId === productId) {
+            return { ...it, quantity: newQty };
+          }
+          return it;
+        });
+        localStorage.setItem("bare_cart", JSON.stringify(updated));
+        window.dispatchEvent(new Event("cartUpdated"));
+      }
+    }
+  };
+
   const removeItem = async (productId) => {
     if (cartService.isLoggedIn()) {
       const result = await removeCartItem(productId);
@@ -164,8 +197,26 @@ export default function CartDrawer({ isOpen, onClose }) {
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-zinc-500">จำนวน: {item.quantity}</span>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-1 border border-zinc-200 rounded-lg overflow-hidden bg-white">
+                      <button
+                        type="button"
+                        onClick={() => updateQty(item.product.id, -1, item)}
+                        className="w-7 h-7 bg-zinc-50 hover:bg-zinc-100 flex items-center justify-center font-bold text-zinc-600 transition active:scale-95 cursor-pointer border-0"
+                      >
+                        -
+                      </button>
+                      <span className="w-7 text-center font-bold text-zinc-800 text-xs">
+                        {item.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => updateQty(item.product.id, 1, item)}
+                        className="w-7 h-7 bg-zinc-50 hover:bg-zinc-100 flex items-center justify-center font-bold text-zinc-600 transition active:scale-95 cursor-pointer border-0"
+                      >
+                        +
+                      </button>
+                    </div>
                     <span className="text-sm font-extrabold text-[#6A5242]">
                       ฿{(item.product.price * item.quantity).toLocaleString()}
                     </span>

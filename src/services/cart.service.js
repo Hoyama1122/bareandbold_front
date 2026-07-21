@@ -66,7 +66,6 @@ export const cartService = {
         if (data.success && data.cart) {
           const localItems = mapBackendCartToLocal(data.cart);
           localStorage.setItem("bare_cart", JSON.stringify(localItems));
-          window.dispatchEvent(new Event("cartUpdated"));
           return localItems;
         }
       } catch (err) {
@@ -94,6 +93,7 @@ export const cartService = {
           }),
         });
         await cartService.fetchCart();
+        window.dispatchEvent(new Event("cartUpdated"));
         return;
       } catch (err) {
         console.error("Error adding to backend cart:", err);
@@ -144,6 +144,7 @@ export const cartService = {
           }),
         });
         await cartService.fetchCart();
+        window.dispatchEvent(new Event("cartUpdated"));
         return;
       } catch (err) {
         console.error("Error updating backend cart item:", err);
@@ -170,6 +171,7 @@ export const cartService = {
           method: "DELETE",
         });
         await cartService.fetchCart();
+        window.dispatchEvent(new Event("cartUpdated"));
         return;
       } catch (err) {
         console.error("Error removing from backend cart:", err);
@@ -228,10 +230,12 @@ export const cartService = {
       // Clear local storage and let fetchCart load/sync
       localStorage.removeItem("bare_cart");
       await cartService.fetchCart();
+      window.dispatchEvent(new Event("cartUpdated"));
     } catch (err) {
       console.error("Failed to merge guest cart with backend:", err);
       // Fallback: fetch user's backend cart anyway
       await cartService.fetchCart();
+      window.dispatchEvent(new Event("cartUpdated"));
     }
   },
 };
