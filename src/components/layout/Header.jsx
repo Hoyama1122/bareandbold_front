@@ -154,9 +154,9 @@ export default function Header({
 
           {/* Action Icons & Profile Access */}
           <div className="flex items-center gap-5 text-earth-dark">
-            <button className="w-10 h-10 flex items-center justify-center hover:text-earth-olive transition">
+            <Link href="/product" className="w-10 h-10 flex items-center justify-center hover:text-earth-olive transition">
               <Search01Icon size={20} strokeWidth={2} />
-            </button>
+            </Link>
             <button className="hover:text-earth-olive transition">
               <FavouriteIcon size={20} strokeWidth={2} />
             </button>
