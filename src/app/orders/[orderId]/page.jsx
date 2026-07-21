@@ -24,6 +24,7 @@ const WHITE = "#FFFFFF";
 const STATUS_STYLES = {
   pending: { bg: "#F5E6C8", color: "#8A6A1F", label: "รอชำระเงิน" },
   preparing: { bg: "#E3E6EE", color: "#3F4E7A", label: "กำลังเตรียมสินค้า" },
+  producing: { bg: "#EAE0F5", color: "#5E3F7A", label: "กำลังผลิต" },
   shipping: { bg: "#DDEAE0", color: "#3F6B52", label: "กำลังจัดส่ง" },
   delivered: { bg: "#E1EAD5", color: OLIVE_DEEP, label: "จัดส่งสำเร็จ" },
   cancelled: { bg: "#F3DEDA", color: "#9B4A3F", label: "ยกเลิก" },
@@ -33,6 +34,7 @@ const STATUS_STYLES = {
 const TIMELINE_STEPS = [
   { id: "pending", label: "รับคำสั่งซื้อแล้ว" },
   { id: "preparing", label: "กำลังเตรียมสินค้า" },
+  { id: "producing", label: "กำลังผลิต" },
   { id: "shipping", label: "กำลังจัดส่ง" },
   { id: "delivered", label: "จัดส่งสำเร็จ" },
 ];
@@ -40,6 +42,7 @@ const TIMELINE_STEPS = [
 const mapStatus = (status) => {
   const s = (status || "").toLowerCase();
   if (s === "paid") return "preparing";
+  if (s === "producing") return "producing";
   if (s === "shipped") return "shipping";
   return s;
 };

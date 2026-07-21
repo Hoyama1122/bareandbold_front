@@ -110,6 +110,9 @@ export default function OrderHistoryPage() {
 
   const filteredOrders = useMemo(() => {
     if (activeTab === "ALL") return orders;
+    if (activeTab === "PAID") {
+      return orders.filter((o) => o.status === "PAID" || o.status === "PRODUCING");
+    }
     return orders.filter((o) => o.status === activeTab);
   }, [orders, activeTab]);
 
@@ -172,6 +175,7 @@ export default function OrderHistoryPage() {
     switch (status) {
       case "PENDING": return "ที่ต้องชำระ";
       case "PAID": return "ต้องจัดส่ง";
+      case "PRODUCING": return "กำลังผลิต";
       case "SHIPPED": return "ต้องได้รับ";
       case "DELIVERED": return "สำเร็จแล้ว";
       case "CANCELLED": return "ยกเลิกแล้ว";
@@ -183,6 +187,7 @@ export default function OrderHistoryPage() {
     switch (status) {
       case "PENDING": return WALNUT;
       case "PAID": return OLIVE;
+      case "PRODUCING": return "#8B5CF6"; // Purple status color for producing
       case "SHIPPED": return "#2563EB";
       case "DELIVERED": return "#059669";
       case "CANCELLED": return "#DC2626";
