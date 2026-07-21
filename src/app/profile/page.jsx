@@ -154,7 +154,7 @@ reader.onload = () => {
     "avatar",
     reader.result
   );
-
+window.dispatchEvent(new Event("profileUpdated"));
   notify("เปลี่ยนรูปโปรไฟล์เรียบร้อยแล้ว");
 };
 
@@ -196,6 +196,25 @@ reader.readAsDataURL(file);
     "profile",
     JSON.stringify(profile)
   );
+
+  // อัปเดตข้อมูลที่ Header ใช้
+  const oldUser = JSON.parse(
+    localStorage.getItem("bare_user") || "{}"
+  );
+
+  const updatedUser = {
+    ...oldUser,
+    firstName: profile.fullName.split(" ")[0] || "",
+    lastName: profile.fullName.split(" ").slice(1).join(" "),
+    email: profile.email,
+  };
+
+  localStorage.setItem(
+    "bare_user",
+    JSON.stringify(updatedUser)
+  );
+
+  window.dispatchEvent(new Event("profileUpdated"));
 
   notify("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
 };
@@ -303,12 +322,7 @@ useEffect(() => {
     notify("เปลี่ยนรหัสผ่านเรียบร้อยแล้ว");
   };
 
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const doLogout = () => {
-    setShowLogoutConfirm(false);
-    notify("ออกจากระบบเรียบร้อยแล้ว");
-  };
-
+  
   return (
     <div style={{ background: "#FAF6F0", minHeight: "100vh" }} className="w-full">
       <style>{`
@@ -707,70 +721,10 @@ useEffect(() => {
           </div>
         </section>
 
-        <section
-          className="rounded-2xl p-6 sm:p-8 flex items-center justify-between flex-wrap gap-4"
-          style={{ background: "#FBF3EF", border: "1px solid #F0DCD3" }}
-        >
-          <div className="flex items-start gap-3">
-            <Clover className="w-5 h-5 mt-1" color="#C4574B" />
-            <div>
-              <h2 className="serif text-xl" style={{ color: "#2B231C", fontWeight: 600 }}>
-                ออกจากระบบ
-              </h2>
-              <p className="text-sm mt-0.5" style={{ color: "#8A7C6C" }}>
-                คุณจะต้องเข้าสู่ระบบใหม่อีกครั้งเพื่อกลับมาใช้งานบัญชีนี้
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowLogoutConfirm(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all hover:brightness-110 active:scale-[0.98]"
-            style={{ background: "#C4574B", color: "#FFF7F4" }}
-          >
-            <LogOut className="w-4 h-4" />
-            ออกจากระบบ
-          </button>
-        </section>
+        
       </div>
 
-      {showLogoutConfirm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center px-4"
-          style={{ background: "#2B231C99" }}
-          onClick={() => setShowLogoutConfirm(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-2xl p-6"
-            style={{ background: "#FFFFFF" }}
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "#FBEAE7" }}>
-                <LogOut className="w-5 h-5" style={{ color: "#C4574B" }} />
-              </div>
-              <h3 className="serif text-xl" style={{ color: "#2B231C", fontWeight: 600 }}>
-                ยืนยันการออกจากระบบ
-              </h3>
-            </div>
-            <p className="text-sm mb-6" style={{ color: "#8A7C6C" }}>
-              คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบบัญชีนี้?
-            </p>
-            <div className="flex justify-end gap-3">
-              <GhostButton onClick={() => setShowLogoutConfirm(false)} icon={X}>
-                ยกเลิก
-              </GhostButton>
-              <button
-                onClick={doLogout}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all hover:brightness-110 active:scale-[0.98]"
-                style={{ background: "#C4574B", color: "#FFF7F4" }}
-              >
-                <LogOut className="w-4 h-4" />
-                ยืนยันออกจากระบบ
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 }

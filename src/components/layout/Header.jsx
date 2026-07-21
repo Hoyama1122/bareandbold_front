@@ -37,6 +37,9 @@ export default function Header({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [user, setUser] = useState(null);
+  const [avatar, setAvatar] = useState(null);
+
   const profileMenuRef = useRef(null);
   const wishlistMenuRef = useRef(null);
 
@@ -44,15 +47,33 @@ export default function Header({
     setIsLoggedIn(initialIsLoggedIn);
   }, [initialIsLoggedIn]);
 
-  useEffect(() => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("bare_auth_token")
-        : null;
+ useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const loadProfile = () => {
+    const token = localStorage.getItem("bare_auth_token");
+
     if (token) {
       setIsLoggedIn(true);
+
+      const savedUser = localStorage.getItem("bare_user");
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+
+      const savedAvatar = localStorage.getItem("avatar");
+      setAvatar(savedAvatar);
     }
-  }, []);
+  };
+
+  loadProfile();
+
+  window.addEventListener("profileUpdated", loadProfile);
+
+  return () => {
+    window.removeEventListener("profileUpdated", loadProfile);
+  };
+}, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -117,6 +138,15 @@ export default function Header({
 
   const handleLogout = () => {
     localStorage.removeItem("bare_auth_token");
+localStorage.removeItem("bare_user");
+localStorage.removeItem("bare_user_email");
+localStorage.removeItem("profile");
+localStorage.removeItem("avatar");
+localStorage.removeItem("addresses");
+localStorage.removeItem("bare_cart");
+
+setUser(null);
+setAvatar(null);
     setIsLoggedIn(false);
     setIsProfileOpen(false);
     if (onAuthStatusChange) {
@@ -127,12 +157,18 @@ export default function Header({
   };
 
   const handleAuthSuccess = (user) => {
-    const hasToken = !!localStorage.getItem("bare_auth_token");
-    setIsLoggedIn(hasToken);
-    if (onAuthStatusChange) {
-      onAuthStatusChange(hasToken, user);
-    }
-  };
+  const hasToken = !!localStorage.getItem("bare_auth_token");
+
+  setIsLoggedIn(hasToken);
+  setUser(user);
+
+  const savedAvatar = localStorage.getItem("avatar");
+  setAvatar(savedAvatar);
+
+  if (onAuthStatusChange) {
+    onAuthStatusChange(hasToken, user);
+  }
+};
 
   return (
     <>
@@ -256,7 +292,15 @@ export default function Header({
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="w-10 h-10 flex items-center justify-center hover:text-earth-olive transition cursor-pointer"
                 >
-                  <UserCircleIcon size={21} strokeWidth={2} />
+                  {avatar ? (
+  <img
+    src={avatar}
+    alt="Profile"
+    className="w-9 h-9 rounded-full object-cover"
+  />
+) : (
+  <UserCircleIcon size={21} strokeWidth={2} />
+)}
                 </button>
               ) : (
                 <button
@@ -273,7 +317,9 @@ export default function Header({
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-xs text-zinc-400">บัญชีผู้ใช้</p>
                     <p className="text-sm font-bold text-earth-dark truncate mt-0.5">
-                      {typeof window !== "undefined" && localStorage.getItem("bare_user_email")}
+                      {user
+  ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+  : localStorage.getItem("bare_user_email")}
                     </p>
                   </div>
                   <Link
