@@ -108,75 +108,87 @@ export default function ShippingForm({
         />
         <Field name="address" span2 required label="ที่อยู่" placeholder="บ้านเลขที่ ซอย ถนน" />
         
-        <label className="flex flex-col gap-1.5 text-sm">
+        <label className="flex flex-col gap-1.5 text-sm relative">
           <span>จังหวัด <span style={{ color: OLIVE_DEEP }}> *</span></span>
-          <select
+          <input
+            list="province-list"
             value={province}
             name="province"
             onChange={(e) => handleProvinceChange(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none"
             style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
+            placeholder="พิมพ์หรือเลือกจังหวัด"
             required
-          >
-            <option value="">เลือกจังหวัด</option>
+            autoComplete="off"
+          />
+          <datalist id="province-list">
             {PROVINCES.map((p) => (
-              <option key={p} value={p}>{p}</option>
+              <option key={p} value={p} />
             ))}
-          </select>
+          </datalist>
         </label>
 
         <label className="flex flex-col gap-1.5 text-sm">
           <span>เขต / อำเภอ <span style={{ color: OLIVE_DEEP }}> *</span></span>
-          <select
+          <input
+            list="district-list"
             value={district}
             name="district"
             onChange={(e) => handleDistrictChange(e.target.value)}
             disabled={!province}
             className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none disabled:opacity-60"
             style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
+            placeholder={province ? "พิมพ์หรือเลือกเขต/อำเภอ" : "กรุณาเลือกจังหวัดก่อน"}
             required
-          >
-            <option value="">{province ? "เลือกเขตหรืออำเภอ" : "กรุณาเลือกจังหวัดก่อน"}</option>
+            autoComplete="off"
+          />
+          <datalist id="district-list">
             {availableDistricts.map((d) => (
-              <option key={d} value={d}>{d}</option>
+              <option key={d} value={d} />
             ))}
-          </select>
+          </datalist>
         </label>
 
         <label className="flex flex-col gap-1.5 text-sm">
           <span>แขวง / ตำบล <span style={{ color: OLIVE_DEEP }}> *</span></span>
-          <select
+          <input
+            list="subdistrict-list"
             value={subDistrict}
             name="subDistrict"
             onChange={(e) => handleSubDistrictChange(e.target.value)}
             disabled={!district}
             className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none disabled:opacity-60"
             style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
+            placeholder={district ? "พิมพ์หรือเลือกแขวง/ตำบล" : "กรุณาเลือกอำเภอก่อน"}
             required
-          >
-            <option value="">{district ? "เลือกแขวงหรือตำบล" : "กรุณาเลือกอำเภอก่อน"}</option>
+            autoComplete="off"
+          />
+          <datalist id="subdistrict-list">
             {availableSubDistricts.map((sd) => (
-              <option key={sd} value={sd}>{sd}</option>
+              <option key={sd} value={sd} />
             ))}
-          </select>
+          </datalist>
         </label>
 
         <label className="flex flex-col gap-1.5 text-sm">
           <span>รหัสไปรษณีย์ <span style={{ color: OLIVE_DEEP }}> *</span></span>
-          <select
+          <input
+            list="zipcode-list"
             value={zipCode}
             name="zipCode"
             onChange={(e) => handleZipCodeChange(e.target.value)}
             disabled={!subDistrict}
             className="w-full px-3.5 py-2.5 rounded-lg text-sm outline-none disabled:opacity-60"
             style={{ border: `1px solid ${BORDER}`, background: CREAM, color: INK }}
+            placeholder={subDistrict ? "พิมพ์หรือเลือกรหัสไปรษณีย์" : "กรุณาเลือกตำบลก่อน"}
             required
-          >
-            <option value="">{subDistrict ? "เลือกรหัสไปรษณีย์" : "กรุณาเลือกตำบลก่อน"}</option>
+            autoComplete="off"
+          />
+          <datalist id="zipcode-list">
             {availableZipCodes.map((z) => (
-              <option key={z} value={z}>{z}</option>
+              <option key={z} value={z} />
             ))}
-          </select>
+          </datalist>
         </label>
 
         <Field name="notes" span2 label="หมายเหตุถึงผู้จัดส่ง (ถ้ามี)" placeholder="เช่น ฝากไว้ที่นิติบุคคล" />
