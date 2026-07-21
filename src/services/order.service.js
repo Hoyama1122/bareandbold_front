@@ -40,14 +40,17 @@ export const orderService = {
 
   getOrderById: async (orderId) => {
     try {
-      return await apiFetch(`/orders/${orderId}`);
+      const data = await apiFetch(`/orders/${orderId}`);
+      if (data && data.success) return data;
+      return { success: true, order: data };
     } catch (e) {
       // Fallback: search in list
       const data = await apiFetch("/orders");
       if (data.success && data.orders) {
-        return data.orders.find(o => o.id === orderId) || null;
+        const order = data.orders.find(o => o.id === orderId) || null;
+        return { success: true, order };
       }
-      return null;
+      return { success: false, error: e.message };
     }
   }
 };

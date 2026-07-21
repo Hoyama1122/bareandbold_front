@@ -8,7 +8,10 @@ export default function ProductInfo({
   setSize,
   qty,
   setQty,
-  addToCart
+  addToCart,
+  buyNow,
+  isLiked,
+  toggleWishlist
 }) {
   return (
     <div className="flex flex-col justify-between font-sans">
@@ -141,18 +144,40 @@ export default function ProductInfo({
 
       {/* Action Buttons */}
       <div className="flex flex-col gap-3 mt-10">
+        <div className="flex gap-3">
+          <button
+            onClick={addToCart}
+            disabled={product.stock === 0}
+            className={`flex-1 py-4 rounded-xl font-bold transition duration-200 text-sm ${
+              product.stock === 0
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "border border-[#7a5b46] text-[#7a5b46] hover:bg-[#7a5b46]/5 cursor-pointer"
+            }`}
+          >
+            {product.stock === 0 ? "สินค้าหมด" : "เพิ่มลงตะกร้า"}
+          </button>
+          
+          <button
+            onClick={toggleWishlist}
+            className="w-14 h-14 border border-gray-200 hover:border-red-200 rounded-xl flex items-center justify-center transition cursor-pointer active:scale-95 group/heart"
+            title="ถูกใจสินค้า"
+          >
+            <svg
+              className={`w-6 h-6 transition-colors ${
+                isLiked ? "fill-red-500 text-red-500" : "text-gray-400 group-hover/heart:text-red-500"
+              }`}
+              fill={isLiked ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          </button>
+        </div>
+
         <button
-  onClick={addToCart}
-  disabled={product.stock === 0}
-  className={`w-full py-4 rounded-xl font-bold transition duration-200 text-sm ${
-    product.stock === 0
-      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-      : "border border-[#7a5b46] text-[#7a5b46] hover:bg-[#7a5b46]/5 cursor-pointer"
-  }`}
->
-  {product.stock === 0 ? "สินค้าหมด" : "เพิ่มลงตะกร้า"}
-</button>
-        <button
+          onClick={buyNow}
           disabled={product.stock === 0}
           className={`w-full py-4 rounded-xl font-bold transition duration-200 text-sm ${
             product.stock === 0

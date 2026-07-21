@@ -37,12 +37,20 @@ const TIMELINE_STEPS = [
   { id: "delivered", label: "จัดส่งสำเร็จ" },
 ];
  
+const mapStatus = (status) => {
+  const s = (status || "").toLowerCase();
+  if (s === "paid") return "preparing";
+  if (s === "shipped") return "shipping";
+  return s;
+};
+
 function baht(n) {
   return n.toLocaleString("th-TH");
 }
  
 function StatusBadge({ status }) {
-  const s = STATUS_STYLES[status] || STATUS_STYLES.pending;
+  const mapped = mapStatus(status);
+  const s = STATUS_STYLES[mapped] || STATUS_STYLES.pending;
   return (
     <span className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: s.bg, color: s.color }}>
       {s.label}
@@ -51,7 +59,8 @@ function StatusBadge({ status }) {
 }
  
 function Timeline({ status, date }) {
-  if (status === "cancelled") {
+  const mapped = mapStatus(status);
+  if (mapped === "cancelled") {
     return (
       <div className="flex items-center gap-3 rounded-xl p-5" style={{ background: STATUS_STYLES.cancelled.bg }}>
         <PackageX size={22} style={{ color: STATUS_STYLES.cancelled.color }} />
@@ -60,14 +69,14 @@ function Timeline({ status, date }) {
             คำสั่งซื้อนี้ถูกยกเลิก
           </p>
           <p className="text-sm" style={{ color: MUTED }}>
-  สั่งซื้อเมื่อ {date}
-</p>
+            สั่งซื้อเมื่อ {date}
+          </p>
         </div>
       </div>
     );
   }
  
-  const currentIndex = TIMELINE_STEPS.findIndex((s) => s.id === status);
+  const currentIndex = TIMELINE_STEPS.findIndex((s) => s.id === mapped);
  
   return (
     <div className="flex flex-col">

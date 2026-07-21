@@ -365,6 +365,16 @@ export default function OrderHistoryPage() {
 
                   {/* Action Buttons Row */}
                   <div className="flex justify-end gap-3 pt-1">
+                    <button
+                      onClick={() => router.push(`/orders/${order.id}`)}
+                      className="px-4 py-2 border rounded-lg text-xs font-semibold cursor-pointer transition-colors mr-auto"
+                      style={{ borderColor: BORDER, color: WALNUT, background: WHITE }}
+                      onMouseEnter={(e) => { e.target.style.background = BEIGE; }}
+                      onMouseLeave={(e) => { e.target.style.background = WHITE; }}
+                    >
+                      ดูรายละเอียดออเดอร์
+                    </button>
+
                     {order.status === "PENDING" && (
                       <>
                         <button

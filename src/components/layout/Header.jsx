@@ -15,6 +15,7 @@ import {
 } from "hugeicons-react";
 import AuthModal from "../auth/AuthModal";
 import CartDrawer from "../cart/CartDrawer";
+import { wishlistService } from "@/services/wishlist.service";
 
 const NAV_LINKS = [
   { label: "หน้าแรก", href: "/" },
@@ -34,7 +35,10 @@ export default function Header({
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [wishlistItems, setWishlistItems] = useState([]);
   const profileMenuRef = useRef(null);
+  const wishlistMenuRef = useRef(null);
 
   useEffect(() => {
     setIsLoggedIn(initialIsLoggedIn);
@@ -57,6 +61,12 @@ export default function Header({
       !profileMenuRef.current.contains(event.target)
     ) {
       setIsProfileOpen(false);
+    }
+    if (
+      wishlistMenuRef.current &&
+      !wishlistMenuRef.current.contains(event.target)
+    ) {
+      setIsWishlistOpen(false);
     }
   }
 
@@ -88,15 +98,23 @@ export default function Header({
     }
   };
 
+  const updateWishlist = async () => {
+    const items = await wishlistService.fetchWishlist();
+    setWishlistItems(items);
+  };
+
   useEffect(() => {
     updateCartCount();
+    updateWishlist();
     window.addEventListener("cartUpdated", updateCartCount);
     window.addEventListener("storage", updateCartCount);
+    window.addEventListener("wishlistUpdated", updateWishlist);
     return () => {
       window.removeEventListener("cartUpdated", updateCartCount);
       window.removeEventListener("storage", updateCartCount);
+      window.removeEventListener("wishlistUpdated", updateWishlist);
     };
-  }, []);
+  }, [isLoggedIn]);
 
   const handleLogout = () => {
     localStorage.removeItem("bare_auth_token");
@@ -134,7 +152,7 @@ export default function Header({
           {/* Nav links */}
           <nav className="hidden md:flex items-center gap-8 text-[14px] font-anuphan font-bold">
             {NAV_LINKS.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
               return (
                 <Link
                   key={link.label}
@@ -154,12 +172,66 @@ export default function Header({
 
           {/* Action Icons & Profile Access */}
           <div className="flex items-center gap-5 text-earth-dark">
-            <Link href="/product" className="w-10 h-10 flex items-center justify-center hover:text-earth-olive transition">
+            <Link href="/products" className="w-10 h-10 flex items-center justify-center hover:text-earth-olive transition">
               <Search01Icon size={20} strokeWidth={2} />
             </Link>
-            <button className="hover:text-earth-olive transition">
-              <FavouriteIcon size={20} strokeWidth={2} />
-            </button>
+            
+            {/* Wishlist Dropdown */}
+            <div className="relative" ref={wishlistMenuRef}>
+              <button
+                onClick={() => setIsWishlistOpen(!isWishlistOpen)}
+                className="relative w-10 h-10 flex items-center justify-center hover:text-earth-olive transition cursor-pointer"
+              >
+                <FavouriteIcon size={20} strokeWidth={2} />
+                {wishlistItems.length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                )}
+              </button>
+
+              {isWishlistOpen && (
+                <div className="absolute right-0 mt-3 w-72 rounded-xl bg-white border border-[#E7DDC8] shadow-xl overflow-hidden z-50 p-4 font-anuphan">
+                  <h3 className="font-extrabold text-sm text-[#3C322A] mb-3 pb-2 border-b border-[#F5F0E6]">รายการโปรดของคุณ ({wishlistItems.length})</h3>
+                  
+                  {wishlistItems.length === 0 ? (
+                    <div className="text-center py-6 text-xs text-zinc-400 font-bold">
+                      ไม่มีสินค้าในรายการโปรด
+                    </div>
+                  ) : (
+                    <div className="max-h-60 overflow-y-auto space-y-3">
+                      {wishlistItems.map((item) => (
+                        <div key={item.id} className="flex gap-3 items-center justify-between group">
+                          <Link 
+                            href={`/products/${item.name?.toLowerCase().replace(/ /g, "-")}`}
+                            onClick={() => setIsWishlistOpen(false)}
+                            className="flex items-center gap-2 flex-1 min-w-0"
+                          >
+                            <img 
+                              src={item.images?.[0]?.url || item.images?.[0] || item.imageUrl || "/placeholder.jpg"} 
+                              alt={item.name} 
+                              className="w-10 h-10 object-cover rounded-lg bg-zinc-50 border border-zinc-100 flex-shrink-0"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-bold text-[#3C322A] truncate hover:text-[#556B2F]">{item.name}</p>
+                              <p className="text-[10px] text-zinc-400">฿{Number(item.price).toLocaleString()}</p>
+                            </div>
+                          </Link>
+                          <button
+                            onClick={() => wishlistService.removeFromWishlist(item.id)}
+                            className="text-zinc-300 hover:text-red-500 p-1.5 transition cursor-pointer rounded-full hover:bg-red-50"
+                            title="ลบจากรายการโปรด"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <button
               onClick={() => setIsCartOpen(true)}
               className="relative hover:text-earth-olive transition cursor-pointer"

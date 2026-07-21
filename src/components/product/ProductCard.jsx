@@ -1,8 +1,30 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { wishlistService } from "@/services/wishlist.service";
 
 export default function ProductCard({ product }) {
+  const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    setIsLiked(wishlistService.isWishlisted(product.id));
+    const handleUpdate = () => {
+      setIsLiked(wishlistService.isWishlisted(product.id));
+    };
+    window.addEventListener("wishlistUpdated", handleUpdate);
+    return () => window.removeEventListener("wishlistUpdated", handleUpdate);
+  }, [product.id]);
+
+  const toggleWishlist = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isLiked) {
+      wishlistService.removeFromWishlist(product.id);
+    } else {
+      wishlistService.addToWishlist(product);
+    }
+  };
+
   // 📸 ดึงรูปภาพแรกจาก Array (images[0].url) 
   const mainImage = product.images && product.images.length > 0 
     ? product.images[0].url 
@@ -33,6 +55,24 @@ export default function ProductCard({ product }) {
             สั่งทำพิเศษ
           </div>
         )}
+
+        {/* Heart Icon Button */}
+        <button
+          onClick={toggleWishlist}
+          className="absolute top-4 right-4 w-9 h-9 bg-white/95 backdrop-blur-sm shadow hover:bg-white rounded-full flex items-center justify-center z-10 transition duration-200 cursor-pointer active:scale-95 group/heart"
+        >
+          <svg
+            className={`w-5 h-5 transition-colors ${
+              isLiked ? "fill-red-500 text-red-500" : "text-[#6A5242] group-hover/heart:text-red-500"
+            }`}
+            fill={isLiked ? "currentColor" : "none"}
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+        </button>
 
         <Image
           src={mainImage}

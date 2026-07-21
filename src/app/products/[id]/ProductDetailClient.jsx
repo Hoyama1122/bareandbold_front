@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { productService } from "@/services/product.service";
 import { cartService } from "@/services/cart.service";
+import { wishlistService } from "@/services/wishlist.service";
 import ProductSkeleton from "@/components/product-detail/ProductSkeleton";
 import ProductImageGallery from "@/components/product-detail/ProductImageGallery";
 import ProductInfo from "@/components/product-detail/ProductInfo";
@@ -38,6 +39,15 @@ export default function ProductDetailClient({ nameSlug }) {
     const loadProductData = async () => {
       try {
         setLoading(true);
+        // Warp scroll to the top of the page instantly
+        if (typeof window !== "undefined") {
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }
+        // Reset selections to defaults when switching products
+        setQty(1);
+        setMaterial("Silver");
+        setSize("16 cm");
+
         const decodedName = decodeURIComponent(nameSlug).replace(/-/g, " ");
         const data = await productService.getProducts();
         if (data.success && data.products) {
@@ -114,6 +124,43 @@ export default function ProductDetailClient({ nameSlug }) {
     }
   };
 
+  const buyNow = async () => {
+    try {
+      await cartService.addToCart(product.id, qty, material, size, {
+        name: product.name,
+        image: currentImage,
+        price: product.price,
+      });
+      router.push("/checkout");
+    } catch (error) {
+      console.error("Failed to buy now:", error);
+      alert("เกิดข้อผิดพลาดในการสั่งซื้อสินค้า");
+    }
+  };
+
+  const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      setIsLiked(wishlistService.isWishlisted(product.id));
+    }
+    const handleUpdate = () => {
+      if (product) {
+        setIsLiked(wishlistService.isWishlisted(product.id));
+      }
+    };
+    window.addEventListener("wishlistUpdated", handleUpdate);
+    return () => window.removeEventListener("wishlistUpdated", handleUpdate);
+  }, [product]);
+
+  const toggleWishlist = () => {
+    if (isLiked) {
+      wishlistService.removeFromWishlist(product.id);
+    } else {
+      wishlistService.addToWishlist(product);
+    }
+  };
+
   if (loading) {
     return <ProductSkeleton />;
   }
@@ -145,6 +192,9 @@ export default function ProductDetailClient({ nameSlug }) {
           qty={qty}
           setQty={setQty}
           addToCart={addToCart}
+          buyNow={buyNow}
+          isLiked={isLiked}
+          toggleWishlist={toggleWishlist}
         />
       </div>
 
