@@ -3,45 +3,122 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ShoppingBag01Icon } from "hugeicons-react";
-import {getCart,removeCartItem,} from "@/services/cart.service";
+import { cartService, getCart, removeCartItem } from "@/services/cart.service";
 
 export default function CartDrawer({ isOpen, onClose }) {
   const [cartItems, setCartItems] = useState([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-  setMounted(true);
+    setMounted(true);
 
-  async function loadCart() {
-    const data = await getCart();
-
-    if (data.success) {
-      setCartItems(data.cart.items);
-    } else {
-      setCartItems([]);
+    async function loadCart() {
+      if (cartService.isLoggedIn()) {
+        // Read directly from synced local storage to avoid redundant GET requests
+        const local = localStorage.getItem("bare_cart");
+        if (local) {
+          try {
+            setCartItems(JSON.parse(local));
+            return;
+          } catch (e) {}
+        }
+        const data = await getCart();
+        if (data.success && data.cart) {
+          setCartItems(data.cart.items);
+        } else {
+          setCartItems([]);
+        }
+      } else {
+        const local = await cartService.fetchCart();
+        setCartItems(
+          local.map((item) => ({
+            id: item.id,
+            productId: item.productId,
+            quantity: item.quantity,
+            customDetails: { material: item.material, size: item.size },
+            product: {
+              id: item.productId,
+              name: item.name,
+              price: item.price,
+              images: [{ url: item.image }],
+            },
+          }))
+        );
+      }
     }
-  }
 
-  if (isOpen) {
-    loadCart();
-  }
-}, [isOpen]);
+    if (isOpen) {
+      loadCart();
+      cartService.fetchCart();
+    }
+
+    window.addEventListener("cartUpdated", loadCart);
+    return () => {
+      window.removeEventListener("cartUpdated", loadCart);
+    };
+  }, [isOpen]);
 
   if (!mounted) return null;
 
   const total = cartItems.reduce(
-  (acc, item) => acc + item.product.price * item.quantity,
-  0
-);
+    (acc, item) => acc + (item.product?.price || item.price || 0) * item.quantity,
+    0
+  );
+
+  const updateQty = async (productId, delta, item) => {
+    const newQty = Math.max(0, item.quantity + delta);
+    
+    // Optimistic UI Update: change value instantly in state
+    const originalItems = [...cartItems];
+    setCartItems((prev) =>
+      prev.map((it) => (it.productId === productId ? { ...it, quantity: newQty } : it))
+    );
+
+    if (newQty === 0) {
+      await removeItem(productId);
+    } else {
+      if (cartService.isLoggedIn()) {
+        try {
+          await cartService.updateCartItem(
+            productId,
+            newQty,
+            item.customDetails?.material || "Silver",
+            item.customDetails?.size || "16 cm",
+            item.id
+          );
+          // Let the cartUpdated event handler automatically sync the UI
+        } catch (err) {
+          console.error("Failed to update item quantity:", err);
+          setCartItems(originalItems); // Revert on failure
+        }
+      } else {
+        const localItems = JSON.parse(localStorage.getItem("bare_cart") || "[]");
+        const updated = localItems.map((it) => {
+          if (it.productId === productId) {
+            return { ...it, quantity: newQty };
+          }
+          return it;
+        });
+        localStorage.setItem("bare_cart", JSON.stringify(updated));
+        window.dispatchEvent(new Event("cartUpdated"));
+      }
+    }
+  };
 
   const removeItem = async (productId) => {
-  const result = await removeCartItem(productId);
-
-  if (result.success) {
-    const data = await getCart();
-    setCartItems(data.cart.items);
-  }
-};
+    if (cartService.isLoggedIn()) {
+      const result = await removeCartItem(productId);
+      if (result.success) {
+        const data = await getCart();
+        setCartItems(data.cart.items);
+      }
+    } else {
+      const localItems = JSON.parse(localStorage.getItem("bare_cart") || "[]");
+      const updated = localItems.filter((it) => it.productId !== productId);
+      localStorage.setItem("bare_cart", JSON.stringify(updated));
+      window.dispatchEvent(new Event("cartUpdated"));
+    }
+  };
 
   return (
     <div
@@ -103,10 +180,10 @@ export default function CartDrawer({ isOpen, onClose }) {
               </button>
             </div>
           ) : (
-            cartItems.map((item) => (
-              <div key={item.id} className="flex gap-4 p-3 bg-[#FDFBF7] rounded-xl border border-[#F5F0E6] relative group">
+            cartItems.map((item, index) => (
+              <div key={item.id || `${item.productId || item.product?.id || ""}-${index}`} className="flex gap-4 p-3 bg-[#FDFBF7] rounded-xl border border-[#F5F0E6] relative group">
                 <button
-                  onClick={() => removeItem(item.product.id)}
+                  onClick={() => removeItem(item.productId)}
                   className="absolute top-2 right-2 text-zinc-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -116,29 +193,48 @@ export default function CartDrawer({ isOpen, onClose }) {
                 {/* Image */}
                 <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-100 border border-[#F5F0E6] flex-shrink-0 flex items-center justify-center">
                   <img
-  src={
-    item.product.images?.[0]?.url ||
-    item.product.images?.[0] ||
-    "/placeholder.jpg"
-  }
-  alt={item.product.name}
-  className="w-full h-full object-cover"
-/>
+                    src={
+                      item.product?.images?.[0]?.url ||
+                      item.product?.images?.[0] ||
+                      item.image ||
+                      "/placeholder.jpg"
+                    }
+                    alt={item.product?.name || item.name || ""}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 {/* Details */}
                 <div className="flex-1 flex flex-col justify-between pr-6">
                   <div>
-                    <h4 className="text-sm font-bold text-[#3C322A] line-clamp-1">{item.product.name}</h4>
+                    <h4 className="text-sm font-bold text-[#3C322A] line-clamp-1">{item.product?.name || item.name || ""}</h4>
                     {item.accessories && item.accessories.length > 0 && (
                       <p className="text-[11px] text-[#556B2F] mt-0.5 font-medium">
                         + {item.accessories.join(", ")}
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-zinc-500">จำนวน: {item.quantity}</span>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-1 border border-zinc-200 rounded-lg overflow-hidden bg-white">
+                      <button
+                        type="button"
+                        onClick={() => updateQty(item.productId, -1, item)}
+                        className="w-7 h-7 bg-zinc-50 hover:bg-zinc-100 flex items-center justify-center font-bold text-zinc-600 transition active:scale-95 cursor-pointer border-0"
+                      >
+                        -
+                      </button>
+                      <span className="w-7 text-center font-bold text-zinc-800 text-xs">
+                        {item.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => updateQty(item.productId, 1, item)}
+                        className="w-7 h-7 bg-zinc-50 hover:bg-zinc-100 flex items-center justify-center font-bold text-zinc-600 transition active:scale-95 cursor-pointer border-0"
+                      >
+                        +
+                      </button>
+                    </div>
                     <span className="text-sm font-extrabold text-[#6A5242]">
-                      ฿{(item.product.price * item.quantity).toLocaleString()}
+                      ฿{((item.product?.price || item.price || 0) * item.quantity).toLocaleString()}
                     </span>
                   </div>
                 </div>

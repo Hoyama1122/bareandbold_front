@@ -51,13 +51,13 @@ export default function RecommendedProducts({
       <div className="overflow-hidden w-full cursor-grab active:cursor-grabbing" ref={emblaRef}>
         <div className="flex gap-7">
           {recommendedProducts.map((prod) => (
-  <div
-    key={prod.id}
-    className="flex-[0_0_85%] sm:flex-[0_0_45%] md:flex-[0_0_30%] lg:flex-[0_0_23%]"
-  >
-    <ProductCard product={prod} />
-  </div>
-))}
+            <div
+              key={prod.id}
+              className="flex-[0_0_85%] sm:flex-[0_0_45%] md:flex-[0_0_30%] lg:flex-[0_0_23%]"
+            >
+              <ProductCard product={prod} />
+            </div>
+          ))}
         </div>
       </div>
     </div>

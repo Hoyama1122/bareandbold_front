@@ -1,189 +1,477 @@
-//OrderHistory//
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { PackageSearch, RotateCcw, ChevronRight } from "lucide-react";
-import { getOrders } from "../../services/order.service";
- 
-export const INK = "#2B2118";
-export const CREAM = "#F2ECDD";
-export const CREAM_DEEP = "#EAE2CC";
-export const OLIVE = "#6B7A4E";
-export const OLIVE_DEEP = "#4F5B38";
-export const BORDER = "#E1D8C0";
-export const MUTED = "#8C8577";
-export const WHITE = "#FFFFFF";
- 
-export const STATUS_STYLES = {
-  pending: { bg: "#F5E6C8", color: "#8A6A1F", label: "รอชำระเงิน" },
-  preparing: { bg: "#E3E6EE", color: "#3F4E7A", label: "กำลังเตรียมสินค้า" },
-  shipping: { bg: "#DDEAE0", color: "#3F6B52", label: "กำลังจัดส่ง" },
-  delivered: { bg: "#E1EAD5", color: OLIVE_DEEP, label: "จัดส่งสำเร็จ" },
-  cancelled: { bg: "#F3DEDA", color: "#9B4A3F", label: "ยกเลิก" },
-};
- 
+import { orderService } from "@/services/order.service";
+import { cartService } from "@/services/cart.service";
+import { paymentService } from "@/services/payment.service";
+import { Package, Clock, MapPin, Truck, ChevronRight, AlertCircle, ShoppingBag, Store, ChevronDown, ChevronUp } from "lucide-react";
 
+// Theme color constants matching f:/GitHub/CSI204-BareAndBold/bareandbold_front/src/app/globals.css
+const CREAM = "#FDFBF7";       // earth-cream
+const BEIGE = "#F5F0E6";       // earth-beige
+const WALNUT = "#6A5242";      // earth-walnut
+const OLIVE = "#556B2F";       // earth-olive
+const DARK = "#3C322A";        // earth-dark
+const BORDER = "#EADECC";      // earth-border
+const MUTED = "#8C8577";
+const WHITE = "#FFFFFF";
 
-const FILTERS = [
-  { id: "all", label: "แสดงทั้งหมด" },
-  { id: "pending", label: "รอชำระเงิน" },
-  { id: "preparing", label: "กำลังเตรียมสินค้า" },
-  { id: "shipping", label: "กำลังจัดส่ง" },
-  { id: "delivered", label: "จัดส่งสำเร็จ" },
-  { id: "cancelled", label: "ยกเลิก" },
+const TABS = [
+  { id: "ALL", label: "ทั้งหมด" },
+  { id: "PENDING", label: "ที่ต้องชำระ" },
+  { id: "PAID", label: "ต้องจัดส่ง" },
+  { id: "SHIPPED", label: "ต้องได้รับ" },
+  { id: "DELIVERED", label: "สำเร็จแล้ว" },
+  { id: "CANCELLED", label: "ยกเลิกแล้ว" }
 ];
- 
-function baht(n) {
-  return n.toLocaleString("th-TH");
-}
- 
-function StatusBadge({ status }) {
-  const s =
-    STATUS_STYLES[(status || "").toLowerCase()] ||
-    STATUS_STYLES.pending;
 
-  return (
-    <span
-      className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full"
-      style={{ background: s.bg, color: s.color }}
-    >
-      {s.label}
-    </span>
-  );
+function baht(n) {
+  return Number(n).toLocaleString("th-TH");
 }
- 
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("th-TH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
 export default function OrderHistoryPage() {
   const router = useRouter();
   const [orders, setOrders] = useState([]);
-  const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [activeTab, setActiveTab] = useState("ALL");
+  const [expandedOrders, setExpandedOrders] = useState({});
+  
+  // QR Modal States
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [qrImageUrl, setQrImageUrl] = useState("");
+  const [chargeId, setChargeId] = useState("");
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [simulating, setSimulating] = useState({});
 
   useEffect(() => {
-  async function loadOrders() {
+    const checkLogin = () => {
+      const logged = cartService.isLoggedIn();
+      setIsLoggedIn(logged);
+      if (!logged) {
+        setLoading(false);
+      }
+    };
+    checkLogin();
+  }, []);
+
+  const fetchOrders = async () => {
     try {
-      const data = await getOrders();
-
-      console.log(data);
-
+      setLoading(true);
+      const data = await orderService.getOrderHistory();
       if (data.success) {
-        setOrders(data.orders);
+        setOrders(data.orders || []);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Failed to load order history:", err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchOrders();
+    }
+  }, [isLoggedIn]);
+
+  // Polling order status if QR modal is open
+  useEffect(() => {
+    if (!showQRModal || !selectedOrder) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const order = await orderService.getOrderById(selectedOrder.id);
+        if (order && order.status === "PAID") {
+          setShowQRModal(false);
+          setSelectedOrder(null);
+          fetchOrders();
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.error("Failed to fetch order status during polling:", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [showQRModal, selectedOrder]);
+
+  const filteredOrders = useMemo(() => {
+    if (activeTab === "ALL") return orders;
+    return orders.filter((o) => o.status === activeTab);
+  }, [orders, activeTab]);
+
+  const toggleExpand = (orderId) => {
+    setExpandedOrders((prev) => ({
+      ...prev,
+      [orderId]: !prev[orderId]
+    }));
+  };
+
+  const handlePayNow = async (order) => {
+    setSelectedOrder(order);
+    try {
+      const methodMapped = order.payment?.paymentMethod === "PENDING" ? "PROMPTPAY" : order.payment?.paymentMethod;
+      const paymentRes = await paymentService.processCheckout({
+        orderId: order.id,
+        method: methodMapped || "PROMPTPAY"
+      });
+
+      if (paymentRes.qrImageUrl) {
+        setQrImageUrl(paymentRes.qrImageUrl);
+        setChargeId(paymentRes.chargeId);
+        setShowQRModal(true);
+      } else if (paymentRes.success) {
+        fetchOrders();
+      }
+    } catch (err) {
+      console.error("Failed to process checkout payment:", err);
+    }
+  };
+
+  const handleSimulatePayment = async (orderId, targetChargeId) => {
+    setSimulating(prev => ({ ...prev, [orderId]: true }));
+    try {
+      let finalChargeId = targetChargeId;
+      if (!finalChargeId) {
+        const paymentRes = await paymentService.processCheckout({
+          orderId,
+          method: "PROMPTPAY"
+        });
+        finalChargeId = paymentRes.chargeId;
+      }
+
+      await paymentService.simulateWebhook({
+        chargeId: finalChargeId,
+        status: "successful"
+      });
+
+      setTimeout(() => {
+        fetchOrders();
+        setSimulating(prev => ({ ...prev, [orderId]: false }));
+      }, 1500);
+    } catch (err) {
+      console.error("Failed to simulate webhook:", err);
+      setSimulating(prev => ({ ...prev, [orderId]: false }));
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case "PENDING": return "ที่ต้องชำระ";
+      case "PAID": return "ต้องจัดส่ง";
+      case "SHIPPED": return "ต้องได้รับ";
+      case "DELIVERED": return "สำเร็จแล้ว";
+      case "CANCELLED": return "ยกเลิกแล้ว";
+      default: return status;
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "PENDING": return WALNUT;
+      case "PAID": return OLIVE;
+      case "SHIPPED": return "#2563EB";
+      case "DELIVERED": return "#059669";
+      case "CANCELLED": return "#DC2626";
+      default: return MUTED;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ background: CREAM, minHeight: "100vh", color: DARK }} className="flex flex-col items-center justify-center py-20 font-sans">
+        <span className="inline-block w-8 h-8 border-4 rounded-full animate-spin mb-4" style={{ borderColor: `${BORDER}20`, borderTopColor: OLIVE }} />
+        <p className="text-sm font-medium font-anuphan" style={{ color: MUTED }}>กำลังโหลดประวัติการสั่งซื้อ...</p>
+      </div>
+    );
   }
 
-  loadOrders();
-}, []);
- 
-  const filtered = useMemo(() => {
-  return orders.filter((o) => {
-    return filter === "all" || o.status === filter;
-  });
-}, [orders, filter]);
- 
-  return (
-    <div style={{ background: CREAM, minHeight: "100vh", fontFamily: "'Sarabun', sans-serif", color: INK }}>
- 
-      <main className="max-w-6xl mx-auto px-6 py-10">
-        <h1 className="kanit text-3xl font-semibold mb-8">ประวัติคำสั่งซื้อ</h1>
- 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {FILTERS.map((f) => {
-            const active = filter === f.id;
-            return (
-              <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
-                className="text-sm px-4 py-2 rounded-full transition-colors"
-                style={{
-                  background: active ? INK : WHITE,
-                  color: active ? CREAM : INK,
-                  border: `1px solid ${active ? INK : BORDER}`,
-                }}
-              >
-                {f.label}
-              </button>
-            );
-          })}
+  if (!isLoggedIn) {
+    return (
+      <div style={{ background: CREAM, minHeight: "100vh", color: DARK }} className="flex items-center justify-center py-20 px-6">
+        <div className="max-w-md w-full bg-white rounded-2xl p-8 text-center border" style={{ borderColor: BORDER }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: BEIGE, color: WALNUT }}>
+            <AlertCircle size={32} />
+          </div>
+          <h1 className="kanit text-xl font-bold mb-3">กรุณาเข้าสู่ระบบ</h1>
+          <p className="text-sm mb-8 font-anuphan text-zinc-500">
+            คุณจำเป็นต้องเข้าสู่ระบบสมาชิกเพื่อเข้าถึงข้อมูลและตรวจสอบประวัติคำสั่งซื้อทั้งหมดของคุณ
+          </p>
+          <button
+            onClick={() => router.push("/")}
+            className="w-full py-3 rounded-lg font-medium kanit cursor-pointer"
+            style={{ background: WALNUT, color: CREAM }}
+          >
+            กลับสู่หน้าหลักเพื่อเข้าสู่ระบบ
+          </button>
         </div>
- 
-        {/* Orders list */}
-        {filtered.length === 0 ? (
-          <div className="text-center py-20" style={{ color: MUTED }}>
-            <PackageSearch size={40} className="mx-auto mb-4" />
-            <p className="mb-1">ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข</p>
-            <p className="text-sm">ลองเปลี่ยนตัวกรองหรือคำค้นหาอีกครั้ง</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen pb-16 font-anuphan" style={{ background: CREAM, color: DARK }}>
+      <style>{`
+        .tab-active { color: ${OLIVE}; border-bottom: 2px solid ${OLIVE}; }
+      `}</style>
+
+      {/* Earth Theme Status Tabs */}
+      <div className="sticky top-0 z-20 " style={{ borderColor: BORDER }}>
+        <div className="max-w-5xl mx-auto flex justify-between overflow-x-auto">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="flex-1 py-4 text-center text-sm font-semibold transition-colors whitespace-nowrap px-4 cursor-pointer"
+              style={{ color: activeTab === tab.id ? OLIVE : MUTED }}
+            >
+              <span className={`pb-3 ${activeTab === tab.id ? "tab-active" : ""}`}>
+                {tab.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <main className="max-w-5xl mx-auto px-4 mt-6">
+        {filteredOrders.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-2xl border flex flex-col items-center justify-center" style={{ borderColor: BORDER }}>
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5" style={{ background: BEIGE }}>
+              <ShoppingBag size={32} style={{ color: WALNUT }} />
+            </div>
+            <h3 className="kanit text-lg font-semibold mb-2">ยังไม่มีรายการคำสั่งซื้อ</h3>
+            <p className="text-sm max-w-sm mb-6 text-zinc-400 font-anuphan">
+              คำสั่งซื้อในหมวดหมู่นี้ยังว่างอยู่ เลือกซื้อเครื่องประดับแฮนด์เมดของเราได้ที่หน้าแรก
+            </p>
+            <button
+              onClick={() => router.push("/")}
+              className="px-8 py-3 rounded-lg text-sm font-semibold text-white transition hover:opacity-95 cursor-pointer"
+              style={{ background: WALNUT }}
+            >
+              ไปช้อปปิ้งเลย
+            </button>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {filtered.map((order) => {
-              const previewItems = order.items.slice(0, 3);
-              const extraCount = order.items.length - previewItems.length;
-              return (
-                <div key={order.id} className="rounded-xl p-5" style={{ background: WHITE, border: `1px solid ${BORDER}` }}>
-                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <p className="kanit font-semibold">{order.id}</p>
-                      <StatusBadge status={(order.status || "").toLowerCase()}/>
-                    </div>
-                    <p className="text-xs" style={{ color: MUTED }}>{new Date(order.createdAt).toLocaleString("th-TH")}</p>
+            {filteredOrders.map((order) => (
+              <div key={order.id} className="bg-white rounded-2xl border overflow-hidden shadow-sm" style={{ borderColor: BORDER }}>
+                
+                {/* 1. Header (Store + Status) */}
+                <div className="px-6 py-4 flex justify-between items-center border-b" style={{ borderColor: `${BORDER}40`, background: `${BEIGE}15` }}>
+                  <div className="flex items-center gap-2">
+                    <Store size={16} style={{ color: WALNUT }} />
+                    <span className="font-bold text-sm tracking-wide" style={{ color: DARK }}>BARE & BOLD</span>
+                    <span className="text-xs ml-3 text-zinc-400 font-mono">ORDER: {order.id}</span>
                   </div>
- 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      {previewItems.map((it, idx) => (
-  <img
-    key={idx}
-    src={
-      it.product.images?.[0]?.url ||
-      it.product.images?.[0] ||
-      "/placeholder.jpg"
-    }
-    alt={it.product.name}
-    className="w-14 h-16 rounded-lg object-cover flex-shrink-0"
-  />
-))}
-                      <div className="text-sm min-w-0">
-                        <p className="truncate max-w-[220px]">{order.items[0].product.name}</p>
-                        <p style={{ color: MUTED }}>
-                          {order.items.length > 1 ? `และอีก ${order.items.length - 1} รายการ` : `จำนวน ${order.items[0].quantity} ชิ้น`}
-                          {extraCount > 0 ? "" : ""}
-                        </p>
-                      </div>
-                    </div>
- 
-                    <div className="flex items-center gap-4 flex-shrink-0">
-                      <div className="text-right">
-                        <p className="text-xs" style={{ color: MUTED }}>ยอดชำระทั้งหมด</p>
-                        <p className="kanit font-semibold">฿{baht(order.totalPrice)}</p>
-                      </div>
-                      <button
-                        onClick={() => router.push("/cart")}
-                        className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg font-medium"
-                        style={{ border: `1.5px solid ${INK}`, color: INK }}
-                      >
-                        <RotateCcw size={14} />
-                        ซื้ออีกครั้ง
-                      </button>
-                      <button
-                        onClick={() => router.push(`/orders/${order.id}`)}
-                        className="flex items-center gap-1 text-sm px-4 py-2 rounded-lg font-medium kanit"
-                        style={{ background: INK, color: CREAM }}
-                      >
-                        ดูรายละเอียด
-                        <ChevronRight size={14} />
-                      </button>
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="text-sm font-bold"
+                      style={{ color: getStatusColor(order.status) }}
+                    >
+                      {getStatusText(order.status)}
+                    </span>
+                    {order.shipping?.status === "IN_TRANSIT" && (
+                      <span className="text-xs text-zinc-400 border-l pl-3 flex items-center gap-1" style={{ borderColor: `${BORDER}40` }}>
+                        <Truck size={13} /> กำลังจัดส่ง
+                      </span>
+                    )}
                   </div>
                 </div>
-              );
-            })}
+
+                {/* 2. Items List */}
+                <div className="divide-y divide-[#EADECC]/40">
+                  {order.items?.map((it) => {
+                    const image = it.product?.images?.[0]?.url || "/images/placeholder.jpg";
+                    return (
+                      <div key={it.id} className="px-6 py-4 flex gap-4 items-center">
+                        <img
+                          src={image}
+                          alt={it.product?.name || "Product"}
+                          className="w-20 h-20 rounded-lg  object-cover flex-shrink-0"
+                          
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-base truncate" style={{ color: DARK }}>{it.product?.name}</h4>
+                          <p className="text-xs text-zinc-400 mt-1 font-anuphan">
+                            {it.customDetails?.size ? `ขนาด: ${it.customDetails.size}` : ""}
+                            {it.customDetails?.material ? ` / วัสดุ: ${it.customDetails.material}` : ""}
+                          </p>
+                          {it.accessories && it.accessories.length > 0 && (
+                            <p className="text-xs text-zinc-400 mt-0.5 font-anuphan">
+                              ตกแต่งเพิ่มเติม: {it.accessories.map(a => a.accessory?.name).join(", ")}
+                            </p>
+                          )}
+                          <span className="text-xs text-zinc-400 mt-2 block font-anuphan">จำนวน: x{it.quantity}</span>
+                        </div>
+                        <div className="text-right pl-4">
+                          <span className="text-sm font-semibold" style={{ color: DARK }}>฿{baht(it.price)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* 3. Footer Summary & Actions */}
+                <div className="px-6 py-5 flex flex-col gap-4 border-t" style={{ background: `${CREAM}30`, borderColor: `${BORDER}40` }}>
+                  {/* Shipping Info Expandable */}
+                  <div>
+                    <button
+                      onClick={() => toggleExpand(order.id)}
+                      className="text-xs font-semibold hover:opacity-80 flex items-center gap-1 cursor-pointer transition-opacity"
+                      style={{ color: MUTED }}
+                    >
+                      <MapPin size={13} style={{ color: OLIVE }} /> 
+                      {expandedOrders[order.id] ? "ซ่อนที่อยู่จัดส่ง" : "ดูที่อยู่จัดส่งและรายละเอียดพัสดุ"}
+                      {expandedOrders[order.id] ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                    </button>
+
+                    {expandedOrders[order.id] && (
+                      <div className="mt-3 p-4 rounded-lg border text-xs leading-relaxed space-y-1.5" style={{ background: CREAM, borderColor: `${BORDER}40`, color: DARK }}>
+                        <p><span className="font-bold">ผู้รับ:</span> {order.recipientName}</p>
+                        <p><span className="font-bold">เบอร์โทรศัพท์:</span> {order.recipientPhone}</p>
+                        <p><span className="font-bold">ที่อยู่จัดส่ง:</span> {order.shippingAddress}</p>
+                        {order.shipping?.trackingNumber && (
+                          <p className="pt-1.5 border-t border-dashed mt-1.5 flex items-center gap-1.5 font-semibold" style={{ borderColor: BORDER, color: OLIVE }}>
+                            <Truck size={14} /> เลขพัสดุ: {order.shipping.trackingNumber} ({order.shipping.carrier})
+                          </p>
+                        )}
+                        <p className="text-[10px] text-zinc-400 pt-1">สั่งซื้อเมื่อ: {formatDate(order.createdAt)}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Total price row */}
+                  <div className="flex justify-end items-center gap-3 py-1">
+                    <span className="text-xs font-semibold flex items-center gap-1.5" style={{ color: MUTED }}>
+                      <Clock size={12} /> ยอดสั่งซื้อทั้งหมด ({order.items?.reduce((s,i) => s + i.quantity, 0)} ชิ้น):
+                    </span>
+                    <span className="text-xl font-bold" style={{ color: OLIVE }}>
+                      ฿{baht(order.totalPrice)}
+                    </span>
+                  </div>
+
+                  {/* Action Buttons Row */}
+                  <div className="flex justify-end gap-3 pt-1">
+                    <button
+                      onClick={() => router.push(`/orders/${order.id}`)}
+                      className="px-4 py-2 border rounded-lg text-xs font-semibold cursor-pointer transition-colors mr-auto"
+                      style={{ borderColor: BORDER, color: WALNUT, background: WHITE }}
+                      onMouseEnter={(e) => { e.target.style.background = BEIGE; }}
+                      onMouseLeave={(e) => { e.target.style.background = WHITE; }}
+                    >
+                      ดูรายละเอียดออเดอร์
+                    </button>
+
+                    {order.status === "PENDING" && (
+                      <>
+                        <button
+                          disabled={simulating[order.id]}
+                          onClick={() => handleSimulatePayment(order.id, order.payment?.omiseChargeId)}
+                          className="px-4 py-2 border rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-60 transition-colors"
+                          style={{ borderColor: BORDER, color: WALNUT, background: WHITE }}
+                          onMouseEnter={(e) => { if (!simulating[order.id]) e.target.style.background = BEIGE; }}
+                          onMouseLeave={(e) => { if (!simulating[order.id]) e.target.style.background = WHITE; }}
+                        >
+                          {simulating[order.id] ? "กำลังจำลอง..." : "จำลองชำระเงินสำเร็จ (Simulate)"}
+                        </button>
+                        <button
+                          onClick={() => handlePayNow(order)}
+                          className="px-6 py-2 rounded-lg text-xs font-bold text-white cursor-pointer hover:opacity-95 transition-opacity"
+                          style={{ background: WALNUT }}
+                        >
+                          ชำระเงิน / ดู QR
+                        </button>
+                      </>
+                    )}
+                    {order.status === "DELIVERED" && (
+                      <button
+                        onClick={() => router.push("/")}
+                        className="px-5 py-2 border rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+                        style={{ borderColor: BORDER, color: WALNUT, background: WHITE }}
+                        onMouseEnter={(e) => { e.target.style.background = BEIGE; }}
+                        onMouseLeave={(e) => { e.target.style.background = WHITE; }}
+                      >
+                        ซื้ออีกครั้ง
+                      </button>
+                    )}
+                    {order.status === "PAID" && (
+                      <span className="text-xs border px-3 py-1.5 rounded-lg select-none" style={{ background: BEIGE, borderColor: BORDER, color: MUTED }}>
+                        ผู้ขายกำลังเตรียมจัดส่งสินค้า
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            ))}
           </div>
         )}
       </main>
+
+      {/* PromtPay QR Code Popup Modal */}
+      {showQRModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-lg animate-in fade-in zoom-in duration-200 border" style={{ borderColor: BORDER }}>
+            <h3 className="kanit text-lg font-bold" style={{ color: DARK }}>สแกนชำระเงินด้วยพร้อมเพย์</h3>
+            <p className="text-xs text-zinc-500 mb-6 font-anuphan">
+              กรุณาบันทึกภาพ QR Code เพื่อสแกนจ่ายเงินจำนวน ฿{selectedOrder ? baht(selectedOrder.totalPrice) : "0"}
+            </p>
+            
+            <div className="flex justify-center mb-6">
+              {qrImageUrl ? (
+                <img src={qrImageUrl} alt="PromptPay QR Code" className="w-56 h-56 border p-1 rounded-lg" style={{ borderColor: BORDER }} />
+              ) : (
+                <div className="w-56 h-56 flex items-center justify-center bg-zinc-50 rounded-lg border" style={{ borderColor: BORDER }}>
+                  <span className="animate-pulse text-xs text-zinc-400">กำลังดึง QR Code...</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-center gap-2 text-xs font-semibold animate-pulse mb-6 font-anuphan" style={{ color: OLIVE }}>
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: OLIVE }} />
+              กำลังรอการโอนเงิน (ระบบอัปเดตอัตโนมัติ)...
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowQRModal(false);
+                  setSelectedOrder(null);
+                }}
+                className="flex-1 py-2.5 border rounded-lg text-xs font-semibold text-zinc-600 hover:bg-zinc-50 cursor-pointer"
+              >
+                ปิดหน้าต่าง
+              </button>
+              <button
+                onClick={async () => {
+                  if (selectedOrder) {
+                    await handleSimulatePayment(selectedOrder.id, chargeId);
+                    setShowQRModal(false);
+                    setSelectedOrder(null);
+                  }
+                }}
+                className="flex-1 py-2.5 rounded-lg text-xs font-bold text-white cursor-pointer hover:opacity-95"
+                style={{ background: WALNUT }}
+              >
+                จำลองจ่ายเงินสำเร็จ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
- 

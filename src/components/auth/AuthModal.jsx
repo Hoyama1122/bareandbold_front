@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { authService } from "@/services/auth.service";
+import { cartService } from "@/services/cart.service";
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [authState, setAuthState] = useState("login"); // login, register, dashboard
@@ -98,6 +99,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       setUser(data.user);
       setAuthState("dashboard");
       setPassword("");
+      
+      // Merge guest cart to user cart
+      await cartService.mergeCart();
+      
       if (onAuthSuccess) onAuthSuccess(data.user);
     } catch (err) {
       setErrorMsg(err.message || "เข้าสู่ระบบล้มเหลว");
@@ -108,6 +113,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
   const handleSignOut = () => {
     localStorage.removeItem("bare_auth_token");
+    localStorage.removeItem("bare_cart");
+    window.dispatchEvent(new Event("cartUpdated"));
     setUser(null);
     setEmail("");
     setPassword("");
