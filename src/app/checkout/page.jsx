@@ -386,6 +386,7 @@ export default function CheckoutPage() {
               shipping={shipping}
               total={total}
               baht={baht}
+              loading={loading}
             />
           </div>
         </form>
