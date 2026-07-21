@@ -134,10 +134,13 @@ if (!order) {
   return <div className="p-10">Loading...</div>;
 }
 
-const subtotal = order.items.reduce(
-  (sum, item) => sum + item.price * item.quantity,
-  0
-);
+const subtotal = order.items.reduce((sum, item) => {
+  const basePrice = Number(item.price || 0) * item.quantity;
+  const accessoriesPrice = (item.accessories || []).reduce((accSum, acc) => {
+    return accSum + Number(acc.price || 0) * acc.quantity;
+  }, 0);
+  return sum + basePrice + accessoriesPrice;
+}, 0);
 
 const shippingFee = order.totalPrice - subtotal;
  
@@ -176,29 +179,47 @@ const shippingFee = order.totalPrice - subtotal;
             <section className="rounded-xl p-6" style={{ background: WHITE, border: `1px solid ${BORDER}` }}>
               <h2 className="kanit text-lg font-semibold mb-4">รายการสินค้า</h2>
               <div className="flex flex-col gap-4">
-                {order.items.map((it, idx) => (
-                  <div key={idx} className="flex items-center gap-4">
-                    <img
-src={
-  it.product.images?.[0]?.url ||
-  it.product.images?.[0] ||
-  "/placeholder.jpg"
-}
-  alt={it.product.name}
-  className="w-16 h-20 rounded-lg object-cover flex-shrink-0"
-/>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-  {it.product.name}
-</p>
-                      <p className="text-xs" style={{ color: MUTED }}>{new Date(order.createdAt).toLocaleString("th-TH")}</p>
-                      <p className="text-xs mt-1" style={{ color: MUTED }}>
-  จำนวน {it.quantity} ชิ้น
-</p>
+                {order.items.map((it, idx) => {
+                  const itemBase = Number(it.price || 0) * it.quantity;
+                  const itemAccessoriesTotal = (it.accessories || []).reduce(
+                    (accSum, acc) => accSum + Number(acc.price || 0) * acc.quantity,
+                    0
+                  );
+                  const itemTotal = itemBase + itemAccessoriesTotal;
+
+                  return (
+                    <div key={idx} className="flex items-start gap-4">
+                      <img
+                        src={
+                          it.product.images?.[0]?.url ||
+                          it.product.images?.[0] ||
+                          "/placeholder.jpg"
+                        }
+                        alt={it.product.name}
+                        className="w-16 h-20 rounded-lg object-cover flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {it.product.name}
+                        </p>
+                        <p className="text-xs" style={{ color: MUTED }}>{new Date(order.createdAt).toLocaleString("th-TH")}</p>
+                        <p className="text-xs mt-1" style={{ color: MUTED }}>
+                          จำนวน {it.quantity} ชิ้น
+                        </p>
+                        {it.accessories && it.accessories.length > 0 && (
+                          <div className="text-[11px] mt-1.5 space-y-0.5" style={{ color: MUTED }}>
+                            {it.accessories.map((acc, accIdx) => (
+                              <span key={accIdx} className="block">
+                                + {acc.accessory?.name} (x{acc.quantity}) (+฿{baht(Number(acc.price || 0) * acc.quantity)})
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-sm font-medium flex-shrink-0">฿{baht(itemTotal)}</p>
                     </div>
-                    <p className="text-sm font-medium flex-shrink-0">฿{baht(it.price * it.quantity)}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
           </div>
