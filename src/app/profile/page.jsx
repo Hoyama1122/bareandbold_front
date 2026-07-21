@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {Camera,Mail, Phone,User,MapPin,Lock,LogOut,Home,Briefcase,Eye,EyeOff,Star,Trash2,Pencil,Plus,Check,X,} from "lucide-react";
 import SearchDropdown from "@/components/SearchDropdown";
 import { provinces } from "@/data/provinces";
@@ -145,9 +145,20 @@ export default function ProfilePage() {
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setAvatar(url);
-    notify("เปลี่ยนรูปโปรไฟล์เรียบร้อยแล้ว");
+    const reader = new FileReader();
+
+reader.onload = () => {
+  setAvatar(reader.result);
+
+  localStorage.setItem(
+    "avatar",
+    reader.result
+  );
+
+  notify("เปลี่ยนรูปโปรไฟล์เรียบร้อยแล้ว");
+};
+
+reader.readAsDataURL(file);
   };
 
   const [profileSaved, setProfileSaved] = useState({
@@ -158,17 +169,58 @@ export default function ProfilePage() {
     bio: "",
   });
   const [profile, setProfile] = useState(profileSaved);
+  useEffect(() => {
+  const savedProfile = localStorage.getItem("profile");
+
+  if (savedProfile) {
+    const data = JSON.parse(savedProfile);
+
+    setProfileSaved(data);
+    setProfile(data);
+  }
+
+  const savedAvatar = localStorage.getItem("avatar");
+
+  if (savedAvatar) {
+    setAvatar(savedAvatar);
+  }
+}, []);
+
+
   const profileChanged = JSON.stringify(profile) !== JSON.stringify(profileSaved);
 
-  const updateProfile = (key) => (e) => setProfile((p) => ({ ...p, [key]: e.target.value }));
-  const saveProfile = () => {
-    setProfileSaved(profile);
-    notify("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
-  };
+ const saveProfile = () => {
+  setProfileSaved(profile);
+
+  localStorage.setItem(
+    "profile",
+    JSON.stringify(profile)
+  );
+
+  notify("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
+};
   const cancelProfile = () => setProfile(profileSaved);
+const updateProfile = (field) => (e) => {
+  setProfile((prev) => ({
+    ...prev,
+    [field]: e.target.value,
+  }));
+};
 
+  const [addresses, setAddresses] = useState(() => {
+    if (typeof window === "undefined") return [];
 
-  const [addresses, setAddresses] = useState([]);
+    const saved = localStorage.getItem("addresses");
+
+    return saved ? JSON.parse(saved) : [];
+});
+
+useEffect(() => {
+    localStorage.setItem(
+        "addresses",
+        JSON.stringify(addresses)
+    );
+}, [addresses]);
 
   const emptyAddress = {label: "home",recipient: "",phone: "",address: "",province: "",district: "",subDistrict: "",postcode: "",note: "",};
   const [addrForm, setAddrForm] = useState(emptyAddress);
