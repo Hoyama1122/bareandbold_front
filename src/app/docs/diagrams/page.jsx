@@ -124,25 +124,103 @@ const DIAGRAMS_DATA = {
         +String lastName
         +String phone
         +String address
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class Employee {
+        +String id
+        +String email
+        +String password
+        +String firstName
+        +String lastName
+        +String role
+        +Boolean isDeleted
+        +DateTime createdAt
+        +DateTime updatedAt
     }
     class Product {
         +String id
         +String name
         +String description
         +Decimal price
+        +Decimal originalPrice
         +String type
+        +String category
         +Int stock
         +Boolean isDeleted
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class ProductImage {
+        +String id
+        +String productId
+        +String url
+        +Int position
+        +DateTime createdAt
+        +DateTime updatedAt
     }
     class CustomOption {
         +String id
+        +String productId
         +String name
         +Boolean isRequired
+        +DateTime createdAt
+        +DateTime updatedAt
     }
     class CustomOptionValue {
         +String id
+        +String optionId
         +String value
         +Decimal priceAdjustment
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class Category {
+        +String id
+        +String name
+        +String description
+        +Boolean isDeleted
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class Accessory {
+        +String id
+        +String name
+        +String description
+        +Decimal price
+        +Int stock
+        +String imageUrl
+        +String categoryId
+        +Boolean isDeleted
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class ProductAccessory {
+        +String productId
+        +String accessoryId
+    }
+    class Cart {
+        +String id
+        +String userId
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class CartItem {
+        +String id
+        +String cartId
+        +String productId
+        +Int quantity
+        +Json customDetails
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class CartItemAccessory {
+        +String id
+        +String cartItemId
+        +String accessoryId
+        +Int quantity
+        +DateTime createdAt
+        +DateTime updatedAt
     }
     class Order {
         +String id
@@ -150,6 +228,10 @@ const DIAGRAMS_DATA = {
         +String status
         +Decimal totalPrice
         +String shippingAddress
+        +String recipientName
+        +String recipientPhone
+        +DateTime createdAt
+        +DateTime updatedAt
     }
     class OrderItem {
         +String id
@@ -157,11 +239,81 @@ const DIAGRAMS_DATA = {
         +String productId
         +Int quantity
         +Decimal price
+        +Json customDetails
+        +DateTime createdAt
+        +DateTime updatedAt
     }
-    Product "1" *--> "*" CustomOption
-    CustomOption "1" *--> "*" CustomOptionValue
-    Order "1" *--> "*" OrderItem
-    User "1" o--> "*" Order`,
+    class OrderItemAccessory {
+        +String id
+        +String orderItemId
+        +String accessoryId
+        +Int quantity
+        +Decimal price
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class Payment {
+        +String id
+        +String orderId
+        +Decimal amount
+        +String paymentMethod
+        +String status
+        +String omiseChargeId
+        +DateTime paidAt
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class Shipping {
+        +String id
+        +String orderId
+        +String trackingNumber
+        +String carrier
+        +String status
+        +DateTime shippedAt
+        +DateTime deliveredAt
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class WishlistItem {
+        +String id
+        +String userId
+        +String productId
+        +DateTime createdAt
+    }
+
+    %% User & Accounts
+    User "1" --> "0..1" Cart : has
+    User "1" --> "*" Order : places
+    User "1" --> "*" WishlistItem : owns
+
+    %% Wishlist
+    WishlistItem "*" --> "1" Product : references
+
+    %% Product structure
+    Product "1" *--> "*" ProductImage : has_images
+    Product "1" *--> "*" CustomOption : has_options
+    CustomOption "1" *--> "*" CustomOptionValue : has_values
+
+    %% Category & Accessory catalog
+    Category "1" *--> "*" Accessory : categorizes
+    ProductAccessory "*" --> "1" Product : references
+    ProductAccessory "*" --> "1" Accessory : references
+
+    %% Cart system
+    Cart "1" *--> "*" CartItem : contains
+    CartItem "*" --> "1" Product : references
+    CartItem "1" *--> "*" CartItemAccessory : has_accessories
+    CartItemAccessory "*" --> "1" Accessory : references
+
+    %% Order system
+    Order "1" *--> "*" OrderItem : contains
+    OrderItem "*" --> "1" Product : references
+    OrderItem "1" *--> "*" OrderItemAccessory : has_accessories
+    OrderItemAccessory "*" --> "1" Accessory : references
+
+    %% Payment & Shipping
+    Order "1" --> "0..1" Payment : paid_by
+    Order "1" --> "0..1" Shipping : shipped_by`,
   sequence_customer: `sequenceDiagram
     autonumber
     actor Customer as ลูกค้า

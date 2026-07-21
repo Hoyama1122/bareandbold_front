@@ -144,7 +144,7 @@ const INITIAL_UAT_ITEMS = [
     expected:
       "สถานะออเดอร์เปลี่ยน และรหัสขนส่งถูกบันทึกส่งตรงไปแสดงฝั่งลูกค้าผู้ซื้อ",
     category: "staff",
-    passed: true,
+    passed: false,
   },
 
   // Section 3: Manager Features
