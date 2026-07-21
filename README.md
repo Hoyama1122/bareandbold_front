@@ -304,4 +304,4 @@ graph TD
     Shipping -->|Mock Tracking Data| DB
 ```
 
-เอกสารเพิ่มตาม https://bareandbold-front.pages.dev/docs
+เอกสารเพิ่มตาม https://bareandbold.duckdns.org/docs
