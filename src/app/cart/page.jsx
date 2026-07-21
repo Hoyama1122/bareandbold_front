@@ -14,7 +14,7 @@ const OLIVE_DEEP = "#4F5B38";
 const BORDER = "#E1D8C0";
 const MUTED = "#8C8577";
 
-const FREE_SHIP_THRESHOLD = 2000;
+const FREE_SHIP_THRESHOLD = 300;
 
 function baht(n) {
   return n.toLocaleString("th-TH");
@@ -82,7 +82,7 @@ export default function CartSummaryPage() {
     [items]
   );
   const promoDiscount = promoApplied ? Math.round(subtotal * 0.1) : 0;
-  const shipping = subtotal === 0 || subtotal >= FREE_SHIP_THRESHOLD ? 0 : 90;
+  const shipping = subtotal === 0 || subtotal >= FREE_SHIP_THRESHOLD ? 0 : 50;
   const total = Math.max(0, subtotal - promoDiscount + shipping);
   const remainingForFreeShip = Math.max(0, FREE_SHIP_THRESHOLD - subtotal);
   const shipProgress = Math.min(100, (subtotal / FREE_SHIP_THRESHOLD) * 100);
