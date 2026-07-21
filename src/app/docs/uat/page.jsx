@@ -156,7 +156,7 @@ const INITIAL_UAT_ITEMS = [
     expected:
       "แสดงกราฟ/ยอดรวมรายได้ของสินค้าพร้อมส่ง และสินค้าแบบคัสตอมแยกหมวดหมู่ชัดเจน",
     category: "manager",
-    passed: false,
+    passed: true,
   },
 
   // Section 4: Infrastructure

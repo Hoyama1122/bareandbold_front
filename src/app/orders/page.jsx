@@ -274,25 +274,33 @@ export default function OrderHistoryPage() {
             {filteredOrders.map((order) => (
               <div key={order.id} className="bg-white rounded-2xl border overflow-hidden shadow-sm" style={{ borderColor: BORDER }}>
                 
-                {/* 1. Header (Store + Status) */}
-                <div className="px-6 py-4 flex justify-between items-center border-b" style={{ borderColor: `${BORDER}40`, background: `${BEIGE}15` }}>
-                  <div className="flex items-center gap-2">
+                {/* 1. Header (Store + Status + Tracking) */}
+                <div className="px-6 py-4 flex flex-wrap justify-between items-center gap-3 border-b" style={{ borderColor: `${BORDER}40`, background: `${BEIGE}15` }}>
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Store size={16} style={{ color: WALNUT }} />
                     <span className="font-bold text-sm tracking-wide" style={{ color: DARK }}>BARE & BOLD</span>
                     <span className="text-xs ml-3 text-zinc-400 font-mono">ORDER: {order.id}</span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {order.shipping?.trackingNumber ? (
+                      <span className="text-xs font-mono text-zinc-700 bg-white px-2.5 py-1 rounded-md border border-zinc-200 shadow-2xs flex items-center gap-1.5">
+                        <Truck size={13} className="text-zinc-500" />
+                        <span className="font-semibold">{order.shipping.carrier ? `${order.shipping.carrier}: ` : ""}</span>
+                        <span className="font-bold text-zinc-900">{order.shipping.trackingNumber}</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-zinc-400 font-medium bg-zinc-50/80 px-2.5 py-1 rounded-md border border-zinc-200/40 flex items-center gap-1.5">
+                        <Clock size={12} className="text-zinc-400" />
+                        <span>รอเจ้าหน้าที่ระบุเลขพัสดุ</span>
+                      </span>
+                    )}
+
                     <span
-                      className="text-sm font-bold"
+                      className="text-sm font-bold ml-1"
                       style={{ color: getStatusColor(order.status) }}
                     >
                       {getStatusText(order.status)}
                     </span>
-                    {order.shipping?.status === "IN_TRANSIT" && (
-                      <span className="text-xs text-zinc-400 border-l pl-3 flex items-center gap-1" style={{ borderColor: `${BORDER}40` }}>
-                        <Truck size={13} /> กำลังจัดส่ง
-                      </span>
-                    )}
                   </div>
                 </div>
 
@@ -348,9 +356,13 @@ export default function OrderHistoryPage() {
                         <p><span className="font-bold">ผู้รับ:</span> {order.recipientName}</p>
                         <p><span className="font-bold">เบอร์โทรศัพท์:</span> {order.recipientPhone}</p>
                         <p><span className="font-bold">ที่อยู่จัดส่ง:</span> {order.shippingAddress}</p>
-                        {order.shipping?.trackingNumber && (
+                        {order.shipping?.trackingNumber ? (
                           <p className="pt-1.5 border-t border-dashed mt-1.5 flex items-center gap-1.5 font-semibold" style={{ borderColor: BORDER, color: OLIVE }}>
-                            <Truck size={14} /> เลขพัสดุ: {order.shipping.trackingNumber} ({order.shipping.carrier})
+                            <Truck size={14} /> เลขพัสดุ: {order.shipping.trackingNumber} ({order.shipping.carrier || "ขนส่งเอกชน"})
+                          </p>
+                        ) : (
+                          <p className="pt-1.5 border-t border-dashed mt-1.5 flex items-center gap-1.5 text-zinc-400 font-medium" style={{ borderColor: BORDER }}>
+                            <Clock size={14} /> เลขพัสดุ: รอเจ้าหน้าที่ระบุเลขพัสดุ
                           </p>
                         )}
                         <p className="text-[10px] text-zinc-400 pt-1">สั่งซื้อเมื่อ: {formatDate(order.createdAt)}</p>
