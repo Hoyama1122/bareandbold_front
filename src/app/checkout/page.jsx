@@ -195,7 +195,8 @@ export default function CheckoutPage() {
 
     const interval = setInterval(async () => {
       try {
-        const order = await orderService.getOrderById(orderId);
+        const res = await orderService.getOrderById(orderId);
+        const order = res?.order || res;
         if (order && order.status === "PAID") {
           setIsPaid(true);
           setPlaced(true);
