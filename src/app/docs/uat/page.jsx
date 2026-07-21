@@ -125,7 +125,7 @@ const INITIAL_UAT_ITEMS = [
     expected:
       "วัสดุในระบบสต็อกคัสตอมอัปเดตยอดคงคลังและราคาให้ลูกค้าออกแบบได้ถูกต้อง",
     category: "staff",
-    passed: false,
+    passed: true,
   },
   {
     id: "staff-orders",
@@ -135,7 +135,7 @@ const INITIAL_UAT_ITEMS = [
     expected:
       "สถานะออเดอร์เปลี่ยน และรหัสขนส่งถูกบันทึกส่งตรงไปแสดงฝั่งลูกค้าผู้ซื้อ",
     category: "staff",
-    passed: false,
+    passed: true,
   },
 
   // Section 3: Manager Features
