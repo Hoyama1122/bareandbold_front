@@ -104,7 +104,7 @@ export default function ProductInfo({
                           key={val.id || valName}
                           type="button"
                           onClick={() => {
-                            if (opt.name.toLowerCase().includes("ขนาด")) {
+                            if (opt.name.toLowerCase().includes("ขนาด") || opt.name.toLowerCase().includes("size")) {
                               setSize(valName);
                             } else {
                               setMaterial(valName);
