@@ -172,10 +172,10 @@ export default function Header({ isLoggedIn: initialIsLoggedIn = false, onAuthSt
   ประวัติคำสั่งซื้อ
 </button>
       <button
-  onClick={() => {
-    setIsProfileOpen(false); // ปิด Dropdown
-    setIsAuthOpen(true);     // เปิด AuthModal
-  }}
+ onClick={() => {
+  setIsProfileOpen(false);
+  router.push("/profile");
+}}
   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE]"
 >
   <Settings02Icon size={18} />
