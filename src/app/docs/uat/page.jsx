@@ -75,20 +75,11 @@ const INITIAL_UAT_ITEMS = [
     category: "customer",
     passed: true,
   },
-  {
-    id: "cust-custom",
-    section: "ระบบลูกค้า (Customer Features)",
-    title: "3. ระบบจำลองคัสตอมกำไล (Customizer Studio)",
-    step: "เลือกขนาดข้อมือ เลือกประเภทหินมงคล หรือตะขอตกแต่งเพื่อคำนวณราคาสั่งตัดเฉพาะรายบุคคล",
-    expected:
-      "แสดงตัวอย่างภาพหินมงคล/สายรัด คำนวณราคาเพิ่มขึ้นหรือลดลงอย่างถูกต้อง",
-    category: "customer",
-    passed: false,
-  },
+
   {
     id: "cust-cart",
     section: "ระบบลูกค้า (Customer Features)",
-    title: "4. การจัดการตะกร้าสินค้า (Cart & Made-to-Order Items)",
+    title: "3. การจัดการตะกร้าสินค้า (Cart & Made-to-Order Items)",
     step: "กดปุ่มเพิ่มสินค้าพร้อมส่ง หรือสินค้าสั่งตัดลงตะกร้า ปรับเพิ่ม/ลดจำนวนชิ้น หรือลบออก",
     expected:
       "สินค้าปรากฏในตะกร้า ข้อมูลสเปกคัสตอมถูกบันทึก และสามารถปรับจำนวนชิ้นได้จริง",
@@ -98,7 +89,7 @@ const INITIAL_UAT_ITEMS = [
   {
     id: "cust-checkout",
     section: "ระบบลูกค้า (Customer Features)",
-    title: "5. การสั่งซื้อและชำระเงินออนไลน์ (Checkout & Omise Gateway)",
+    title: "4. การสั่งซื้อและชำระเงินออนไลน์ (Checkout & Omise Gateway)",
     step: "ระบุชื่อ ที่อยู่ เบอร์โทรศัพท์ และทำรายการชำระเงินจำลองผ่าน Omise API",
     expected:
       "สร้างรหัสใบสั่งซื้อออเดอร์ในสถานะ PENDING พร้อมทำรายการชำระสำเร็จจะเปลี่ยนสถานะอัตโนมัติ",
@@ -108,7 +99,7 @@ const INITIAL_UAT_ITEMS = [
   {
     id: "cust-track",
     section: "ระบบลูกค้า (Customer Features)",
-    title: "6. ติดตามและดูประวัติคำสั่งซื้อ (Order History & Tracking)",
+    title: "5. ติดตามและดูประวัติคำสั่งซื้อ (Order History & Tracking)",
     step: "ลูกค้ากดดูประวัติออเดอร์ของตนเองเพื่อตรวจสอบข้อมูลจัดส่ง",
     expected:
       "แสดงรายการออเดอร์ในสถานะปัจจุบัน เช่น PAID หรือ SHIPPED พร้อมเลขติดตามพัสดุ",
@@ -120,7 +111,7 @@ const INITIAL_UAT_ITEMS = [
   {
     id: "staff-products",
     section: "ระบบพนักงาน (Staff Features)",
-    title: "7. การจัดการรายการสินค้าในร้าน (Product Catalog Management)",
+    title: "6. การจัดการรายการสินค้าในร้าน (Product Catalog Management)",
     step: "พนักงานกดเพิ่มสินค้าใหม่ แก้ไขข้อมูล ราคา หรือทำการลบสินค้า (Soft Delete)",
     expected: "ข้อมูลสินค้าอัปเดต และรายการที่ถูกลบจะไม่แสดงที่หน้าร้านหลัก",
     category: "staff",
@@ -129,7 +120,7 @@ const INITIAL_UAT_ITEMS = [
   {
     id: "staff-accessories",
     section: "ระบบพนักงาน (Staff Features)",
-    title: "8. การจัดการสต็อกวัสดุคัสตอม (Accessories Stock Control)",
+    title: "7. การจัดการสต็อกวัสดุคัสตอม (Accessories Stock Control)",
     step: "พนักงานจัดการรายการหินมงคล อะไหล่ประดับ ปรับราคาหรือปรับยอดคงคลังวัสดุ",
     expected:
       "วัสดุในระบบสต็อกคัสตอมอัปเดตยอดคงคลังและราคาให้ลูกค้าออกแบบได้ถูกต้อง",
@@ -139,7 +130,7 @@ const INITIAL_UAT_ITEMS = [
   {
     id: "staff-orders",
     section: "ระบบพนักงาน (Staff Features)",
-    title: "9. การจัดการออเดอร์และการขนส่ง (Order & Shipment Fulfillment)",
+    title: "8. การจัดการออเดอร์และการขนส่ง (Order & Shipment Fulfillment)",
     step: "พนักงานตรวจเช็คใบสั่งซื้อที่จ่ายเงินแล้ว ทำการอัปเดตรหัสเลขพัสดุและเปลี่ยนสถานะเป็น SHIPPED",
     expected:
       "สถานะออเดอร์เปลี่ยน และรหัสขนส่งถูกบันทึกส่งตรงไปแสดงฝั่งลูกค้าผู้ซื้อ",
@@ -151,7 +142,7 @@ const INITIAL_UAT_ITEMS = [
   {
     id: "mgr-staffs",
     section: "ระบบผู้จัดการ (Manager Features)",
-    title: "10. จัดการสิทธิ์และบัญชีพนักงาน (Staff Accounts Management)",
+    title: "9. จัดการสิทธิ์และบัญชีพนักงาน (Staff Accounts Management)",
     step: "ผู้จัดการ/แอดมินสร้างบัญชีหรือลบบัญชีทีมงานหลังบ้าน รวมถึงกำหนดระดับสิทธิ์",
     expected: "สร้างพนักงานใหม่เข้าสู่ระบบได้ตามสิทธิ์ที่จำกัดไว้สำเร็จ",
     category: "manager",
@@ -160,7 +151,7 @@ const INITIAL_UAT_ITEMS = [
   {
     id: "mgr-dashboard",
     section: "ระบบผู้จัดการ (Manager Features)",
-    title: "11. ดูรายงานการขายเชิงธุรกิจ (Executive Analytics Dashboard)",
+    title: "10. ดูรายงานการขายเชิงธุรกิจ (Executive Analytics Dashboard)",
     step: "ผู้จัดการเข้าดูรายงานสรุปยอดสถิติรายรับและประเภทสัดส่วนออเดอร์",
     expected:
       "แสดงกราฟ/ยอดรวมรายได้ของสินค้าพร้อมส่ง และสินค้าแบบคัสตอมแยกหมวดหมู่ชัดเจน",
@@ -173,7 +164,7 @@ const INITIAL_UAT_ITEMS = [
     id: "infra-upload",
     section: "โครงสร้างพื้นฐานระบบ (Infrastructure)",
     title:
-      "12. ระบบอัปโหลดรูปภาพใบเสร็จและสินค้า (Cloudflare R2 Object Storage)",
+      "11. ระบบอัปโหลดรูปภาพใบเสร็จและสินค้า (Cloudflare R2 Object Storage)",
     step: "อัปโหลดภาพประกอบสินค้า หรืออัปโหลดรูปสลิปตอนแจ้งโอนผ่านหน้าเว็บ",
     expected:
       "ไฟล์รูปภาพถูกจัดเก็บแบบไร้รอยต่อบนคลาวด์ R2 และดึงแสดงผลได้เสถียรปลอดภัย",
