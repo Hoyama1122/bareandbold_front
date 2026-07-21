@@ -52,11 +52,15 @@ export default function ProductDetailClient({ nameSlug }) {
         setSize("16 cm");
         setSelectedAccessories([]);
 
-        const decodedName = decodeURIComponent(nameSlug).replace(/-/g, " ");
+        let cleanSlug = nameSlug || "";
+        if (cleanSlug.endsWith("/")) {
+          cleanSlug = cleanSlug.slice(0, -1);
+        }
+        const decodedName = decodeURIComponent(cleanSlug).replace(/-/g, " ");
         const data = await productService.getProducts();
         if (data.success && data.products) {
           const matched = data.products.find(
-            (p) => p.name.toLowerCase() === decodedName.toLowerCase() || p.id === nameSlug
+            (p) => p.name.toLowerCase() === decodedName.toLowerCase() || p.id === cleanSlug
           );
           if (matched) {
             let fullProduct = matched;
