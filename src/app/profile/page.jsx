@@ -376,14 +376,14 @@ useEffect(() => {
           <SectionHeader title="ข้อมูลส่วนตัว" subtitle="แก้ไขชื่อ ข้อมูลติดต่อ และคำแนะนำตัวของคุณ" />
 
           <div className="grid sm:grid-cols-2 gap-5">
-            <Field label="ชื่อ-นามสกุล">
+            <Field label="ชื่อจริง">
               <div className="relative">
                 <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#B9AC99" }} />
-                <TextInput className="pl-9" value={profile.fullName} onChange={updateProfile("fullName")}placeholder="กรอกชื่อ-นามสกุล"/>
+                <TextInput className="pl-9" value={profile.fullName} onChange={updateProfile("fullName")}placeholder="กรอกชื่อจริง"/>
               </div>
             </Field>
-            <Field label="ชื่อผู้ใช้" >
-              <TextInput value={profile.username}onChange={updateProfile("username")}placeholder="กรอกชื่อผู้ใช้"/>
+            <Field label="นามสกุล" >
+              <TextInput value={profile.username}onChange={updateProfile("username")}placeholder="กรอกนามสกุล"/>
             </Field>
             <Field label="อีเมล">
               <div className="relative">
@@ -394,7 +394,7 @@ useEffect(() => {
             <Field label="เบอร์โทรศัพท์">
               <div className="relative">
                 <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#B9AC99" }} />
-                <TextInput className="pl-9" value={profile.phone}onChange={updateProfile("phone")}placeholder="08X-XXX-XXXX"/>
+                <TextInput className="pl-9" value={profile.phone}onChange={updateProfile("phone")}placeholder="000-000-0000"/>
               </div>
             </Field>
           </div>
