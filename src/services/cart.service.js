@@ -235,3 +235,30 @@ export const cartService = {
     }
   },
 };
+
+// Named exports for compatibility with tharatorn-Aom branch
+export async function addToCart(data) {
+  const { productId, quantity, customDetails } = data;
+  const material = customDetails?.material || "";
+  const size = customDetails?.size || "";
+  return await cartService.addToCart(productId, quantity, material, size);
+}
+
+export async function getCart() {
+  const items = await cartService.fetchCart();
+  return {
+    success: true,
+    cart: {
+      items: items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        customDetails: { material: item.material, size: item.size },
+        product: { name: item.name, price: item.price, images: [{ url: item.image }] }
+      }))
+    }
+  };
+}
+
+export async function removeCartItem(productId) {
+  return await cartService.removeCartItem(productId);
+}

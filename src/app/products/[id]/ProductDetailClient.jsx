@@ -9,6 +9,7 @@ import ProductImageGallery from "@/components/product-detail/ProductImageGallery
 import ProductInfo from "@/components/product-detail/ProductInfo";
 import RecommendedProducts from "@/components/product-detail/RecommendedProducts";
 import ImageZoomModal from "@/components/product-detail/ImageZoomModal";
+import { addToCart as addCartAPI } from "@/services/cart.service";
 
 export default function ProductDetailClient({ nameSlug }) {
   const [product, setProduct] = useState(null);

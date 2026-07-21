@@ -27,10 +27,10 @@ const apiFetch = async (endpoint, options = {}) => {
 };
 
 export const orderService = {
-  createOrder: async ({ shippingAddress, recipientName, recipientPhone }) => {
+  createOrder: async (orderData) => {
     return await apiFetch("/orders", {
       method: "POST",
-      body: JSON.stringify({ shippingAddress, recipientName, recipientPhone }),
+      body: JSON.stringify(orderData),
     });
   },
 
@@ -39,10 +39,32 @@ export const orderService = {
   },
 
   getOrderById: async (orderId) => {
-    const data = await apiFetch("/orders");
-    if (data.success && data.orders) {
-      return data.orders.find(o => o.id === orderId);
+    try {
+      return await apiFetch(`/orders/${orderId}`);
+    } catch (e) {
+      // Fallback: search in list
+      const data = await apiFetch("/orders");
+      if (data.success && data.orders) {
+        return data.orders.find(o => o.id === orderId) || null;
+      }
+      return null;
     }
-    return null;
   }
 };
+
+// Named exports to maintain compatibility with other branches/components
+export async function createOrder(orderData) {
+  return await orderService.createOrder(orderData);
+}
+
+export async function getOrders() {
+  return await orderService.getOrderHistory();
+}
+
+export async function getOrderHistory() {
+  return await orderService.getOrderHistory();
+}
+
+export async function getOrderById(orderId) {
+  return await orderService.getOrderById(orderId);
+}

@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Search01Icon,
   FavouriteIcon,
   ShoppingBag01Icon,
   UserIcon,
+  UserCircleIcon,
+  PackageIcon,
+  Logout01Icon,
+  Settings02Icon
 } from "hugeicons-react";
 import AuthModal from "../auth/AuthModal";
 import CartDrawer from "../cart/CartDrawer";
@@ -24,10 +28,13 @@ export default function Header({
   onAuthStatusChange,
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileMenuRef = useRef(null);
 
   useEffect(() => {
     setIsLoggedIn(initialIsLoggedIn);
@@ -42,6 +49,23 @@ export default function Header({
       setIsLoggedIn(true);
     }
   }, []);
+
+  useEffect(() => {
+  function handleClickOutside(event) {
+    if (
+      profileMenuRef.current &&
+      !profileMenuRef.current.contains(event.target)
+    ) {
+      setIsProfileOpen(false);
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
 
   const updateCartCount = () => {
     if (typeof window !== "undefined") {
@@ -73,6 +97,17 @@ export default function Header({
       window.removeEventListener("storage", updateCartCount);
     };
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("bare_auth_token");
+    setIsLoggedIn(false);
+    setIsProfileOpen(false);
+    if (onAuthStatusChange) {
+      onAuthStatusChange(false);
+    }
+    router.push("/");
+    window.dispatchEvent(new Event("cartUpdated"));
+  };
 
   const handleAuthSuccess = (user) => {
     const hasToken = !!localStorage.getItem("bare_auth_token");
@@ -119,7 +154,7 @@ export default function Header({
 
           {/* Action Icons & Profile Access */}
           <div className="flex items-center gap-5 text-earth-dark">
-            <button className="hover:text-earth-olive transition">
+            <button className="w-10 h-10 flex items-center justify-center hover:text-earth-olive transition">
               <Search01Icon size={20} strokeWidth={2} />
             </button>
             <button className="hover:text-earth-olive transition">
@@ -137,26 +172,74 @@ export default function Header({
               )}
             </button>
 
-            <button
-              onClick={() => setIsAuthOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-earth-beige hover:bg-earth-border border border-earth-border transition text-xs font-bold text-earth-dark cursor-pointer"
-            >
+            <div className="relative" ref={profileMenuRef}>
               {isLoggedIn ? (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-earth-olive" />
-                  บัญชี
-                </>
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="w-10 h-10 flex items-center justify-center hover:text-earth-olive transition cursor-pointer"
+                >
+                  <UserCircleIcon size={21} strokeWidth={2} />
+                </button>
               ) : (
-                <>
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-earth-beige hover:bg-earth-border border border-earth-border transition text-xs font-bold text-earth-dark cursor-pointer"
+                >
                   <UserIcon
                     size={14}
                     strokeWidth={2.5}
                     className="text-zinc-600"
                   />
                   เข้าสู่ระบบ
-                </>
+                </button>
               )}
-            </button>
+
+              {isLoggedIn && isProfileOpen && (
+                <div className="absolute right-0 mt-3 w-60 rounded-xl bg-white border border-[#E7DDC8] shadow-xl overflow-hidden z-50">
+                  <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-left text-sm font-bold text-earth-dark">
+                    <FavouriteIcon size={18}/>
+                    รายการโปรด
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      setIsCartOpen(true);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-left text-sm font-bold text-earth-dark"
+                  >
+                    <ShoppingBag01Icon size={18}/>
+                    ตะกร้าสินค้า
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      router.push("/orders");
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-left text-sm font-bold text-earth-dark"
+                  >
+                    <PackageIcon size={18} />
+                    ประวัติคำสั่งซื้อ
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      setIsAuthOpen(true);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-left text-sm font-bold text-earth-dark"
+                  >
+                    <Settings02Icon size={18} />
+                    โปรไฟล์
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#FFF5F5] text-left text-sm font-bold text-red-600 border-t border-gray-100"
+                  >
+                    <Logout01Icon size={18} />
+                    ออกจากระบบ
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ShoppingBag01Icon } from "hugeicons-react";
-import { cartService } from "@/services/cart.service";
+import { cartService, getCart, removeCartItem } from "@/services/cart.service";
 
 export default function CartDrawer({ isOpen, onClose }) {
   const [cartItems, setCartItems] = useState([]);
@@ -11,26 +11,36 @@ export default function CartDrawer({ isOpen, onClose }) {
 
   useEffect(() => {
     setMounted(true);
-    
-    const loadCart = () => {
-      const localCart = localStorage.getItem("bare_cart");
-      if (localCart) {
-        try {
-          const parsed = JSON.parse(localCart);
-          if (Array.isArray(parsed)) {
-            setCartItems(parsed);
-            return;
-          }
-        } catch (e) {
-          console.error("Error parsing cart from localStorage", e);
-        }
-      }
-      setCartItems([]);
-    };
 
-    loadCart();
+    async function loadCart() {
+      if (cartService.isLoggedIn()) {
+        const data = await getCart();
+        if (data.success && data.cart) {
+          setCartItems(data.cart.items);
+        } else {
+          setCartItems([]);
+        }
+      } else {
+        const local = await cartService.fetchCart();
+        setCartItems(
+          local.map((item) => ({
+            id: item.id,
+            productId: item.productId,
+            quantity: item.quantity,
+            customDetails: { material: item.material, size: item.size },
+            product: {
+              id: item.productId,
+              name: item.name,
+              price: item.price,
+              images: [{ url: item.image }],
+            },
+          }))
+        );
+      }
+    }
 
     if (isOpen) {
+      loadCart();
       cartService.fetchCart();
     }
 
@@ -42,16 +52,23 @@ export default function CartDrawer({ isOpen, onClose }) {
 
   if (!mounted) return null;
 
-  const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const total = cartItems.reduce(
+    (acc, item) => acc + item.product.price * item.quantity,
+    0
+  );
 
-  const removeItem = async (id) => {
-    const item = cartItems.find(it => it.id === id);
-    if (item) {
-      try {
-        await cartService.removeCartItem(item.productId, id);
-      } catch (err) {
-        console.error("Failed to remove item:", err);
+  const removeItem = async (productId) => {
+    if (cartService.isLoggedIn()) {
+      const result = await removeCartItem(productId);
+      if (result.success) {
+        const data = await getCart();
+        setCartItems(data.cart.items);
       }
+    } else {
+      const localItems = JSON.parse(localStorage.getItem("bare_cart") || "[]");
+      const updated = localItems.filter((it) => it.productId !== productId);
+      localStorage.setItem("bare_cart", JSON.stringify(updated));
+      window.dispatchEvent(new Event("cartUpdated"));
     }
   };
 
@@ -118,7 +135,7 @@ export default function CartDrawer({ isOpen, onClose }) {
             cartItems.map((item) => (
               <div key={item.id} className="flex gap-4 p-3 bg-[#FDFBF7] rounded-xl border border-[#F5F0E6] relative group">
                 <button
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => removeItem(item.product.id)}
                   className="absolute top-2 right-2 text-zinc-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -127,19 +144,20 @@ export default function CartDrawer({ isOpen, onClose }) {
                 </button>
                 {/* Image */}
                 <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-100 border border-[#F5F0E6] flex-shrink-0 flex items-center justify-center">
-                  {item.image ? (
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=300"; // fallback
-                    }} />
-                  ) : (
-                    <div className="text-xs text-zinc-400">No Image</div>
-                  )}
+                  <img
+                    src={
+                      item.product.images?.[0]?.url ||
+                      item.product.images?.[0] ||
+                      "/placeholder.jpg"
+                    }
+                    alt={item.product.name}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 {/* Details */}
                 <div className="flex-1 flex flex-col justify-between pr-6">
                   <div>
-                    <h4 className="text-sm font-bold text-[#3C322A] line-clamp-1">{item.name}</h4>
+                    <h4 className="text-sm font-bold text-[#3C322A] line-clamp-1">{item.product.name}</h4>
                     {item.accessories && item.accessories.length > 0 && (
                       <p className="text-[11px] text-[#556B2F] mt-0.5 font-medium">
                         + {item.accessories.join(", ")}
@@ -149,7 +167,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-zinc-500">จำนวน: {item.quantity}</span>
                     <span className="text-sm font-extrabold text-[#6A5242]">
-                      ฿{(item.price * item.quantity).toLocaleString()}
+                      ฿{(item.product.price * item.quantity).toLocaleString()}
                     </span>
                   </div>
                 </div>
