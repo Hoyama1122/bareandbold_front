@@ -55,27 +55,27 @@ export default function Header({
   }, []);
 
   useEffect(() => {
-  function handleClickOutside(event) {
-    if (
-      profileMenuRef.current &&
-      !profileMenuRef.current.contains(event.target)
-    ) {
-      setIsProfileOpen(false);
+    function handleClickOutside(event) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setIsProfileOpen(false);
+      }
+      if (
+        wishlistMenuRef.current &&
+        !wishlistMenuRef.current.contains(event.target)
+      ) {
+        setIsWishlistOpen(false);
+      }
     }
-    if (
-      wishlistMenuRef.current &&
-      !wishlistMenuRef.current.contains(event.target)
-    ) {
-      setIsWishlistOpen(false);
-    }
-  }
 
-  document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
 
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const updateCartCount = () => {
     if (typeof window !== "undefined") {
@@ -93,7 +93,6 @@ export default function Header({
           }
         } catch (e) {}
       }
-      // If no cart found, set default count to 0
       setCartCount(0);
     }
   };
@@ -257,41 +256,27 @@ export default function Header({
                   onClick={() => setIsAuthOpen(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-earth-beige hover:bg-earth-border border border-earth-border transition text-xs font-bold text-earth-dark cursor-pointer"
                 >
-                  <UserIcon
-                    size={14}
-                    strokeWidth={2.5}
-                    className="text-zinc-600"
-                  />
-                  เข้าสู่ระบบ
+                  <UserIcon size={14} strokeWidth={2.5} />
+                  <span>เข้าสู่ระบบ</span>
                 </button>
               )}
 
-              {isLoggedIn && isProfileOpen && (
-                <div className="absolute right-0 mt-3 w-60 rounded-xl bg-white border border-[#E7DDC8] shadow-xl overflow-hidden z-50">
-                  <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-left text-sm font-bold text-earth-dark">
-                    <FavouriteIcon size={18}/>
-                    รายการโปรด
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      setIsCartOpen(true);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-left text-sm font-bold text-earth-dark"
-                  >
-                    <ShoppingBag01Icon size={18}/>
-                    ตะกร้าสินค้า
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      router.push("/orders");
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-left text-sm font-bold text-earth-dark"
+              {isProfileOpen && isLoggedIn && (
+                <div className="absolute right-0 mt-3 w-56 rounded-xl bg-white border border-earth-border shadow-xl overflow-hidden z-50 py-1 font-anuphan">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-xs text-zinc-400">บัญชีผู้ใช้</p>
+                    <p className="text-sm font-bold text-earth-dark truncate mt-0.5">
+                      {typeof window !== "undefined" && localStorage.getItem("bare_user_email")}
+                    </p>
+                  </div>
+                  <Link
+                    href="/orders"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-sm font-bold text-earth-dark transition"
                   >
                     <PackageIcon size={18} />
                     ประวัติคำสั่งซื้อ
-                  </button>
+                  </Link>
                   <button
                     onClick={() => {
                       setIsProfileOpen(false);

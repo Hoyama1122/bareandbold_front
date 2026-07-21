@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Header from "@/components/layout/Header";
 
 // Web3Forms Configuration for clean styled email delivery
 const WEB3FORMS_ACCESS_KEY = "88b8fd6b-7615-4101-b456-9b981cbb264e";
