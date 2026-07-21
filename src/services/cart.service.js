@@ -79,8 +79,15 @@ export const cartService = {
   },
 
   // Add Item to Cart
-  addToCart: async (productId, quantity, material, size, productDetails = {}) => {
+  addToCart: async (productId, quantity, material, size, selectedAccessories = [], productDetails = {}) => {
     if (typeof window === "undefined") return;
+
+    const accessoriesPayload = (selectedAccessories && Array.isArray(selectedAccessories))
+      ? selectedAccessories.map((a) => ({
+          accessoryId: typeof a === "object" ? a.id : a,
+          quantity: 1,
+        }))
+      : [];
 
     if (cartService.isLoggedIn()) {
       try {
@@ -90,6 +97,7 @@ export const cartService = {
             productId,
             quantity,
             customDetails: { material, size },
+            accessories: accessoriesPayload,
           }),
         });
         await cartService.fetchCart();
@@ -136,6 +144,7 @@ export const cartService = {
         quantity,
         material,
         size,
+        accessories: selectedAccessories.map((a) => (typeof a === "object" ? a.name : a)),
       });
     }
 

@@ -6,6 +6,8 @@ export default function ProductInfo({
   setMaterial,
   size,
   setSize,
+  selectedAccessories = [],
+  setSelectedAccessories,
   qty,
   setQty,
   addToCart,
@@ -70,48 +72,149 @@ export default function ProductInfo({
         {/* OPTIONS - MADE TO ORDER */}
         {product.type === "MADE_TO_ORDER" && (
           <div className="mt-8 space-y-6">
-            <div>
-              <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
-                วัสดุห่วงเชื่อม / โซ่ปรับระดับ
-              </p>
-              <div className="flex flex-wrap gap-2.5">
-                {["Silver", "Gold", "Rose Gold"].map((mat) => (
-                  <button
-                    key={mat}
-                    type="button"
-                    onClick={() => setMaterial(mat)}
-                    className={`px-5 py-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                      material === mat
-                        ? "border-[#7a5b46] bg-[#7a5b46] text-white"
-                        : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {mat}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {product.customOptions && product.customOptions.length > 0 ? (
+              product.customOptions.map((opt) => (
+                <div key={opt.id || opt.name}>
+                  <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
+                    {opt.name}
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">
+                    {opt.values && opt.values.map((val) => {
+                      const valName = typeof val === "string" ? val : val.name;
+                      const isSelected = (material === valName || size === valName);
+                      return (
+                        <button
+                          key={val.id || valName}
+                          type="button"
+                          onClick={() => {
+                            if (opt.name.toLowerCase().includes("ขนาด")) {
+                              setSize(valName);
+                            } else {
+                              setMaterial(valName);
+                            }
+                          }}
+                          className={`px-5 py-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                            isSelected
+                              ? "border-[#7a5b46] bg-[#7a5b46] text-white"
+                              : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {valName}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <>
+                <div>
+                  <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
+                    วัสดุห่วงเชื่อม / โซ่ปรับระดับ
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">
+                    {["Silver", "Gold", "Rose Gold"].map((mat) => (
+                      <button
+                        key={mat}
+                        type="button"
+                        onClick={() => setMaterial(mat)}
+                        className={`px-5 py-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                          material === mat
+                            ? "border-[#7a5b46] bg-[#7a5b46] text-white"
+                            : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        {mat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-            <div>
-              <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
-                ขนาดความยาวข้อมือ (ซม.)
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {["14 cm", "15 cm", "16 cm", "17 cm", "18 cm"].map((sz) => (
+                <div>
+                  <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
+                    ขนาดความยาวข้อมือ (ซม.)
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {["12 cm", "12.5 cm", "13 cm", "14 cm", "15 cm", "16 cm"].map((sz) => (
+                      <button
+                        key={sz}
+                        type="button"
+                        onClick={() => setSize(sz)}
+                        className={`w-12 h-12 rounded-lg border text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                          size === sz
+                            ? "border-[#7a5b46] bg-[#7a5b46] text-white"
+                            : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        {sz.replace(" cm", "")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* LINKED ACCESSORIES FOR CUSTOM PRODUCT */}
+        {product.accessories && product.accessories.length > 0 && (
+          <div className="mt-8">
+            <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
+              เลือกวัสดุตกแต่งเพิ่มเติม (Accessories)
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {product.accessories.map((item) => {
+                const acc = item.accessory;
+                if (!acc) return null;
+                const isOutOfStock = acc.stock <= 0;
+                const isSelected = selectedAccessories.some((a) => a.id === acc.id);
+
+                const toggleSelect = () => {
+                  if (isOutOfStock) return;
+                  if (isSelected) {
+                    setSelectedAccessories(selectedAccessories.filter((a) => a.id !== acc.id));
+                  } else {
+                    setSelectedAccessories([...selectedAccessories, acc]);
+                  }
+                };
+
+                return (
                   <button
-                    key={sz}
+                    key={acc.id}
                     type="button"
-                    onClick={() => setSize(sz)}
-                    className={`w-12 h-12 rounded-lg border text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
-                      size === sz
-                        ? "border-[#7a5b46] bg-[#7a5b46] text-white"
-                        : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    disabled={isOutOfStock}
+                    onClick={toggleSelect}
+                    className={`p-3 rounded-xl border flex flex-col items-center justify-between text-center transition-all cursor-pointer relative ${
+                      isOutOfStock
+                        ? "border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed"
+                        : isSelected
+                        ? "border-[#7a5b46] bg-[#7a5b46]/5 text-[#7a5b46] ring-2 ring-[#7a5b46]"
+                        : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
                     }`}
                   >
-                    {sz.replace(" cm", "")}
+                    {isOutOfStock && (
+                      <span className="absolute top-1.5 right-1.5 bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
+                        ของหมด
+                      </span>
+                    )}
+                    {acc.imageUrl ? (
+                      <img
+                        src={acc.imageUrl}
+                        alt={acc.name}
+                        className="w-12 h-12 rounded-lg object-cover mb-2 border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] text-gray-400 font-bold mb-2">
+                        No Img
+                      </div>
+                    )}
+                    <span className="text-xs font-bold line-clamp-1">{acc.name}</span>
+                    <span className="text-[11px] font-semibold text-[#7a5b46] mt-1">
+                      {acc.price > 0 ? `+฿${parseFloat(acc.price).toLocaleString()}` : "ฟรี"}
+                    </span>
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
         )}

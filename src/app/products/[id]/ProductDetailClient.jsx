@@ -36,6 +36,7 @@ export default function ProductDetailClient({ nameSlug }) {
 
   const [material, setMaterial] = useState("Silver");
   const [size, setSize] = useState("16 cm");
+  const [selectedAccessories, setSelectedAccessories] = useState([]);
 
   useEffect(() => {
     const loadProductData = async () => {
@@ -49,6 +50,7 @@ export default function ProductDetailClient({ nameSlug }) {
         setQty(1);
         setMaterial("Silver");
         setSize("16 cm");
+        setSelectedAccessories([]);
 
         const decodedName = decodeURIComponent(nameSlug).replace(/-/g, " ");
         const data = await productService.getProducts();
@@ -57,14 +59,23 @@ export default function ProductDetailClient({ nameSlug }) {
             (p) => p.name.toLowerCase() === decodedName.toLowerCase() || p.id === nameSlug
           );
           if (matched) {
-            setProduct(matched);
-            const imgs = matched.images && matched.images.length > 0
-              ? matched.images.map(img => typeof img === "object" ? img.url : img)
-              : [matched.imageUrl];
+            let fullProduct = matched;
+            try {
+              const fullRes = await productService.getProductById(matched.id);
+              if (fullRes.success && fullRes.product) {
+                fullProduct = fullRes.product;
+              }
+            } catch (e) {
+              console.error("Failed to load full product by ID:", e);
+            }
+            setProduct(fullProduct);
+            const imgs = fullProduct.images && fullProduct.images.length > 0
+              ? fullProduct.images.map(img => typeof img === "object" ? img.url : img)
+              : [fullProduct.imageUrl];
             setCurrentImage(imgs[0]);
 
             // Fetch recommendations
-            const recData = await productService.getProductRecommendations(matched.id);
+            const recData = await productService.getProductRecommendations(fullProduct.id);
             if (recData.success) {
               setRecommendedProducts(recData.products);
             }
@@ -114,7 +125,7 @@ export default function ProductDetailClient({ nameSlug }) {
 
   const addToCart = async () => {
     try {
-      await cartService.addToCart(product.id, qty, material, size, {
+      await cartService.addToCart(product.id, qty, material, size, selectedAccessories, {
         name: product.name,
         image: currentImage,
         price: product.price,
@@ -128,7 +139,7 @@ export default function ProductDetailClient({ nameSlug }) {
 
   const buyNow = async () => {
     try {
-      await cartService.addToCart(product.id, qty, material, size, {
+      await cartService.addToCart(product.id, qty, material, size, selectedAccessories, {
         name: product.name,
         image: currentImage,
         price: product.price,
@@ -191,6 +202,8 @@ export default function ProductDetailClient({ nameSlug }) {
           setMaterial={setMaterial}
           size={size}
           setSize={setSize}
+          selectedAccessories={selectedAccessories}
+          setSelectedAccessories={setSelectedAccessories}
           qty={qty}
           setQty={setQty}
           addToCart={addToCart}
