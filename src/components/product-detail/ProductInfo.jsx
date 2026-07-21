@@ -80,7 +80,7 @@ export default function ProductInfo({
             </p>
           ) : (
             <p className="text-amber-700 font-semibold flex items-center gap-1.5">
-              ✨ สินค้าสั่งทำพิเศษ (Made to Order - สั่งผลิตตามคำสั่งซื้อ)
+              สินค้าสั่งทำพิเศษ (Made to Order - สั่งผลิตตามคำสั่งซื้อ)
             </p>
           )}
         </div>

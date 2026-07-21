@@ -142,10 +142,17 @@ export default function Header({
           {/* Logo */}
           <Link
             href="/"
-            className="text-2xl font-extrabold tracking-tight text-earth-dark hover:text-earth-olive transition"
+            className="flex items-center gap-2.5 hover:text-earth-olive transition select-none text-earth-dark"
             prefetch={false}
           >
-            Bare & Bold
+            <svg className="w-6 h-6 transition-transform duration-300 hover:rotate-12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
+              <path d="M8.5 12C8.5 13.933 10.067 15.5 12 15.5C13.933 15.5 15.5 13.933 15.5 12C15.5 10.067 13.933 8.5 12 8.5C10.067 8.5 8.5 10.067 8.5 12Z" fill="currentColor" />
+              <path d="M12 5C8.134 5 5 8.134 5 12C5 15.866 8.134 19 12 19C15.866 19 19 15.866 19 12C19 8.134 15.866 5 12 5Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+            <span className="text-xl font-bold uppercase tracking-[0.15em] font-sans">
+              Bare & Bold
+            </span>
           </Link>
 
           {/* Nav links */}
