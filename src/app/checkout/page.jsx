@@ -168,6 +168,82 @@ export default function CheckoutPage() {
 
   const handleZipCodeChange = (zipCodeVal) => {
     setZipCode(zipCodeVal);
+
+    if (zipCodeVal && zipCodeVal.length === 5) {
+      import("../../data/thailand-address.json").then((mod) => {
+        const thailandAddresses = mod.default;
+        const matches = thailandAddresses.filter(item => item.zipCode === zipCodeVal);
+        if (matches.length > 0) {
+          const match = matches[0];
+          const prov = match.provinceList?.[0]?.provinceName || "";
+          
+          if (prov) {
+            setProvince(prov);
+            
+            // Extract districts
+            const districts = [];
+            const districtIds = new Set();
+            thailandAddresses.forEach((item) => {
+              const hasProv = item.provinceList?.some((p) => p.provinceName === prov);
+              if (hasProv) {
+                item.districtList?.forEach((d) => {
+                  if (!districtIds.has(d.districtId)) {
+                    districtIds.add(d.districtId);
+                    districts.push(d.districtName);
+                  }
+                });
+              }
+            });
+            districts.sort();
+            setAvailableDistricts(districts);
+
+            // Find unique districts matching this zip code
+            const matchedDistricts = new Set();
+            matches.forEach(m => {
+              m.districtList?.forEach(d => matchedDistricts.add(d.districtName));
+            });
+            
+            if (matchedDistricts.size === 1) {
+              const dist = Array.from(matchedDistricts)[0];
+              setDistrict(dist);
+
+              // Extract subdistricts
+              const subdistricts = [];
+              const subdistrictIds = new Set();
+              thailandAddresses.forEach((item) => {
+                const hasProv = item.provinceList?.some((p) => p.provinceName === prov);
+                const hasDist = item.districtList?.some((d) => d.districtName === dist);
+                if (hasProv && hasDist) {
+                  const distMatch = item.districtList?.find((d) => d.districtName === dist);
+                  item.subDistrictList?.forEach((sd) => {
+                    if (distMatch && sd.districtId === distMatch.districtId) {
+                      if (!subdistrictIds.has(sd.subDistrictId)) {
+                        subdistrictIds.add(sd.subDistrictId);
+                        subdistricts.push(sd.subDistrictName);
+                      }
+                    }
+                  });
+                }
+              });
+              subdistricts.sort();
+              setAvailableSubDistricts(subdistricts);
+
+              const matchedSubDistricts = new Set();
+              matches.forEach(m => {
+                m.subDistrictList?.forEach(sd => matchedSubDistricts.add(sd.subDistrictName));
+              });
+
+              if (matchedSubDistricts.size === 1) {
+                const subDist = Array.from(matchedSubDistricts)[0];
+                setSubDistrict(subDist);
+              }
+            }
+            
+            setAvailableZipCodes([zipCodeVal]);
+          }
+        }
+      });
+    }
   };
 
   useEffect(() => {

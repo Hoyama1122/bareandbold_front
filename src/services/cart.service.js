@@ -34,12 +34,36 @@ const mapBackendCartToLocal = (backendCart) => {
     const material = item.customDetails?.material || "";
     const size = item.customDetails?.size || "";
     const image = item.product?.images?.[0]?.url || "";
+
+    // Calculate dynamic price including custom adjustments and accessories
+    let finalPrice = Number(item.product?.price || 0);
+
+    if (item.product?.customOptions) {
+      item.product.customOptions.forEach((opt) => {
+        const selectedVal = opt.values?.find(val => {
+          const valName = typeof val === "string" ? val : (val.value || val.name);
+          return valName === size || valName === material;
+        });
+        if (selectedVal && selectedVal.priceAdjustment) {
+          finalPrice += Number(selectedVal.priceAdjustment);
+        }
+      });
+    }
+
+    if (item.accessories) {
+      item.accessories.forEach((a) => {
+        if (a.accessory && a.accessory.price) {
+          finalPrice += Number(a.accessory.price);
+        }
+      });
+    }
+
     return {
-      id: item.id, // Using cart item ID for backend-managed cart
+      id: item.id,
       productId: item.productId,
       name: item.product?.name || "",
       image: image,
-      price: item.product?.price || 0,
+      price: finalPrice,
       quantity: item.quantity,
       material: material,
       size: size,

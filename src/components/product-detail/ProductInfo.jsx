@@ -15,6 +15,22 @@ export default function ProductInfo({
   isLiked,
   toggleWishlist
 }) {
+  const customOptionsPrice = product.customOptions?.reduce((sum, opt) => {
+    const selectedVal = opt.values?.find(val => {
+      const valName = typeof val === "string" ? val : (val.value || val.name);
+      return valName === size || valName === material;
+    });
+    const adj = selectedVal?.priceAdjustment ? Number(selectedVal.priceAdjustment) : 0;
+    return sum + adj;
+  }, 0) || 0;
+
+  const accessoriesPrice = selectedAccessories.reduce((sum, acc) => {
+    return sum + (acc.price ? Number(acc.price) : 0);
+  }, 0);
+
+  const basePrice = Number(product.price);
+  const totalPrice = (basePrice + customOptionsPrice + accessoriesPrice) * qty;
+
   return (
     <div className="flex flex-col justify-between font-sans">
       <div>
@@ -80,8 +96,9 @@ export default function ProductInfo({
                   </p>
                   <div className="flex flex-wrap gap-2.5">
                     {opt.values && opt.values.map((val) => {
-                      const valName = typeof val === "string" ? val : val.name;
+                      const valName = typeof val === "string" ? val : (val.value || val.name);
                       const isSelected = (material === valName || size === valName);
+                      const priceAdj = val.priceAdjustment ? Number(val.priceAdjustment) : 0;
                       return (
                         <button
                           key={val.id || valName}
@@ -100,6 +117,7 @@ export default function ProductInfo({
                           }`}
                         >
                           {valName}
+                          {priceAdj > 0 && ` (+฿${priceAdj})`}
                         </button>
                       );
                     })}
@@ -157,71 +175,110 @@ export default function ProductInfo({
         )}
 
         {/* LINKED ACCESSORIES FOR CUSTOM PRODUCT */}
-        {product.accessories && product.accessories.length > 0 && (
-          <div className="mt-8">
-            <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
-              เลือกวัสดุตกแต่งเพิ่มเติม (Accessories)
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {product.accessories.map((item) => {
-                const acc = item.accessory;
-                if (!acc) return null;
-                const isOutOfStock = acc.stock <= 0;
-                const isSelected = selectedAccessories.some((a) => a.id === acc.id);
+        {product.accessories && product.accessories.length > 0 && (() => {
+          const groups = {};
+          product.accessories.forEach((item) => {
+            const acc = item.accessory;
+            if (!acc) return;
+            let categoryName = acc.category?.name;
+            if (!categoryName) {
+              const nameLower = (acc.name || "").toLowerCase();
+              if (nameLower.includes("จี้") || nameLower.includes("charm") || nameLower.includes("ดาว") || nameLower.includes("หัวใจ") || nameLower.includes("แมว")) {
+                categoryName = "CHARM";
+              } else if (nameLower.includes("หิน") || nameLower.includes("bead") || nameLower.includes("นิล") || nameLower.includes("โรส") || nameLower.includes("เทอร์") || nameLower.includes("หินสี") || nameLower.includes("หินนำโชค")) {
+                categoryName = "BEAD";
+              } else if (nameLower.includes("เชือก") || nameLower.includes("หนัง") || nameLower.includes("cord") || nameLower.includes("wax") || nameLower.includes("สาย")) {
+                categoryName = "CORD";
+              } else {
+                categoryName = "อื่น ๆ";
+              }
+            }
+            let displayName = categoryName;
+            if (categoryName === "CHARM") displayName = "จี้ประดับ (Charm)";
+            else if (categoryName === "BEAD") displayName = "ลูกปัดหินนำโชค (Bead)";
+            else if (categoryName === "CORD") displayName = "สายรัดและเชือกถัก (Cord)";
 
-                const toggleSelect = () => {
-                  if (isOutOfStock) return;
-                  if (isSelected) {
-                    setSelectedAccessories(selectedAccessories.filter((a) => a.id !== acc.id));
-                  } else {
-                    setSelectedAccessories([...selectedAccessories, acc]);
-                  }
-                };
+            if (!groups[displayName]) {
+              groups[displayName] = [];
+            }
+            groups[displayName].push(item);
+          });
 
-                return (
-                  <button
-                    key={acc.id}
-                    type="button"
-                    disabled={isOutOfStock}
-                    onClick={toggleSelect}
-                    className={`p-3 rounded-xl border flex flex-col items-center justify-between text-center transition-all cursor-pointer relative ${
-                      isOutOfStock
-                        ? "border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed"
-                        : isSelected
-                        ? "border-[#7a5b46] bg-[#7a5b46]/5 text-[#7a5b46] ring-2 ring-[#7a5b46]"
-                        : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-                    }`}
-                  >
-                    {isOutOfStock && (
-                      <span className="absolute top-1.5 right-1.5 bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
-                        ของหมด
-                      </span>
-                    )}
-                    {acc.imageUrl ? (
-                      <img
-                        src={acc.imageUrl}
-                        alt={acc.name}
-                        className="w-12 h-12 rounded-lg object-cover mb-2 border border-gray-100"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] text-gray-400 font-bold mb-2">
-                        No Img
-                      </div>
-                    )}
-                    <span className="text-xs font-bold line-clamp-1">{acc.name}</span>
-                    <span className="text-[11px] font-semibold text-[#7a5b46] mt-1">
-                      {acc.price > 0 ? `+฿${parseFloat(acc.price).toLocaleString()}` : "ฟรี"}
-                    </span>
-                  </button>
-                );
-              })}
+          return (
+            <div className="mt-8 space-y-6">
+              {Object.entries(groups).map(([groupName, items]) => (
+                <div key={groupName} className="space-y-3">
+                  <p className="font-bold text-xs text-[#7a5b46] uppercase tracking-wider">
+                    เลือก{groupName}
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {items.map((item) => {
+                      const acc = item.accessory;
+                      const isOutOfStock = acc.stock <= 0;
+                      const isSelected = selectedAccessories.some((a) => a.id === acc.id);
+
+                      const toggleSelect = () => {
+                        if (isOutOfStock) return;
+                        if (isSelected) {
+                          setSelectedAccessories(selectedAccessories.filter((a) => a.id !== acc.id));
+                        } else {
+                          setSelectedAccessories([...selectedAccessories, acc]);
+                        }
+                      };
+
+                      return (
+                        <button
+                          key={acc.id}
+                          type="button"
+                          disabled={isOutOfStock}
+                          onClick={toggleSelect}
+                          className={`p-3 rounded-xl border flex flex-col items-center justify-between text-center transition-all cursor-pointer relative ${
+                            isOutOfStock
+                              ? "border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed"
+                              : isSelected
+                              ? "border-[#7a5b46] bg-[#7a5b46]/5 text-[#7a5b46] ring-2 ring-[#7a5b46]"
+                              : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+                          }`}
+                        >
+                          {isOutOfStock && (
+                            <span className="absolute top-1.5 right-1.5 bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
+                              ของหมด
+                            </span>
+                          )}
+                          {acc.imageUrl ? (
+                            <img
+                              src={acc.imageUrl}
+                              alt={acc.name}
+                              className="w-12 h-12 rounded-lg object-cover mb-2 border border-gray-100"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] text-gray-400 font-bold mb-2">
+                              No Img
+                            </div>
+                          )}
+                          <span className="text-xs font-bold line-clamp-1">{acc.name}</span>
+                          <span className="text-[11px] font-semibold text-[#7a5b46] mt-1">
+                            {acc.price > 0 ? `+฿${parseFloat(acc.price).toLocaleString()}` : "ฟรี"}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Quantity */}
         <div className="mt-8">
-          <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">จำนวนสินค้า</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-bold text-xs text-gray-400 uppercase tracking-wider">จำนวนสินค้า</p>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs text-gray-400 font-semibold">ราคารวม:</span>
+              <span className="text-xl font-extrabold text-[#7a5b46]">฿{totalPrice.toLocaleString()}</span>
+            </div>
+          </div>
           <div className="flex items-center gap-1 w-fit border border-gray-200 rounded-lg overflow-hidden bg-white">
             <button
               type="button"

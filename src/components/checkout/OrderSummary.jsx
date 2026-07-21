@@ -23,8 +23,19 @@ export default function OrderSummary({ orderItems, itemCount, subtotal, shipping
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm truncate">{it.name}</p>
-              <p className="text-xs" style={{ color: MUTED }}>{it.variant || ""}</p>
+              <p className="text-sm truncate font-semibold">{it.name}</p>
+              {(it.size || it.material) && (
+                <p className="text-[11px] font-medium" style={{ color: MUTED }}>
+                  {it.size ? `ขนาด: ${it.size}` : ""}
+                  {it.size && it.material ? " | " : ""}
+                  {it.material ? `วัสดุ: ${it.material}` : ""}
+                </p>
+              )}
+              {it.accessories && it.accessories.length > 0 && (
+                <p className="text-[10px] italic font-medium mt-0.5 truncate" style={{ color: MUTED }}>
+                  ของตกแต่ง: {it.accessories.join(", ")}
+                </p>
+              )}
             </div>
             <p className="text-sm font-medium flex-shrink-0">฿{baht(it.price * it.quantity)}</p>
           </div>
