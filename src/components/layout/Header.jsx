@@ -277,19 +277,17 @@ export default function Header({
                     <PackageIcon size={18} />
                     ประวัติคำสั่งซื้อ
                   </Link>
-                  <button
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      setIsAuthOpen(true);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-left text-sm font-bold text-earth-dark"
+                  <Link
+                    href="/profile"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-sm font-bold text-earth-dark transition"
                   >
                     <Settings02Icon size={18} />
                     โปรไฟล์
-                  </button>
+                  </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#FFF5F5] text-left text-sm font-bold text-red-600 border-t border-gray-100"
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#FFF5F5] text-left text-sm font-bold text-red-600 border-t border-gray-100 cursor-pointer"
                   >
                     <Logout01Icon size={18} />
                     ออกจากระบบ
