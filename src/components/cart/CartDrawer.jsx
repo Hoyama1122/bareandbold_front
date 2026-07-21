@@ -61,7 +61,7 @@ export default function CartDrawer({ isOpen, onClose }) {
   if (!mounted) return null;
 
   const total = cartItems.reduce(
-    (acc, item) => acc + item.product.price * item.quantity,
+    (acc, item) => acc + (item.product?.price || item.price || 0) * item.quantity,
     0
   );
 
@@ -194,18 +194,19 @@ export default function CartDrawer({ isOpen, onClose }) {
                 <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-100 border border-[#F5F0E6] flex-shrink-0 flex items-center justify-center">
                   <img
                     src={
-                      item.product.images?.[0]?.url ||
-                      item.product.images?.[0] ||
+                      item.product?.images?.[0]?.url ||
+                      item.product?.images?.[0] ||
+                      item.image ||
                       "/placeholder.jpg"
                     }
-                    alt={item.product.name}
+                    alt={item.product?.name || item.name || ""}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 {/* Details */}
                 <div className="flex-1 flex flex-col justify-between pr-6">
                   <div>
-                    <h4 className="text-sm font-bold text-[#3C322A] line-clamp-1">{item.product.name}</h4>
+                    <h4 className="text-sm font-bold text-[#3C322A] line-clamp-1">{item.product?.name || item.name || ""}</h4>
                     {item.accessories && item.accessories.length > 0 && (
                       <p className="text-[11px] text-[#556B2F] mt-0.5 font-medium">
                         + {item.accessories.join(", ")}
@@ -233,7 +234,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                       </button>
                     </div>
                     <span className="text-sm font-extrabold text-[#6A5242]">
-                      ฿{(item.product.price * item.quantity).toLocaleString()}
+                      ฿{((item.product?.price || item.price || 0) * item.quantity).toLocaleString()}
                     </span>
                   </div>
                 </div>
