@@ -532,6 +532,7 @@ export default function DiagramsPage() {
                 { id: "sequence", label: "Sequence Diagram" },
                 { id: "schema", label: "Database Schema" },
                 { id: "wireframe", label: "Wireframe" },
+                { id: "persona", label: "User Personas" },
               ].map((diag) => (
                 <button
                   key={diag.id}
@@ -935,6 +936,116 @@ export default function DiagramsPage() {
                         alt="Backoffice Wireframe" 
                         className="w-full h-auto rounded-lg shadow-sm border border-[#EADECC]/45"
                       />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* --- 6. USER PERSONAS --- */}
+              {selectedDiagram === "persona" && (
+                <div className="space-y-8 font-anuphan">
+                  <div>
+                    <h3 className="text-xl font-black text-[#3C322A]">
+                      User Persona Design (กลุ่มผู้ใช้งานเป้าหมาย)
+                    </h3>
+                    <p className="text-xs text-[#6A5242] mt-1 font-bold">
+                      การจำลองลักษณะผู้ใช้งานจริงทั้งฝั่งลูกค้า (Customer) และฝั่งเจ้าหน้าที่หลังบ้าน (Staff/Admin) เพื่อใช้ออกแบบฟีเจอร์และประสบการณ์ใช้งาน
+                    </p>
+                  </div>
+
+                  {/* Persona Cards Grid */}
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {/* Persona 1: Customer (Nicha) */}
+                    <div className="border border-[#EADECC]/60 rounded-2xl overflow-hidden bg-white shadow-sm flex flex-col justify-between hover:shadow-md transition duration-200">
+                      <div className="p-6 space-y-4">
+                        {/* Profile Header */}
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-full bg-[#556B2F]/10 border border-[#556B2F]/20 overflow-hidden flex items-center justify-center text-[#556B2F] font-black text-xl">
+                            ณ
+                          </div>
+                          <div>
+                            <h4 className="text-base font-extrabold text-[#3C322A]">คุณณิชา (Nicha)</h4>
+                            <span className="bg-[#556B2F]/10 text-[#556B2F] text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                              ลูกค้าสายแฟชั่น & มูเตลู
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Demographic details */}
+                        <div className="text-[13px] space-y-3.5 border-t border-[#F5F0E6] pt-4 text-[#3C322A]/85 leading-relaxed font-medium">
+                          <p><strong>อายุ:</strong> 25 ปี</p>
+                          <p><strong>อาชีพ:</strong> คอนเทนต์ครีเอเตอร์อิสระ</p>
+                          <p><strong>พฤติกรรม:</strong> ชื่นชอบแฟชั่นมินิมอลและเครื่องประดับสายมู ชอบคัสตอมรูปแบบและหินสีต่าง ๆ ให้ตรงตามดวงชะตาเพื่อความมั่นใจ</p>
+                          <p><strong>เป้าหมาย (Goals):</strong> ต้องการเครื่องประดับที่ออกแบบเองได้ มีคุณค่าทางใจ ขนาดข้อมือพอดีตัว และมีระบบหลังบ้านชำระเงินที่สะดวกสบาย</p>
+                          <p><strong>ปัญหา (Pain Points):</strong> ร้านสร้อยหินทั่วไปมักมีขนาดมาตรฐานที่ไม่พอดีกับข้อมือตน และไม่สามารถเห็นรูปจำลองการออกแบบก่อนสั่งทำจริงได้</p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-[#F5F0E6]/30 px-6 py-3 border-t border-[#F5F0E6]/60">
+                        <span className="text-[10px] text-[#556B2F] font-black uppercase tracking-wider">ฟีเจอร์ตอบโจทย์: Made-to-Order Customizer</span>
+                      </div>
+                    </div>
+
+                    {/* Persona 2: Customer (Kongkiat) */}
+                    <div className="border border-[#EADECC]/60 rounded-2xl overflow-hidden bg-white shadow-sm flex flex-col justify-between hover:shadow-md transition duration-200">
+                      <div className="p-6 space-y-4">
+                        {/* Profile Header */}
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-full bg-[#6A5242]/10 border border-[#6A5242]/20 overflow-hidden flex items-center justify-center text-[#6A5242] font-black text-xl">
+                            ก
+                          </div>
+                          <div>
+                            <h4 className="text-base font-extrabold text-[#3C322A]">คุณก้องเกียรติ (Kong)</h4>
+                            <span className="bg-[#6A5242]/10 text-[#6A5242] text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                              ลูกค้าเน้นความรวดเร็ว
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Demographic details */}
+                        <div className="text-[13px] space-y-3.5 border-t border-[#F5F0E6] pt-4 text-[#3C322A]/85 leading-relaxed font-medium">
+                          <p><strong>อายุ:</strong> 31 ปี</p>
+                          <p><strong>อาชีพ:</strong> วิศวกรซอฟต์แวร์</p>
+                          <p><strong>พฤติกรรม:</strong> ต้องการซื้อของขวัญชิ้นพิเศษให้แฟนในวันครบรอบ ไม่มีเวลาเลือกนาน และต้องการชำระเงินให้เร็วที่สุดผ่านมือถือ</p>
+                          <p><strong>เป้าหมาย (Goals):</strong> อยากซื้อสินค้าแบรนด์ดังที่ออกแบบเสร็จสำเร็จรูป ไม่ต้องการลงทะเบียนหลายขั้นตอนก่อนสั่งซื้อ สะดวกใจจ่ายผ่าน PromptPay QR</p>
+                          <p><strong>ปัญหา (Pain Points):</strong> เบื่อขั้นตอนเช็คเอาท์ที่ยาวและต้องเลือกกรอกฟิลด์ที่ไม่จำเป็น รวมถึงหน้าเว็บไม่มีระบบสแกนคิวอาร์ชำระเงินที่รวดเร็ว</p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-[#F5F0E6]/30 px-6 py-3 border-t border-[#F5F0E6]/60">
+                        <span className="text-[10px] text-[#6A5242] font-black uppercase tracking-wider">ฟีเจอร์ตอบโจทย์: สั่งซื้อทันที (Buy Now) & QR Payment</span>
+                      </div>
+                    </div>
+
+                    {/* Persona 3: Staff (Praewa) */}
+                    <div className="border border-[#EADECC]/60 rounded-2xl overflow-hidden bg-white shadow-sm flex flex-col justify-between hover:shadow-md transition duration-200">
+                      <div className="p-6 space-y-4">
+                        {/* Profile Header */}
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-full bg-zinc-800/10 border border-zinc-800/20 overflow-hidden flex items-center justify-center text-zinc-800 font-black text-xl">
+                            พ
+                          </div>
+                          <div>
+                            <h4 className="text-base font-extrabold text-[#3C322A]">คุณแพรวา (Praewa)</h4>
+                            <span className="bg-zinc-800/10 text-zinc-800 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                              Admin / พนักงานหลังบ้าน
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Demographic details */}
+                        <div className="text-[13px] space-y-3.5 border-t border-[#F5F0E6] pt-4 text-[#3C322A]/85 leading-relaxed font-medium">
+                          <p><strong>อายุ:</strong> 27 ปี</p>
+                          <p><strong>อาชีพ:</strong> Admin / เจ้าหน้าที่บริหารจัดการหลังบ้าน</p>
+                          <p><strong>พฤติกรรม:</strong> ต้องดูแลการเช็คสลิปโอนเงิน อัปเดตคลังของประดับ ตรวจสเปกวัสดุคัสตอม และคีย์เลขพัสดุในแต่ละวัน</p>
+                          <p><strong>เป้าหมาย (Goals):</strong> จัดหมวดหมู่วัสดุ ตรวจความต้องการสั่งตัดข้อมือของลูกค้า ปริ้นท์ใบคำสั่งซื้อที่ชำระเงินเรียบร้อย เพื่อส่งสินค้าได้รวดเร็ว</p>
+                          <p><strong>ปัญหา (Pain Points):</strong> ข้อมูลวัสดุคัสตอมในระบบแบบเดิมสับสน แยกหมวดหมู่สินค้าไม่ออก และไม่สามารถเปลี่ยนสถานะออเดอร์แจ้งลูกค้าได้ง่าย</p>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-[#F5F0E6]/30 px-6 py-3 border-t border-[#F5F0E6]/60">
+                        <span className="text-[10px] text-zinc-800 font-black uppercase tracking-wider">ฟีเจอร์ตอบโจทย์: Backoffice Stock & Status Management</span>
+                      </div>
                     </div>
                   </div>
                 </div>
