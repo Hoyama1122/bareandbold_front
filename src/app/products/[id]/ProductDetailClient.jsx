@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import useEmblaCarousel from "embla-carousel-react";
 import { productService } from "@/services/product.service";
 import { cartService } from "@/services/cart.service";
@@ -13,6 +14,7 @@ import ImageZoomModal from "@/components/product-detail/ImageZoomModal";
 import { addToCart as addCartAPI } from "@/services/cart.service";
 
 export default function ProductDetailClient({ nameSlug }) {
+  const router = useRouter();
   const [product, setProduct] = useState(null);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [loading, setLoading] = useState(true);

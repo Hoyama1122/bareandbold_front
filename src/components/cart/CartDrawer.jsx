@@ -14,6 +14,14 @@ export default function CartDrawer({ isOpen, onClose }) {
 
     async function loadCart() {
       if (cartService.isLoggedIn()) {
+        // Read directly from synced local storage to avoid redundant GET requests
+        const local = localStorage.getItem("bare_cart");
+        if (local) {
+          try {
+            setCartItems(JSON.parse(local));
+            return;
+          } catch (e) {}
+        }
         const data = await getCart();
         if (data.success && data.cart) {
           setCartItems(data.cart.items);
@@ -59,6 +67,13 @@ export default function CartDrawer({ isOpen, onClose }) {
 
   const updateQty = async (productId, delta, item) => {
     const newQty = Math.max(0, item.quantity + delta);
+    
+    // Optimistic UI Update: change value instantly in state
+    const originalItems = [...cartItems];
+    setCartItems((prev) =>
+      prev.map((it) => (it.productId === productId ? { ...it, quantity: newQty } : it))
+    );
+
     if (newQty === 0) {
       await removeItem(productId);
     } else {
@@ -71,10 +86,10 @@ export default function CartDrawer({ isOpen, onClose }) {
             item.customDetails?.size || "16 cm",
             item.id
           );
-          const data = await getCart();
-          setCartItems(data.cart.items);
+          // Let the cartUpdated event handler automatically sync the UI
         } catch (err) {
           console.error("Failed to update item quantity:", err);
+          setCartItems(originalItems); // Revert on failure
         }
       } else {
         const localItems = JSON.parse(localStorage.getItem("bare_cart") || "[]");
@@ -165,10 +180,10 @@ export default function CartDrawer({ isOpen, onClose }) {
               </button>
             </div>
           ) : (
-            cartItems.map((item) => (
-              <div key={item.id} className="flex gap-4 p-3 bg-[#FDFBF7] rounded-xl border border-[#F5F0E6] relative group">
+            cartItems.map((item, index) => (
+              <div key={item.id || `${item.productId || item.product?.id || ""}-${index}`} className="flex gap-4 p-3 bg-[#FDFBF7] rounded-xl border border-[#F5F0E6] relative group">
                 <button
-                  onClick={() => removeItem(item.product.id)}
+                  onClick={() => removeItem(item.productId)}
                   className="absolute top-2 right-2 text-zinc-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -201,7 +216,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                     <div className="flex items-center gap-1 border border-zinc-200 rounded-lg overflow-hidden bg-white">
                       <button
                         type="button"
-                        onClick={() => updateQty(item.product.id, -1, item)}
+                        onClick={() => updateQty(item.productId, -1, item)}
                         className="w-7 h-7 bg-zinc-50 hover:bg-zinc-100 flex items-center justify-center font-bold text-zinc-600 transition active:scale-95 cursor-pointer border-0"
                       >
                         -
@@ -211,7 +226,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                       </span>
                       <button
                         type="button"
-                        onClick={() => updateQty(item.product.id, 1, item)}
+                        onClick={() => updateQty(item.productId, 1, item)}
                         className="w-7 h-7 bg-zinc-50 hover:bg-zinc-100 flex items-center justify-center font-bold text-zinc-600 transition active:scale-95 cursor-pointer border-0"
                       >
                         +

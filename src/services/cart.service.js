@@ -97,11 +97,25 @@ export const cartService = {
         return;
       } catch (err) {
         console.error("Error adding to backend cart:", err);
+        throw err;
       }
     }
 
     // Guest cart logic fallback
-    const cart = JSON.parse(localStorage.getItem("bare_cart") || "[]");
+    let cart = [];
+    try {
+      const local = localStorage.getItem("bare_cart");
+      if (local) {
+        cart = JSON.parse(local);
+      }
+    } catch (e) {
+      console.error("Error parsing guest cart:", e);
+    }
+
+    if (!Array.isArray(cart)) {
+      cart = [];
+    }
+
     // Check if duplicate exists with same options
     const existingIndex = cart.findIndex(
       (item) =>
@@ -148,11 +162,20 @@ export const cartService = {
         return;
       } catch (err) {
         console.error("Error updating backend cart item:", err);
+        throw err;
       }
     }
 
     // Guest cart fallback
-    const cart = JSON.parse(localStorage.getItem("bare_cart") || "[]");
+    let cart = [];
+    try {
+      const local = localStorage.getItem("bare_cart");
+      if (local) cart = JSON.parse(local);
+    } catch (e) {
+      console.error("Error parsing guest cart:", e);
+    }
+    if (!Array.isArray(cart)) cart = [];
+
     const updated = cart
       .map((item) => (item.id === cartItemId ? { ...item, quantity } : item))
       .filter((item) => item.quantity > 0);
@@ -175,11 +198,20 @@ export const cartService = {
         return;
       } catch (err) {
         console.error("Error removing from backend cart:", err);
+        throw err;
       }
     }
 
     // Guest cart fallback
-    const cart = JSON.parse(localStorage.getItem("bare_cart") || "[]");
+    let cart = [];
+    try {
+      const local = localStorage.getItem("bare_cart");
+      if (local) cart = JSON.parse(local);
+    } catch (e) {
+      console.error("Error parsing guest cart:", e);
+    }
+    if (!Array.isArray(cart)) cart = [];
+
     const updated = cart.filter((item) => item.id !== cartItemId);
     localStorage.setItem("bare_cart", JSON.stringify(updated));
     window.dispatchEvent(new Event("cartUpdated"));
