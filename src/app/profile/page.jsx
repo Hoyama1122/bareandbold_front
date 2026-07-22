@@ -232,20 +232,18 @@ const updateProfile = (field) => (e) => {
     const saved = localStorage.getItem("addresses");
 
     return saved ? JSON.parse(saved) : [];
-});
+  });
 
-useEffect(() => {
+  useEffect(() => {
     localStorage.setItem(
-        "addresses",
-        JSON.stringify(addresses)
+      "addresses",
+      JSON.stringify(addresses)
     );
-}, [addresses]);
+  }, [addresses]);
 
-  const emptyAddress = {label: "home",recipient: "",phone: "",address: "",province: "",district: "",subDistrict: "",postcode: "",note: "",};
+  const emptyAddress = { label: "home", recipient: "", phone: "", address: "", province: "", district: "", subDistrict: "", postcode: "", note: "" };
   const [addrForm, setAddrForm] = useState(emptyAddress);
 
-  
-  
   const [editingId, setEditingId] = useState(null);
   const [showAddrForm, setShowAddrForm] = useState(false);
 
@@ -260,23 +258,24 @@ useEffect(() => {
     setShowAddrForm(true);
   };
   const saveAddress = () => {
+    const recipientName = profile.fullName || addrForm.recipient || "";
     if (
-  !addrForm.recipient ||
-  !addrForm.phone ||
-  !addrForm.address ||
-  !addrForm.province ||
-  !addrForm.district ||
-  !addrForm.subDistrict ||
-  !addrForm.postcode) 
-  {
+      !addrForm.phone ||
+      !addrForm.address ||
+      !addrForm.province ||
+      !addrForm.district ||
+      !addrForm.subDistrict ||
+      !addrForm.postcode
+    ) {
       notify("กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน");
       return;
     }
+    const finalForm = { ...addrForm, recipient: recipientName };
     if (editingId) {
-      setAddresses((list) => list.map((a) => (a.id === editingId ? { ...addrForm, id: editingId, isDefault: a.isDefault } : a)));
+      setAddresses((list) => list.map((a) => (a.id === editingId ? { ...finalForm, id: editingId, isDefault: a.isDefault } : a)));
       notify("แก้ไขที่อยู่เรียบร้อยแล้ว");
     } else {
-      setAddresses((list) => [...list, { ...addrForm, id: Date.now(), isDefault: list.length === 0 }]);
+      setAddresses((list) => [...list, { ...finalForm, id: Date.now(), isDefault: list.length === 0 }]);
       notify("บันทึกที่อยู่ใหม่เรียบร้อยแล้ว");
     }
     setShowAddrForm(false);
@@ -464,7 +463,7 @@ useEffect(() => {
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold" style={{ color: "#2B231C" }}>
-                        {addr.recipient}
+                        {addr.recipient || profile.fullName}
                       </span>
                       <span
                         className="text-[11px] px-2 py-0.5 rounded-full"
@@ -554,16 +553,7 @@ useEffect(() => {
                 </div>
               </Field>
 
-              <div className="grid sm:grid-cols-2 gap-4 mt-4">
-
-                <Field label="ชื่อผู้รับ">
-                  <TextInput
-                    value={addrForm.recipient}
-                    onChange={(e) => setAddrForm((f) => ({ ...f, recipient: e.target.value }))}
-                    placeholder="ชื่อ-นามสกุลผู้รับพัสดุ"
-                  />
-                </Field>
-
+              <div className="mt-4">
                 <Field label="เบอร์โทรศัพท์">
                   <TextInput
                     value={addrForm.phone}
@@ -574,68 +564,66 @@ useEffect(() => {
               </div>
 
               <div className="mt-4">
-
                 <SearchDropdown
-  label="จังหวัด"
-  value={addrForm.province}
-  options={provinces}
-  placeholder="เลือกจังหวัด"
-  onChange={(province) =>
-    setAddrForm((f) => ({
-      ...f,
-      province,
-    }))
-  }
-/>
-
+                  label="จังหวัด"
+                  value={addrForm.province}
+                  options={provinces}
+                  placeholder="เลือกจังหวัด"
+                  onChange={(province) =>
+                    setAddrForm((f) => ({
+                      ...f,
+                      province,
+                    }))
+                  }
+                />
 
                 <Field label="เขต / อำเภอ">
-    <TextInput
-        value={addrForm.district}
-        onChange={(e) =>
-            setAddrForm((f) => ({
-                ...f,
-                district: e.target.value,
-            }))
-        }
-        placeholder="กรอกเขต / อำเภอ"
-    />
-</Field>
-
+                  <TextInput
+                    value={addrForm.district}
+                    onChange={(e) =>
+                      setAddrForm((f) => ({
+                        ...f,
+                        district: e.target.value,
+                      }))
+                    }
+                    placeholder="กรอกเขต / อำเภอ"
+                  />
+                </Field>
 
                 <Field label="แขวง / ตำบล">
-    <TextInput
-        value={addrForm.subDistrict}
-        onChange={(e) =>
-            setAddrForm((f) => ({
-                ...f,
-                subDistrict: e.target.value,
-            }))
-        }
-        placeholder="กรอกแขวง / ตำบล"
-    />
-</Field>
-                
+                  <TextInput
+                    value={addrForm.subDistrict}
+                    onChange={(e) =>
+                      setAddrForm((f) => ({
+                        ...f,
+                        subDistrict: e.target.value,
+                      }))
+                    }
+                    placeholder="กรอกแขวง / ตำบล"
+                  />
+                </Field>
+
                 <Field label="ที่อยู่">
-                <TextInput
+                  <TextInput
                     style={inputStyle}
                     value={addrForm.address}
-                    onChange={(e)=>
-                setAddrForm(f=>({...f,address:e.target.value}))} placeholder="บ้านเลขที่ ซอย ถนน"/>
+                    onChange={(e) => setAddrForm((f) => ({ ...f, address: e.target.value }))}
+                    placeholder="บ้านเลขที่ ซอย ถนน"
+                  />
                 </Field>
-                
+
                 <Field label="รหัสไปรษณีย์">
-    <TextInput
-        value={addrForm.postcode}
-        onChange={(e) =>
-            setAddrForm((f) => ({
-                ...f,
-                postcode: e.target.value,
-            }))
-        }
-        placeholder="กรอกรหัสไปรษณีย์"
-    />
-</Field>
+                  <TextInput
+                    value={addrForm.postcode}
+                    onChange={(e) =>
+                      setAddrForm((f) => ({
+                        ...f,
+                        postcode: e.target.value,
+                      }))
+                    }
+                    placeholder="กรอกรหัสไปรษณีย์"
+                  />
+                </Field>
 
                 <Field label="หมายเหตุผู้จัดส่ง">
                     <textarea

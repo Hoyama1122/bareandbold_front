@@ -296,19 +296,39 @@ export default function CheckoutPage() {
   const total = subtotal + shipping;
   const itemCount = orderItems.reduce((s, it) => s + it.quantity, 0);
 
+  const [selectedAddress, setSelectedAddress] = useState(null);
+
   const handleConfirm = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const formData = new FormData(e.currentTarget);
-      const recipientName = `${formData.get("firstName")} ${formData.get("lastName")}`;
-      const recipientPhone = formData.get("phone");
-      const addressDetail = formData.get("address");
-      const notes = formData.get("notes") || "";
+      let recipientName = "";
+      let recipientPhone = "";
+      let shippingAddress = "";
 
-      const shippingAddress = `${addressDetail}, ${subDistrict}, ${district}, ${province} ${zipCode} ${notes ? `(หมายเหตุ: ${notes})` : ""}`;
+      if (selectedAddress) {
+        recipientName = selectedAddress.recipientName;
+        recipientPhone = selectedAddress.phone;
+        const noteText = selectedAddress.note ? ` (หมายเหตุ: ${selectedAddress.note})` : "";
+        const tambonText = selectedAddress.tambon ? `ต.${selectedAddress.tambon}, ` : "";
+        const amphoeText = selectedAddress.amphoe ? `อ.${selectedAddress.amphoe}, ` : "";
+        shippingAddress = `${selectedAddress.addressLine}, ${tambonText}${amphoeText}${selectedAddress.province} ${selectedAddress.postalCode}${noteText}`;
+      } else {
+        const formData = new FormData(e.currentTarget);
+        recipientName = `${formData.get("firstName") || ""} ${formData.get("lastName") || ""}`.trim();
+        recipientPhone = formData.get("phone") || "";
+        const addressDetail = formData.get("address") || "";
+        const notes = formData.get("notes") || "";
+        const tambonText = subDistrict ? `ต.${subDistrict}, ` : "";
+        const amphoeText = district ? `อ.${district}, ` : "";
+        shippingAddress = `${addressDetail}, ${tambonText}${amphoeText}${province} ${zipCode} ${notes ? `(หมายเหตุ: ${notes})` : ""}`.trim();
+      }
+
+      if (!recipientName || !recipientPhone || !shippingAddress) {
+        throw new Error("กรุณาระบุข้อมูลผู้รับและที่อยู่จัดส่งให้ครบถ้วน");
+      }
 
       // 1. Create order on backend
       const orderRes = await orderService.createOrder({
@@ -322,7 +342,7 @@ export default function CheckoutPage() {
       }
 
       setOrderId(orderRes.orderId);
-      setOrderNumber(orderRes.orderId); // Use orderId as order number or custom format
+      setOrderNumber(orderRes.orderId);
       setSavedTotal(total);
 
       // 2. Process checkout payment
@@ -449,6 +469,7 @@ export default function CheckoutPage() {
               handleZipCodeChange={handleZipCodeChange}
               saveInfo={saveInfo}
               setSaveInfo={setSaveInfo}
+              onAddressSelect={(addr) => setSelectedAddress(addr)}
             />
 
             <PaymentForm payment={payment} setPayment={setPayment} />
