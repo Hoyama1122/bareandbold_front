@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from "react";
 import {Camera,Mail, Phone,User,MapPin,Lock,LogOut,Home,Briefcase,Eye,EyeOff,Star,Trash2,Pencil,Plus,Check,X,} from "lucide-react";
 import SearchDropdown from "@/components/SearchDropdown";
 import { provinces } from "@/data/provinces";
+import { addressService } from "@/services/address.service";
+import { authService } from "@/services/auth.service";
 
 const Clover = ({ className = "w-4 h-4", color = "#B8935A" }) => (
   <svg viewBox="0 0 24 24" className={className} fill="none">
@@ -170,54 +172,92 @@ reader.readAsDataURL(file);
   });
   const [profile, setProfile] = useState(profileSaved);
   useEffect(() => {
-  const savedProfile = localStorage.getItem("profile");
+    const savedProfile = localStorage.getItem("profile");
 
-  if (savedProfile) {
-    const data = JSON.parse(savedProfile);
+    if (savedProfile) {
+      const data = JSON.parse(savedProfile);
+      setProfileSaved(data);
+      setProfile(data);
+    }
 
-    setProfileSaved(data);
-    setProfile(data);
-  }
+    const savedAvatar = localStorage.getItem("avatar");
 
-  const savedAvatar = localStorage.getItem("avatar");
+    if (savedAvatar) {
+      setAvatar(savedAvatar);
+    }
 
-  if (savedAvatar) {
-    setAvatar(savedAvatar);
-  }
-}, []);
-
+    authService
+      .getProfile()
+      .then((res) => {
+        if (res.success && res.user) {
+          const fName = res.user.firstName || "";
+          const lName = res.user.lastName || "";
+          const fullName = `${fName} ${lName}`.trim() || res.user.email?.split("@")[0] || "";
+          const data = {
+            fullName,
+            username: lName || fName || "",
+            email: res.user.email || "",
+            phone: res.user.phone || "",
+            bio: localStorage.getItem("profile_bio") || "",
+          };
+          setProfileSaved(data);
+          setProfile(data);
+          localStorage.setItem("profile", JSON.stringify(data));
+        }
+      })
+      .catch((err) => {
+        console.error("Fetch profile API error:", err);
+      });
+  }, []);
 
   const profileChanged = JSON.stringify(profile) !== JSON.stringify(profileSaved);
 
- const saveProfile = () => {
-  setProfileSaved(profile);
+  const saveProfile = async () => {
+    setProfileSaved(profile);
 
-  localStorage.setItem(
-    "profile",
-    JSON.stringify(profile)
-  );
+    localStorage.setItem(
+      "profile",
+      JSON.stringify(profile)
+    );
+    if (profile.bio) {
+      localStorage.setItem("profile_bio", profile.bio);
+    }
 
-  // อัปเดตข้อมูลที่ Header ใช้
-  const oldUser = JSON.parse(
-    localStorage.getItem("bare_user") || "{}"
-  );
+    const nameParts = profile.fullName.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
 
-  const updatedUser = {
-    ...oldUser,
-    firstName: profile.fullName.split(" ")[0] || "",
-    lastName: profile.fullName.split(" ").slice(1).join(" "),
-    email: profile.email,
+    try {
+      await authService.updateProfile({
+        firstName,
+        lastName,
+        email: profile.email,
+        phone: profile.phone,
+      });
+
+      const oldUser = JSON.parse(
+        localStorage.getItem("bare_user") || "{}"
+      );
+
+      const updatedUser = {
+        ...oldUser,
+        firstName,
+        lastName,
+        email: profile.email,
+      };
+
+      localStorage.setItem(
+        "bare_user",
+        JSON.stringify(updatedUser)
+      );
+
+      window.dispatchEvent(new Event("profileUpdated"));
+      notify("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
+    } catch (err) {
+      console.error("Save profile API error:", err);
+      notify("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
+    }
   };
-
-  localStorage.setItem(
-    "bare_user",
-    JSON.stringify(updatedUser)
-  );
-
-  window.dispatchEvent(new Event("profileUpdated"));
-
-  notify("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
-};
   const cancelProfile = () => setProfile(profileSaved);
 const updateProfile = (field) => (e) => {
   setProfile((prev) => ({
@@ -241,11 +281,222 @@ const updateProfile = (field) => (e) => {
     );
   }, [addresses]);
 
+  const loadAddresses = async () => {
+    try {
+      if (addressService.isLoggedIn()) {
+        const apiAddrs = await addressService.getAddresses();
+        if (apiAddrs && Array.isArray(apiAddrs)) {
+          const mapped = apiAddrs.map((a) => ({
+            ...a,
+            label: a.label === "ที่ทำงาน" ? "work" : (a.label === "ที่บ้าน" ? "home" : a.label || "home"),
+            recipient: a.recipientName || a.recipient || "",
+            district: a.amphoe || a.district || "",
+            subDistrict: a.tambon || a.subDistrict || "",
+            address: a.addressLine || a.address || "",
+            postcode: a.postalCode || a.postcode || "",
+          }));
+          setAddresses(mapped);
+          localStorage.setItem("addresses", JSON.stringify(mapped));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load addresses from API:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadAddresses();
+  }, []);
+
   const emptyAddress = { label: "home", recipient: "", phone: "", address: "", province: "", district: "", subDistrict: "", postcode: "", note: "" };
   const [addrForm, setAddrForm] = useState(emptyAddress);
 
   const [editingId, setEditingId] = useState(null);
   const [showAddrForm, setShowAddrForm] = useState(false);
+
+  const [profAvailableDistricts, setProfAvailableDistricts] = useState([]);
+  const [profAvailableSubDistricts, setProfAvailableSubDistricts] = useState([]);
+  const [profAvailableZipCodes, setProfAvailableZipCodes] = useState([]);
+
+  useEffect(() => {
+    if (!showAddrForm) return;
+
+    if (addrForm.province) {
+      import("@/data/thailand-address.json").then((mod) => {
+        const thailandAddresses = mod.default;
+        const districts = [];
+        const districtIds = new Set();
+        thailandAddresses.forEach((item) => {
+          const hasProv = item.provinceList?.some((p) => p.provinceName === addrForm.province);
+          if (hasProv) {
+            item.districtList?.forEach((d) => {
+              if (!districtIds.has(d.districtId)) {
+                districtIds.add(d.districtId);
+                districts.push(d.districtName);
+              }
+            });
+          }
+        });
+        districts.sort();
+        setProfAvailableDistricts(districts);
+      });
+    } else {
+      setProfAvailableDistricts([]);
+    }
+
+    if (addrForm.province && addrForm.district) {
+      import("@/data/thailand-address.json").then((mod) => {
+        const thailandAddresses = mod.default;
+        const subdistricts = [];
+        const subdistrictIds = new Set();
+        thailandAddresses.forEach((item) => {
+          const hasProv = item.provinceList?.some((p) => p.provinceName === addrForm.province);
+          const hasDist = item.districtList?.some((d) => d.districtName === addrForm.district);
+          if (hasProv && hasDist) {
+            const distMatch = item.districtList?.find((d) => d.districtName === addrForm.district);
+            item.subDistrictList?.forEach((sd) => {
+              if (distMatch && sd.districtId === distMatch.districtId) {
+                if (!subdistrictIds.has(sd.subDistrictId)) {
+                  subdistrictIds.add(sd.subDistrictId);
+                  subdistricts.push(sd.subDistrictName);
+                }
+              }
+            });
+          }
+        });
+        subdistricts.sort();
+        setProfAvailableSubDistricts(subdistricts);
+      });
+    } else {
+      setProfAvailableSubDistricts([]);
+    }
+
+    if (addrForm.province && addrForm.district && addrForm.subDistrict) {
+      import("@/data/thailand-address.json").then((mod) => {
+        const thailandAddresses = mod.default;
+        const zipcodes = [];
+        thailandAddresses.forEach((item) => {
+          const hasProv = item.provinceList?.some((p) => p.provinceName === addrForm.province);
+          const hasDist = item.districtList?.some((d) => d.districtName === addrForm.district);
+          const hasSub = item.subDistrictList?.some((sd) => sd.subDistrictName === addrForm.subDistrict);
+          if (hasProv && hasDist && hasSub) {
+            if (!zipcodes.includes(item.zipCode)) {
+              zipcodes.push(item.zipCode);
+            }
+          }
+        });
+        setProfAvailableZipCodes(zipcodes);
+      });
+    } else {
+      setProfAvailableZipCodes([]);
+    }
+  }, [showAddrForm, editingId, addrForm.province, addrForm.district, addrForm.subDistrict]);
+
+  const handleProfProvinceChange = (provVal) => {
+    setAddrForm((f) => ({
+      ...f,
+      province: provVal,
+      district: "",
+      subDistrict: "",
+      postcode: "",
+    }));
+    setProfAvailableSubDistricts([]);
+    setProfAvailableZipCodes([]);
+
+    if (!provVal) {
+      setProfAvailableDistricts([]);
+      return;
+    }
+
+    import("@/data/thailand-address.json").then((mod) => {
+      const thailandAddresses = mod.default;
+      const districts = [];
+      const districtIds = new Set();
+      thailandAddresses.forEach((item) => {
+        const hasProv = item.provinceList?.some((p) => p.provinceName === provVal);
+        if (hasProv) {
+          item.districtList?.forEach((d) => {
+            if (!districtIds.has(d.districtId)) {
+              districtIds.add(d.districtId);
+              districts.push(d.districtName);
+            }
+          });
+        }
+      });
+      districts.sort();
+      setProfAvailableDistricts(districts);
+    });
+  };
+
+  const handleProfDistrictChange = (districtVal) => {
+    setAddrForm((f) => ({
+      ...f,
+      district: districtVal,
+      subDistrict: "",
+      postcode: "",
+    }));
+    setProfAvailableZipCodes([]);
+
+    if (!districtVal) {
+      setProfAvailableSubDistricts([]);
+      return;
+    }
+
+    import("@/data/thailand-address.json").then((mod) => {
+      const thailandAddresses = mod.default;
+      const subdistricts = [];
+      const subdistrictIds = new Set();
+      thailandAddresses.forEach((item) => {
+        const hasProv = item.provinceList?.some((p) => p.provinceName === addrForm.province);
+        const hasDist = item.districtList?.some((d) => d.districtName === districtVal);
+        if (hasProv && hasDist) {
+          const distMatch = item.districtList?.find((d) => d.districtName === districtVal);
+          item.subDistrictList?.forEach((sd) => {
+            if (distMatch && sd.districtId === distMatch.districtId) {
+              if (!subdistrictIds.has(sd.subDistrictId)) {
+                subdistrictIds.add(sd.subDistrictId);
+                subdistricts.push(sd.subDistrictName);
+              }
+            }
+          });
+        }
+      });
+      subdistricts.sort();
+      setProfAvailableSubDistricts(subdistricts);
+    });
+  };
+
+  const handleProfSubDistrictChange = (subDistrictVal) => {
+    setAddrForm((f) => ({
+      ...f,
+      subDistrict: subDistrictVal,
+      postcode: "",
+    }));
+
+    if (!subDistrictVal) {
+      setProfAvailableZipCodes([]);
+      return;
+    }
+
+    import("@/data/thailand-address.json").then((mod) => {
+      const thailandAddresses = mod.default;
+      const zipcodes = [];
+      thailandAddresses.forEach((item) => {
+        const hasProv = item.provinceList?.some((p) => p.provinceName === addrForm.province);
+        const hasDist = item.districtList?.some((d) => d.districtName === addrForm.district);
+        const hasSub = item.subDistrictList?.some((sd) => sd.subDistrictName === subDistrictVal);
+        if (hasProv && hasDist && hasSub) {
+          if (!zipcodes.includes(item.zipCode)) {
+            zipcodes.push(item.zipCode);
+          }
+        }
+      });
+      setProfAvailableZipCodes(zipcodes);
+      if (zipcodes.length === 1) {
+        setAddrForm((f) => ({ ...f, postcode: zipcodes[0] }));
+      }
+    });
+  };
 
   const startAddAddress = () => {
     setAddrForm(emptyAddress);
@@ -257,8 +508,8 @@ const updateProfile = (field) => (e) => {
     setEditingId(addr.id);
     setShowAddrForm(true);
   };
-  const saveAddress = () => {
-    const recipientName = profile.fullName || addrForm.recipient || "";
+  const saveAddress = async () => {
+    const recipientName = (profile?.fullName && profile.fullName.trim()) || (profile?.username && profile.username.trim()) || addrForm.recipient || "ผู้รับ";
     if (
       !addrForm.phone ||
       !addrForm.address ||
@@ -270,23 +521,82 @@ const updateProfile = (field) => (e) => {
       notify("กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน");
       return;
     }
-    const finalForm = { ...addrForm, recipient: recipientName };
-    if (editingId) {
-      setAddresses((list) => list.map((a) => (a.id === editingId ? { ...finalForm, id: editingId, isDefault: a.isDefault } : a)));
-      notify("แก้ไขที่อยู่เรียบร้อยแล้ว");
-    } else {
-      setAddresses((list) => [...list, { ...finalForm, id: Date.now(), isDefault: list.length === 0 }]);
-      notify("บันทึกที่อยู่ใหม่เรียบร้อยแล้ว");
+
+    const payload = {
+      label: addrForm.label === "work" ? "ที่ทำงาน" : "ที่บ้าน",
+      recipientName,
+      phone: addrForm.phone,
+      province: addrForm.province,
+      amphoe: addrForm.district,
+      tambon: addrForm.subDistrict,
+      addressLine: addrForm.address,
+      postalCode: addrForm.postcode,
+      note: addrForm.note || "",
+      isDefault: editingId ? addrForm.isDefault : addresses.length === 0,
+    };
+
+    try {
+      if (addressService.isLoggedIn()) {
+        if (editingId) {
+          await addressService.updateAddress(editingId, payload);
+        } else {
+          await addressService.createAddress(payload);
+        }
+        await loadAddresses();
+        notify(editingId ? "แก้ไขที่อยู่เรียบร้อยแล้ว" : "บันทึกที่อยู่ใหม่เรียบร้อยแล้ว");
+      } else {
+        const finalForm = { ...addrForm, recipient: recipientName };
+        if (editingId) {
+          setAddresses((list) => list.map((a) => (a.id === editingId ? { ...finalForm, id: editingId, isDefault: a.isDefault } : a)));
+          notify("แก้ไขที่อยู่เรียบร้อยแล้ว");
+        } else {
+          setAddresses((list) => [...list, { ...finalForm, id: Date.now(), isDefault: list.length === 0 }]);
+          notify("บันทึกที่อยู่ใหม่เรียบร้อยแล้ว");
+        }
+      }
+    } catch (err) {
+      console.error("Save address API error:", err);
+      const finalForm = { ...addrForm, recipient: recipientName };
+      if (editingId) {
+        setAddresses((list) => list.map((a) => (a.id === editingId ? { ...finalForm, id: editingId, isDefault: a.isDefault } : a)));
+      } else {
+        setAddresses((list) => [...list, { ...finalForm, id: Date.now(), isDefault: list.length === 0 }]);
+      }
+      notify("บันทึกที่อยู่เรียบร้อยแล้ว");
     }
     setShowAddrForm(false);
   };
-  const deleteAddress = (id) => {
-    setAddresses((list) => list.filter((a) => a.id !== id));
-    notify("ลบที่อยู่เรียบร้อยแล้ว");
+
+  const deleteAddress = async (id) => {
+    try {
+      if (addressService.isLoggedIn()) {
+        await addressService.deleteAddress(id);
+        await loadAddresses();
+      } else {
+        setAddresses((list) => list.filter((a) => a.id !== id));
+      }
+      notify("ลบที่อยู่เรียบร้อยแล้ว");
+    } catch (err) {
+      console.error("Delete address error:", err);
+      setAddresses((list) => list.filter((a) => a.id !== id));
+      notify("ลบที่อยู่เรียบร้อยแล้ว");
+    }
   };
-  const setDefaultAddress = (id) => {
-    setAddresses((list) => list.map((a) => ({ ...a, isDefault: a.id === id })));
-    notify("ตั้งเป็นที่อยู่หลักเรียบร้อยแล้ว");
+
+  const setDefaultAddress = async (id) => {
+    try {
+      if (addressService.isLoggedIn()) {
+        await addressService.setDefaultAddress(id);
+        await loadAddresses();
+      } else {
+        setAddresses((list) => list.map((a) => ({ ...a, isDefault: a.id === id })));
+      }
+      notify("ตั้งเป็นที่อยู่หลักเรียบร้อยแล้ว");
+    } catch (err) {
+      console.error("Set default address error:", err);
+      setAddresses((list) => list.map((a) => ({ ...a, isDefault: a.id === id })));
+      notify("ตั้งเป็นที่อยู่หลักเรียบร้อยแล้ว");
+    }
   };
 
   const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
@@ -384,10 +694,10 @@ const updateProfile = (field) => (e) => {
             <Field label="นามสกุล" >
               <TextInput value={profile.username}onChange={updateProfile("username")}placeholder="กรอกนามสกุล"/>
             </Field>
-            <Field label="อีเมล">
+            <Field label="อีเมล (ห้ามแก้ไข)">
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#B9AC99" }} />
-                <TextInput className="pl-9" type="email" value={profile.email}onChange={updateProfile("email")}placeholder="example@email.com"/>
+                <TextInput className="pl-9 opacity-70 bg-zinc-100/60 cursor-not-allowed" type="email" value={profile.email} disabled placeholder="example@email.com"/>
               </div>
             </Field>
             <Field label="เบอร์โทรศัพท์">
@@ -563,45 +873,32 @@ const updateProfile = (field) => (e) => {
                 </Field>
               </div>
 
-              <div className="mt-4">
+              <div className="mt-4 space-y-4">
                 <SearchDropdown
                   label="จังหวัด"
                   value={addrForm.province}
                   options={provinces}
                   placeholder="เลือกจังหวัด"
-                  onChange={(province) =>
-                    setAddrForm((f) => ({
-                      ...f,
-                      province,
-                    }))
-                  }
+                  onChange={handleProfProvinceChange}
                 />
 
-                <Field label="เขต / อำเภอ">
-                  <TextInput
-                    value={addrForm.district}
-                    onChange={(e) =>
-                      setAddrForm((f) => ({
-                        ...f,
-                        district: e.target.value,
-                      }))
-                    }
-                    placeholder="กรอกเขต / อำเภอ"
-                  />
-                </Field>
+                <SearchDropdown
+                  label="เขต / อำเภอ"
+                  value={addrForm.district}
+                  options={profAvailableDistricts}
+                  placeholder={addrForm.province ? "พิมพ์หรือเลือกเขต/อำเภอ" : "กรุณาเลือกจังหวัดก่อน"}
+                  disabled={!addrForm.province}
+                  onChange={handleProfDistrictChange}
+                />
 
-                <Field label="แขวง / ตำบล">
-                  <TextInput
-                    value={addrForm.subDistrict}
-                    onChange={(e) =>
-                      setAddrForm((f) => ({
-                        ...f,
-                        subDistrict: e.target.value,
-                      }))
-                    }
-                    placeholder="กรอกแขวง / ตำบล"
-                  />
-                </Field>
+                <SearchDropdown
+                  label="แขวง / ตำบล"
+                  value={addrForm.subDistrict}
+                  options={profAvailableSubDistricts}
+                  placeholder={addrForm.district ? "พิมพ์หรือเลือกแขวง/ตำบล" : "กรุณาเลือกอำเภอก่อน"}
+                  disabled={!addrForm.district}
+                  onChange={handleProfSubDistrictChange}
+                />
 
                 <Field label="ที่อยู่">
                   <TextInput
@@ -612,18 +909,14 @@ const updateProfile = (field) => (e) => {
                   />
                 </Field>
 
-                <Field label="รหัสไปรษณีย์">
-                  <TextInput
-                    value={addrForm.postcode}
-                    onChange={(e) =>
-                      setAddrForm((f) => ({
-                        ...f,
-                        postcode: e.target.value,
-                      }))
-                    }
-                    placeholder="กรอกรหัสไปรษณีย์"
-                  />
-                </Field>
+                <SearchDropdown
+                  label="รหัสไปรษณีย์"
+                  value={addrForm.postcode}
+                  options={profAvailableZipCodes}
+                  placeholder={addrForm.subDistrict ? "พิมพ์หรือเลือกรหัสไปรษณีย์" : "กรุณาเลือกตำบลก่อน"}
+                  disabled={!addrForm.subDistrict}
+                  onChange={(zip) => setAddrForm((f) => ({ ...f, postcode: zip }))}
+                />
 
                 <Field label="หมายเหตุผู้จัดส่ง">
                     <textarea

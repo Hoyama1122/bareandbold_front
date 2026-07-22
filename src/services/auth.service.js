@@ -1,22 +1,34 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-// Helper สำหรับยิง API ทั่วไป (ใช้ Cookie อัตโนมัติด้วย credentials: "include")
 const apiFetch = async (endpoint, options = {}) => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("bare_auth_token") : null;
   const headers = {
     "Content-Type": "application/json",
     ...options.headers,
   };
 
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers,
-    credentials: "include", // ให้ส่งและรับ Cookie (token) เสมอ
+    credentials: "include",
   });
 
-  const data = await response.json();
+  const contentType = response.headers.get("content-type");
+  let data = {};
+  if (contentType && contentType.includes("application/json")) {
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
+  }
 
   if (!response.ok) {
-    throw new Error(data.error || "Something went wrong");
+    throw new Error(data.error || `HTTP ${response.status}: Failed to process request`);
   }
 
   return data;
@@ -68,6 +80,14 @@ export const authService = {
   logout: async () => {
     return apiFetch("/auth/logout", {
       method: "POST",
+    });
+  },
+
+  // อัปเดตโปรไฟล์ผู้ใช้งาน
+  updateProfile: async (data) => {
+    return apiFetch("/auth/profile", {
+      method: "PUT",
+      body: JSON.stringify(data),
     });
   },
 };

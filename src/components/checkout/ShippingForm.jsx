@@ -254,6 +254,31 @@ export default function ShippingForm({
     }
   };
 
+  const hasProfileName = !!((profile?.firstName && profile?.firstName.trim()) || (profile?.fullName && profile?.fullName.trim()));
+
+  // Sync draft address to parent component when adding new address
+  useEffect(() => {
+    if (showAddModal) {
+      const defaultRecipient = profile ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.fullName || "" : "";
+      const customRecipient = `${newFirstName} ${newLastName}`.trim();
+      const rName = hasProfileName ? defaultRecipient : (customRecipient || "ผู้รับ");
+
+      if (newPhone || newAddressLine || newProvince) {
+        onAddressSelect?.({
+          recipientName: rName,
+          phone: newPhone,
+          addressLine: newAddressLine,
+          province: newProvince,
+          amphoe: newAmphoe,
+          tambon: newTambon,
+          postalCode: newPostalCode,
+          note: newNote,
+          isDraft: true
+        });
+      }
+    }
+  }, [showAddModal, newFirstName, newLastName, newPhone, newAddressLine, newProvince, newAmphoe, newTambon, newPostalCode, newNote, profile, hasProfileName]);
+
   // Cascading Address Filtering for New Address Form
   const [newAvailableDistricts, setNewAvailableDistricts] = useState([]);
   const [newAvailableSubDistricts, setNewAvailableSubDistricts] = useState([]);
@@ -377,8 +402,6 @@ export default function ShippingForm({
     const formatted = formatPhoneNumber(e.target.value);
     setPhone(formatted);
   };
-
-  const hasProfileName = !!((profile?.firstName && profile?.firstName.trim()) || (profile?.fullName && profile?.fullName.trim()));
 
   const handleSaveNewAddress = async (e) => {
     if (e && e.preventDefault) e.preventDefault();

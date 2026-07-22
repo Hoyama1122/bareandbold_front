@@ -75,4 +75,13 @@ export const addressService = {
       method: "DELETE",
     });
   },
+
+  updateAddress: async (id, addressData) => {
+    if (!addressService.isLoggedIn()) throw new Error("Please log in first");
+    const data = await apiFetch(`/addresses/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(addressData),
+    });
+    return data.address;
+  },
 };

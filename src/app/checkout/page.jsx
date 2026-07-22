@@ -309,21 +309,24 @@ export default function CheckoutPage() {
       let shippingAddress = "";
 
       if (selectedAddress) {
-        recipientName = selectedAddress.recipientName;
-        recipientPhone = selectedAddress.phone;
+        const defaultRecipient = profile ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.fullName || "" : "";
+        recipientName = selectedAddress.recipientName || defaultRecipient || "ผู้รับ";
+        recipientPhone = selectedAddress.phone || profile?.phone || "";
         const noteText = selectedAddress.note ? ` (หมายเหตุ: ${selectedAddress.note})` : "";
         const tambonText = selectedAddress.tambon ? `ต.${selectedAddress.tambon}, ` : "";
         const amphoeText = selectedAddress.amphoe ? `อ.${selectedAddress.amphoe}, ` : "";
-        shippingAddress = `${selectedAddress.addressLine}, ${tambonText}${amphoeText}${selectedAddress.province} ${selectedAddress.postalCode}${noteText}`;
+        shippingAddress = `${selectedAddress.addressLine || ""}, ${tambonText}${amphoeText}${selectedAddress.province || ""} ${selectedAddress.postalCode || ""}${noteText}`.replace(/^,\s*/, "").trim();
       } else {
         const formData = new FormData(e.currentTarget);
-        recipientName = `${formData.get("firstName") || ""} ${formData.get("lastName") || ""}`.trim();
-        recipientPhone = formData.get("phone") || "";
+        const nameFromProfile = profile ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.fullName || "" : "";
+        const nameFromForm = `${formData.get("firstName") || ""} ${formData.get("lastName") || ""}`.trim();
+        recipientName = nameFromForm || nameFromProfile || "ผู้รับ";
+        recipientPhone = formData.get("phone") || profile?.phone || "";
         const addressDetail = formData.get("address") || "";
         const notes = formData.get("notes") || "";
         const tambonText = subDistrict ? `ต.${subDistrict}, ` : "";
         const amphoeText = district ? `อ.${district}, ` : "";
-        shippingAddress = `${addressDetail}, ${tambonText}${amphoeText}${province} ${zipCode} ${notes ? `(หมายเหตุ: ${notes})` : ""}`.trim();
+        shippingAddress = `${addressDetail}, ${tambonText}${amphoeText}${province} ${zipCode} ${notes ? `(หมายเหตุ: ${notes})` : ""}`.replace(/^,\s*/, "").trim();
       }
 
       if (!recipientName || !recipientPhone || !shippingAddress) {
