@@ -184,6 +184,8 @@ export default function ShippingForm({
 
   // New Address Form State (matches mockup)
   const [newLabel, setNewLabel] = useState("ที่บ้าน");
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
   const [newRecipientName, setNewRecipientName] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newProvince, setNewProvince] = useState("");
@@ -376,18 +378,29 @@ export default function ShippingForm({
     setPhone(formatted);
   };
 
+  const hasProfileName = !!((profile?.firstName && profile?.firstName.trim()) || (profile?.fullName && profile?.fullName.trim()));
+
   const handleSaveNewAddress = async (e) => {
-    e.preventDefault();
-    if (!newRecipientName || !newPhone || !newProvince || !newAddressLine || !newPostalCode) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!newPhone || !newProvince || !newAddressLine || !newPostalCode) {
       alert("กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน");
       return;
     }
+
+    if (!hasProfileName && (!newFirstName.trim() || !newLastName.trim())) {
+      alert("กรุณากรอกชื่อจริงและนามสกุลให้ครบถ้วน");
+      return;
+    }
+
+    const defaultRecipient = profile ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || profile.fullName || "" : "";
+    const customRecipient = `${newFirstName} ${newLastName}`.trim();
+    const recipientName = hasProfileName ? defaultRecipient : (customRecipient || "ผู้รับ");
 
     setSavingAddress(true);
     try {
       const created = await addressService.createAddress({
         label: newLabel,
-        recipientName: newRecipientName,
+        recipientName: recipientName,
         phone: newPhone,
         province: newProvince,
         amphoe: newAmphoe,
@@ -404,6 +417,8 @@ export default function ShippingForm({
       applySavedAddress(created);
 
       // Reset form
+      setNewFirstName("");
+      setNewLastName("");
       setNewRecipientName("");
       setNewPhone("");
       setNewProvince("");
@@ -544,15 +559,28 @@ export default function ShippingForm({
               </div>
             </div>
 
-            {/* ชื่อผู้รับ + เบอร์โทรศัพท์ */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field
-                label="ชื่อผู้รับ"
-                required
-                placeholder="ชื่อ-นามสกุลผู้รับพัสดุ"
-                value={newRecipientName}
-                onChange={(e) => setNewRecipientName(e.target.value)}
-              />
+            {/* หากยังไม่มีชื่อใน Profile ให้แสดงช่องกรอกชื่อจริง และ นามสกุล */}
+            {!hasProfileName && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field
+                  label="ชื่อจริง"
+                  required
+                  placeholder="กรอกชื่อจริง"
+                  value={newFirstName}
+                  onChange={(e) => setNewFirstName(e.target.value)}
+                />
+                <Field
+                  label="นามสกุล"
+                  required
+                  placeholder="กรอกนามสกุล"
+                  value={newLastName}
+                  onChange={(e) => setNewLastName(e.target.value)}
+                />
+              </div>
+            )}
+
+            {/* เบอร์โทรศัพท์ */}
+            <div>
               <Field
                 label="เบอร์โทรศัพท์"
                 required
