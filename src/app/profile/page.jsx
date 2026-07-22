@@ -164,6 +164,8 @@ reader.readAsDataURL(file);
   };
 
   const [profileSaved, setProfileSaved] = useState({
+    firstName: "",
+    lastName: "",
     fullName: "",
     username: "",
     email: "",
@@ -176,6 +178,11 @@ reader.readAsDataURL(file);
 
     if (savedProfile) {
       const data = JSON.parse(savedProfile);
+      if (!data.firstName && data.fullName) {
+        const parts = data.fullName.trim().split(" ");
+        data.firstName = parts[0] || "";
+        data.lastName = parts.slice(1).join(" ") || data.username || "";
+      }
       setProfileSaved(data);
       setProfile(data);
     }
@@ -194,6 +201,8 @@ reader.readAsDataURL(file);
           const lName = res.user.lastName || "";
           const fullName = `${fName} ${lName}`.trim() || res.user.email?.split("@")[0] || "";
           const data = {
+            firstName: fName,
+            lastName: lName,
             fullName,
             username: lName || fName || "",
             email: res.user.email || "",
@@ -213,24 +222,24 @@ reader.readAsDataURL(file);
   const profileChanged = JSON.stringify(profile) !== JSON.stringify(profileSaved);
 
   const saveProfile = async () => {
-    setProfileSaved(profile);
+    const fullName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
+    const updatedProfile = { ...profile, fullName };
+
+    setProfileSaved(updatedProfile);
+    setProfile(updatedProfile);
 
     localStorage.setItem(
       "profile",
-      JSON.stringify(profile)
+      JSON.stringify(updatedProfile)
     );
     if (profile.bio) {
       localStorage.setItem("profile_bio", profile.bio);
     }
 
-    const nameParts = profile.fullName.trim().split(" ");
-    const firstName = nameParts[0] || "";
-    const lastName = nameParts.slice(1).join(" ") || "";
-
     try {
       await authService.updateProfile({
-        firstName,
-        lastName,
+        firstName: profile.firstName || "",
+        lastName: profile.lastName || "",
         email: profile.email,
         phone: profile.phone,
       });
@@ -241,8 +250,8 @@ reader.readAsDataURL(file);
 
       const updatedUser = {
         ...oldUser,
-        firstName,
-        lastName,
+        firstName: profile.firstName || "",
+        lastName: profile.lastName || "",
         email: profile.email,
       };
 
@@ -688,11 +697,11 @@ const updateProfile = (field) => (e) => {
             <Field label="ชื่อจริง">
               <div className="relative">
                 <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#B9AC99" }} />
-                <TextInput className="pl-9" value={profile.fullName} onChange={updateProfile("fullName")}placeholder="กรอกชื่อจริง"/>
+                <TextInput className="pl-9" value={profile.firstName} onChange={updateProfile("firstName")} placeholder="กรอกชื่อจริง"/>
               </div>
             </Field>
             <Field label="นามสกุล" >
-              <TextInput value={profile.username}onChange={updateProfile("username")}placeholder="กรอกนามสกุล"/>
+              <TextInput value={profile.lastName} onChange={updateProfile("lastName")} placeholder="กรอกนามสกุล"/>
             </Field>
             <Field label="อีเมล (ห้ามแก้ไข)">
               <div className="relative">
