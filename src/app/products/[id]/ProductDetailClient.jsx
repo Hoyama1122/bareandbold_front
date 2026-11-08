@@ -127,31 +127,76 @@ export default function ProductDetailClient({ nameSlug }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isZoomOpen, currentImage, images]);
 
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+  const showToast = (msg, type = "success") => {
+    setToast({ show: true, message: msg, type });
+  };
+
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast((prev) => ({ ...prev, show: false }));
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
+
   const addToCart = async () => {
     try {
+      const customOptionsPrice = product.customOptions?.reduce((sum, opt) => {
+        const selectedVal = opt.values?.find(val => {
+          const valName = typeof val === "string" ? val : (val.value || val.name);
+          return valName === size || valName === material;
+        });
+        const adj = selectedVal?.priceAdjustment ? Number(selectedVal.priceAdjustment) : 0;
+        return sum + adj;
+      }, 0) || 0;
+
+      const accessoriesPrice = selectedAccessories.reduce((sum, acc) => {
+        return sum + (acc.price ? Number(acc.price) : 0);
+      }, 0);
+
+      const unitPrice = Number(product.price) + customOptionsPrice + accessoriesPrice;
+
       await cartService.addToCart(product.id, qty, material, size, selectedAccessories, {
         name: product.name,
         image: currentImage,
-        price: product.price,
+        price: unitPrice,
       });
-      alert("เพิ่มลงตะกร้าแล้ว");
+      showToast("เพิ่มลงตะกร้าสินค้าเรียบร้อยแล้ว", "success");
     } catch (error) {
       console.error("Failed to add to cart:", error);
-      alert("ไม่สามารถเพิ่มสินค้าลงในตะกร้าได้");
+      showToast("ไม่สามารถเพิ่มสินค้าลงในตะกร้าได้", "error");
     }
   };
 
   const buyNow = async () => {
     try {
+      const customOptionsPrice = product.customOptions?.reduce((sum, opt) => {
+        const selectedVal = opt.values?.find(val => {
+          const valName = typeof val === "string" ? val : (val.value || val.name);
+          return valName === size || valName === material;
+        });
+        const adj = selectedVal?.priceAdjustment ? Number(selectedVal.priceAdjustment) : 0;
+        return sum + adj;
+      }, 0) || 0;
+
+      const accessoriesPrice = selectedAccessories.reduce((sum, acc) => {
+        return sum + (acc.price ? Number(acc.price) : 0);
+      }, 0);
+
+      const unitPrice = Number(product.price) + customOptionsPrice + accessoriesPrice;
+
       await cartService.addToCart(product.id, qty, material, size, selectedAccessories, {
         name: product.name,
         image: currentImage,
-        price: product.price,
+        price: unitPrice,
       });
       router.push("/checkout");
     } catch (error) {
       console.error("Failed to buy now:", error);
-      alert("เกิดข้อผิดพลาดในการสั่งซื้อสินค้า");
+      showToast("เกิดข้อผิดพลาดในการสั่งซื้อสินค้า", "error");
     }
   };
 
@@ -234,6 +279,25 @@ export default function ProductDetailClient({ nameSlug }) {
           handleNextImage={handleNextImage}
           productName={product.name}
         />
+      )}
+
+      {/* Premium Toast Notification */}
+      {toast.show && (
+        <div
+          className="fixed bottom-8 right-8 z-[999] px-6 py-3.5 rounded-xl shadow-2xl border text-sm font-semibold flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-4 duration-300 font-sans"
+          style={{
+            background: "#2B2118", // INK
+            color: "#F2ECDD", // CREAM
+            borderColor: "#E1D8C0", // BORDER
+          }}
+        >
+          {toast.type === "success" ? (
+            <span style={{ color: "#6B7A4E" }} className="text-base font-bold">✓</span>
+          ) : (
+            <span className="text-red-500 text-base font-bold">✕</span>
+          )}
+          <span>{toast.message}</span>
+        </div>
       )}
     </div>
   );

@@ -96,6 +96,17 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     try {
       const data = await authService.login(email, password);
       localStorage.setItem("bare_auth_token", data.token);
+      
+
+localStorage.setItem(
+  "bare_user",
+  JSON.stringify(data.user)
+);
+
+localStorage.setItem(
+  "bare_user_email",
+  data.user.email
+);
       setUser(data.user);
       setAuthState("dashboard");
       setPassword("");
@@ -112,19 +123,27 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   };
 
   const handleSignOut = () => {
-    localStorage.removeItem("bare_auth_token");
-    localStorage.removeItem("bare_cart");
-    window.dispatchEvent(new Event("cartUpdated"));
-    setUser(null);
-    setEmail("");
-    setPassword("");
-    setFirstName("");
-    setLastName("");
-    setErrorMsg("");
-    setSuccessMsg("");
-    setAuthState("login");
-    if (onAuthSuccess) onAuthSuccess(null);
-  };
+  localStorage.removeItem("bare_auth_token");
+  localStorage.removeItem("bare_user");
+  localStorage.removeItem("bare_user_email");
+  localStorage.removeItem("profile");
+  localStorage.removeItem("avatar");
+  localStorage.removeItem("addresses");
+  localStorage.removeItem("bare_cart");
+
+  window.dispatchEvent(new Event("cartUpdated"));
+
+  setUser(null);
+  setEmail("");
+  setPassword("");
+  setFirstName("");
+  setLastName("");
+  setErrorMsg("");
+  setSuccessMsg("");
+  setAuthState("login");
+
+  if (onAuthSuccess) onAuthSuccess(null);
+};
 
   return (
     <div 

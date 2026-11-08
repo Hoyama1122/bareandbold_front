@@ -37,6 +37,9 @@ export default function Header({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [user, setUser] = useState(null);
+  const [avatar, setAvatar] = useState(null);
+
   const profileMenuRef = useRef(null);
   const wishlistMenuRef = useRef(null);
 
@@ -44,15 +47,33 @@ export default function Header({
     setIsLoggedIn(initialIsLoggedIn);
   }, [initialIsLoggedIn]);
 
-  useEffect(() => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("bare_auth_token")
-        : null;
+ useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const loadProfile = () => {
+    const token = localStorage.getItem("bare_auth_token");
+
     if (token) {
       setIsLoggedIn(true);
+
+      const savedUser = localStorage.getItem("bare_user");
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+
+      const savedAvatar = localStorage.getItem("avatar");
+      setAvatar(savedAvatar);
     }
-  }, []);
+  };
+
+  loadProfile();
+
+  window.addEventListener("profileUpdated", loadProfile);
+
+  return () => {
+    window.removeEventListener("profileUpdated", loadProfile);
+  };
+}, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -117,6 +138,15 @@ export default function Header({
 
   const handleLogout = () => {
     localStorage.removeItem("bare_auth_token");
+localStorage.removeItem("bare_user");
+localStorage.removeItem("bare_user_email");
+localStorage.removeItem("profile");
+localStorage.removeItem("avatar");
+localStorage.removeItem("addresses");
+localStorage.removeItem("bare_cart");
+
+setUser(null);
+setAvatar(null);
     setIsLoggedIn(false);
     setIsProfileOpen(false);
     if (onAuthStatusChange) {
@@ -127,12 +157,18 @@ export default function Header({
   };
 
   const handleAuthSuccess = (user) => {
-    const hasToken = !!localStorage.getItem("bare_auth_token");
-    setIsLoggedIn(hasToken);
-    if (onAuthStatusChange) {
-      onAuthStatusChange(hasToken, user);
-    }
-  };
+  const hasToken = !!localStorage.getItem("bare_auth_token");
+
+  setIsLoggedIn(hasToken);
+  setUser(user);
+
+  const savedAvatar = localStorage.getItem("avatar");
+  setAvatar(savedAvatar);
+
+  if (onAuthStatusChange) {
+    onAuthStatusChange(hasToken, user);
+  }
+};
 
   return (
     <>
@@ -142,10 +178,17 @@ export default function Header({
           {/* Logo */}
           <Link
             href="/"
-            className="text-2xl font-extrabold tracking-tight text-earth-dark hover:text-earth-olive transition"
+            className="flex items-center gap-2.5 hover:text-earth-olive transition select-none text-earth-dark"
             prefetch={false}
           >
-            Bare & Bold
+            <svg className="w-6 h-6 transition-transform duration-300 hover:rotate-12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
+              <path d="M8.5 12C8.5 13.933 10.067 15.5 12 15.5C13.933 15.5 15.5 13.933 15.5 12C15.5 10.067 13.933 8.5 12 8.5C10.067 8.5 8.5 10.067 8.5 12Z" fill="currentColor" />
+              <path d="M12 5C8.134 5 5 8.134 5 12C5 15.866 8.134 19 12 19C15.866 19 19 15.866 19 12C19 8.134 15.866 5 12 5Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+            <span className="text-xl font-bold uppercase tracking-[0.15em] font-sans">
+              Bare & Bold
+            </span>
           </Link>
 
           {/* Nav links */}
@@ -249,7 +292,15 @@ export default function Header({
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="w-10 h-10 flex items-center justify-center hover:text-earth-olive transition cursor-pointer"
                 >
-                  <UserCircleIcon size={21} strokeWidth={2} />
+                  {avatar ? (
+  <img
+    src={avatar}
+    alt="Profile"
+    className="w-9 h-9 rounded-full object-cover"
+  />
+) : (
+  <UserCircleIcon size={21} strokeWidth={2} />
+)}
                 </button>
               ) : (
                 <button
@@ -266,7 +317,9 @@ export default function Header({
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-xs text-zinc-400">บัญชีผู้ใช้</p>
                     <p className="text-sm font-bold text-earth-dark truncate mt-0.5">
-                      {typeof window !== "undefined" && localStorage.getItem("bare_user_email")}
+                      {user
+  ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+  : localStorage.getItem("bare_user_email")}
                     </p>
                   </div>
                   <Link
@@ -277,19 +330,17 @@ export default function Header({
                     <PackageIcon size={18} />
                     ประวัติคำสั่งซื้อ
                   </Link>
-                  <button
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      setIsAuthOpen(true);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-left text-sm font-bold text-earth-dark"
+                  <Link
+                    href="/profile"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-sm font-bold text-earth-dark transition"
                   >
                     <Settings02Icon size={18} />
                     โปรไฟล์
-                  </button>
+                  </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#FFF5F5] text-left text-sm font-bold text-red-600 border-t border-gray-100"
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#FFF5F5] text-left text-sm font-bold text-red-600 border-t border-gray-100 cursor-pointer"
                   >
                     <Logout01Icon size={18} />
                     ออกจากระบบ
