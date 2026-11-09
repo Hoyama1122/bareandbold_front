@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { wishlistService } from "@/services/wishlist.service";
+import StarRating from "./StarRating";
 
 export default function ProductCard({ product }) {
   const [isLiked, setIsLiked] = useState(false);
@@ -104,10 +105,8 @@ export default function ProductCard({ product }) {
             {product.name}
           </h3>
 
-          {/*  แสดงดาวรีวิวคงที่ตามโครงสร้างแบรนด์ */}
-          <div className="flex text-amber-500 text-xs">
-            {"★".repeat(product.rating || 5)}
-          </div>
+          {/* แสดงดาวรีวิว 5 ดวง (ดวงที่ได้คะแนนเป็นสีทอง) */}
+          <StarRating rating={product.rating} size="text-xs" />
         </div>
 
         {/* ราคาสินค้าและปุ่มแอคชัน */}

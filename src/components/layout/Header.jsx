@@ -16,6 +16,7 @@ import {
 import AuthModal from "../auth/AuthModal";
 import CartDrawer from "../cart/CartDrawer";
 import { wishlistService } from "@/services/wishlist.service";
+import { useAuth } from "@/context/AuthContext";
 
 const NAV_LINKS = [
   { label: "หน้าแรก", href: "/" },
@@ -43,9 +44,28 @@ export default function Header({
   const profileMenuRef = useRef(null);
   const wishlistMenuRef = useRef(null);
 
+  const {
+    user: authUser,
+    shop,
+    isLoggedIn: contextLoggedIn,
+    loading: authLoading,
+    logout: contextLogout,
+    refresh: refreshAuth,
+  } = useAuth();
+
   useEffect(() => {
     setIsLoggedIn(initialIsLoggedIn);
   }, [initialIsLoggedIn]);
+
+  // ให้ Header ใช้สถานะล่าสุดจาก AuthContext เป็นแหล่งความจริง
+  useEffect(() => {
+    if (authLoading) return;
+    setIsLoggedIn(contextLoggedIn);
+    setUser(authUser || null);
+    if (authUser) {
+      setAvatar(localStorage.getItem("avatar"));
+    }
+  }, [authLoading, contextLoggedIn, authUser]);
 
  useEffect(() => {
   if (typeof window === "undefined") return;
@@ -136,8 +156,8 @@ export default function Header({
     };
   }, [isLoggedIn]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("bare_auth_token");
+  const handleLogout = async () => {
+localStorage.removeItem("bare_auth_token");
 localStorage.removeItem("bare_user");
 localStorage.removeItem("bare_user_email");
 localStorage.removeItem("profile");
@@ -145,6 +165,7 @@ localStorage.removeItem("avatar");
 localStorage.removeItem("addresses");
 localStorage.removeItem("bare_cart");
 
+await contextLogout();
 setUser(null);
 setAvatar(null);
     setIsLoggedIn(false);
@@ -161,6 +182,7 @@ setAvatar(null);
 
   setIsLoggedIn(hasToken);
   setUser(user);
+  refreshAuth();
 
   const savedAvatar = localStorage.getItem("avatar");
   setAvatar(savedAvatar);
@@ -322,6 +344,37 @@ setAvatar(null);
   : localStorage.getItem("bare_user_email")}
                     </p>
                   </div>
+
+                  {/* Seller zone (Seller Center UI ถูกนำออกแล้ว) */}
+                  {shop?.status === "APPROVED" ? (
+                    <Link
+                      href={`/shop/${shop.slug}`}
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-sm font-bold text-earth-olive transition"
+                    >
+                      <ShoppingBag01Icon size={18} />
+                      ดูร้านของฉัน
+                    </Link>
+                  ) : shop ? (
+                    <Link
+                      href="/become-seller"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-sm font-bold text-amber-600 transition"
+                    >
+                      <ShoppingBag01Icon size={18} />
+                      ร้านรอการอนุมัติ
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/become-seller"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-sm font-bold text-earth-dark transition"
+                    >
+                      <ShoppingBag01Icon size={18} />
+                      สมัครเปิดร้าน
+                    </Link>
+                  )}
+
                   <Link
                     href="/orders"
                     onClick={() => setIsProfileOpen(false)}

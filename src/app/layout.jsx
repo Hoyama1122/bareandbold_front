@@ -1,6 +1,7 @@
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata = {
   title: "BARE & BOLD | ร้านค้าออนไลน์สไตล์มินิมอล",
@@ -14,11 +15,13 @@ export default function RootLayout({ children }) {
       className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col bg-[#FDFBF7] text-[#3C322A] font-anuphan antialiased">
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );
