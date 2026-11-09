@@ -23,165 +23,211 @@
 
 ---
 
-## 👥 การแบ่งหน้าที่รับผิดชอบสำหรับทีม 4 คน (Team Task Division)
+## 👥 การแบ่งหน้าที่รับผิดชอบตามตำแหน่งและบทบาท (Role-Based Task Division)
+
+| Role / ตำแหน่งงาน | ขอบเขตรับผิดชอบหลัก (Domain) | กลุ่มผู้ใช้ที่ดูแล (Actors) | โฟลเดอร์ที่รับผิดชอบ |
+| :--- | :--- | :--- | :--- |
+| **🔵 Role 1: Frontend Engineer**<br>*(Storefront & Catalog)* | หน้าร้านค้า, แคตตาล็อกสินค้า, ค้นหา/กรอง, หน้าร้านผู้ขาย, ระบบดูดวงหินมงคล | Guest, Buyer | `bareandbold_front/` |
+| **🟢 Role 2: Frontend Engineer**<br>*(Transaction & Orders)* | ตะกร้าสินค้าแยกตามร้าน, Checkout, ชำระเงิน Omise, ไทม์ไลน์ติดตามพัสดุ, รีวิว | Buyer | `bareandbold_front/` |
+| **🟠 Role 3: Fullstack / Portal Engineer**<br>*(Seller Center & Admin)* | ระบบสมัครเปิดร้าน, แดชบอร์ดผู้ขาย, จัดการสินค้า/ออเดอร์ร้านค้า, ระบบแอดมินอนุมัติ | Seller, Admin, Staff | `bareandbold_front/src/app/seller/`<br>`bareandbold_backoffice/` |
+| **🟣 Role 4: Backend & Database Engineer**<br>*(API & Financial Escrow)* | REST APIs ทั้งหมด, ฐานข้อมูล Prisma, ระบบพักเงิน Escrow, Omise Webhook, Wallet | System, DB, Payment | `bareandbold_backend/` |
+
+---
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        Marketplace Ecosystem                           │
-├────────────────────────────┬─────────────────────────────┬─────────────┤
-│   🔵 คนที่ 1 (Frontend)    │    🟢 คนที่ 2 (Frontend)    │ 🟠 คนที่ 3  │
-│  Storefront, Catalog &     │  Cart, Checkout & Order     │ Seller &    │
-│     Customizer Pages       │     Tracking & Reviews      │ Backoffice  │
-├────────────────────────────┴─────────────────────────────┴─────────────┤
-│                          🟣 คนที่ 4 (Backend API)                       │
-│    Auth, Multi-Vendor APIs, Split Order, Omise Escrow & Wallet DB       │
-└────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        Marketplace Ecosystem Architecture                              │
+├────────────────────────────┬─────────────────────────────┬─────────────────────────────┤
+│ 🔵 Role 1: Frontend        │ 🟢 Role 2: Frontend         │ 🟠 Role 3: Fullstack        │
+│ Storefront, Catalog &      │ Cart, Checkout, Tracking,   │ Seller Portal (Dashboard) & │
+│ AI Gemstone Recommender    │ Omise UI, Reviews & Refund  │ Admin Backoffice Approval   │
+├────────────────────────────┴─────────────────────────────┴─────────────────────────────┤
+│ 🟣 Role 4: Backend & Database Engineer                                                 │
+│ REST API (Hono/Bun), Prisma Multi-file ORM, Split Order Engine, Omise Escrow & Wallet │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 🔵 คนที่ 1 — Frontend: ฝั่งผู้ซื้อ (Storefront, Catalog & Customizer)
+---
+
+### 🔵 Role 1: Frontend Engineer — Storefront, Product Experience & AI Recommender
+* **บทบาท / ตำแหน่ง:** Frontend Developer (Customer Discovery & Experience)
+* **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** ผู้เยี่ยมชมทั่วไป (Guest) และ ผู้ซื้อ (Buyer)
 * **โฟลเดอร์หลัก:** `bareandbold_front/`
-* **ขอบเขต:** พัฒนาประสบการณ์การเลือกซื้อสินค้าเครื่องประดับ, หน้ารวมสินค้า, ระบบค้นหา/กรอง, หน้ารายละเอียดสินค้า และหน้าร้านค้าเฉพาะผู้ขาย
-* **งานที่ต้องทำ:**
-  - [ ] **Homepage (`/`)**: เชื่อมต่อ API สินค้าแนะนำ, หมวดหมู่กำไลข้อมือ/ข้อเท้า, แบนเนอร์โปรโมต, ลิสต์ร้านค้ายอดนิยม
+* **เทคโนโลยี:** Next.js (App Router), Tailwind CSS, Lucide Icons, Fetch API
+* **ความรับผิดชอบหลัก (Core Duties):**
+  - [ ] **Homepage (`/`)**:
+    - [ ] เชื่อมต่อ API ดึงสินค้าแนะนำและสินค้ามาใหม่
+    - [ ] แสดงหมวดหมู่สินค้าหลัก (กำไลข้อมือ BRACELET, กำไลข้อเท้า ANKLET)
+    - [ ] แสดงการ์ดร้านค้ายอดนิยมใน Marketplace พร้อมลิงก์ไปหน้าร้าน
+    - [ ] Hero Banner & Promotional Campaigns
   - [ ] **Product Catalog & Search (`/products`)**:
-    - [ ] ระบบ Search ค้นหาตามชื่อสินค้า / ชื่อร้านค้า
-    - [ ] ระบบตัวกรอง (Filter): หมวดหมู่ (BRACELET, ANKLET), ประเภท (พร้อมส่ง vs สั่งทำ), ช่วงราคา
-    - [ ] ตัวกรองเฉพาะเครื่องประดับ: ขนาดความยาวรอบข้อมือ/ข้อเท้า (ซม.)
-  - [ ] **Product Detail (`/products/[id]`)**:
-    - [ ] Gallery รูปภาพสินค้า (ดึงจาก Cloudflare R2)
-    - [ ] แสดงป้ายบอกระยะเวลาผลิต (เช่น "สินค้าสั่งทำ: ใช้เวลาทำ 5-7 วัน")
-    - [ ] Custom Options Selector: เลือกขนาดรอบข้อมือ (14-20 cm), สีเชือก, จี้/ชาร์ม
-    - [ ] การ์ดข้อมูลร้านค้า (Seller Card) พร้อมปุ่มคลิกไปหน้าร้าน
-    - [ ] **ส่วนแสดงรีวิวและคะแนนดาว (Customer Reviews & Ratings)**:
-      - [ ] แสดงคะแนนดาวเฉลี่ย (เช่น ⭐ 4.8 / 5) และจำนวนรีวิวทั้งหมด
-      - [ ] รายการคอมเมนต์จากลูกค้าผู้ซื้อจริง (Verified Purchase) พร้อมรูปถ่ายสินค้าจริง
-  - [ ] **Shop Profile Page (`/shop/[slug]`)**: หน้าร้านค้าของผู้ขาย แสดงโลโก้, แบนเนอร์, รายละเอียดร้าน, คะแนนรีวิวเฉลี่ยของร้าน, และ Grid สินค้าเฉพาะของร้านนั้น
-  - [ ] **Wishlist Page (`/account/wishlist`)**: หน้ารายการสินค้าโปรดของลูกค้า
+    - [ ] แถบค้นหาแบบ Realtime (Search by Name / Shop)
+    - [ ] ระบบตัวกรองละเอียด (Filter Panel):
+      - กรองตามหมวดหมู่ (ข้อมือ, ข้อเท้า)
+      - กรองตามประเภท (สินค้าพร้อมส่ง READY_TO_SHIP vs สินค้าสั่งทำ MADE_TO_ORDER)
+      - กรองตามช่วงราคา (Price Range Slider)
+      - กรองตามขนาดความยาวรอบข้อมือ/ข้อเท้า (ซม.)
+    - [ ] ระบบเรียงลำดับ (Sort by: ล่าสุด, ราคาต่ำ-สูง, ราคาสูง-ต่ำ, เรตติ้งดาว)
+  - [ ] **Product Detail Page (`/products/[id]`)**:
+    - [ ] แกลเลอรีรูปภาพสินค้า (รองรับ Thumbnail และรูปขนาดใหญ่จาก Cloudflare R2)
+    - [ ] แสดง Badge ชนิดสินค้า: "พร้อมส่ง" หรือ "สั่งทำพิเศษ (Made-to-Order: ใช้เวลาผลิต X วัน)"
+    - [ ] Interactive Customizer Selector: เลือกขนาดรอบข้อมือ (14-20 cm), สีเชือก, จี้/ชาร์ม
+    - [ ] Seller Profile Card: แสดงชื่อร้าน, โลโก้, คะแนนดาวร้าน, และปุ่ม "ไปที่หน้าร้าน"
+    - [ ] Customer Reviews & Ratings: แสดงคะแนนดาวเฉลี่ย ⭐, กราฟสรุปคะแนน, และรายการคอมเมนต์พร้อมรูปถ่ายสินค้าจริง
+  - [ ] **Shop Profile Page (`/shop/[slug]`)**:
+    - [ ] หน้าร้านค้าเฉพาะของผู้ขายแต่ละราย แสดงแบนเนอร์, โลโก้, รายละเอียดร้าน, คะแนนรีวิวเฉลี่ย
+    - [ ] Grid แสดงรายการสินค้าทั้งหมดเฉพาะของร้านนี้ พร้อมตัวกรองหมวดหมู่ภายในร้าน
+  - [ ] **Wishlist Page (`/account/wishlist`)**: หน้ารายการสินค้าโปรดของลูกค้า (บันทึก/ลบ/ย้ายไปตะกร้า)
   - [ ] **🔮 หน้าระบบจับคู่หินมงคลและราศี (`/horoscope` หรือ `/gemstone-guide`) (Feature Highlight)**:
-    - [ ] แบบฟอร์มกรอกข้อมูล: วันเกิด (จันทร์ - อาทิตย์), ราศี, และเรื่องที่ต้องการเสริม (การงาน, การเงิน, ความรัก, สุขภาพ)
-    - [ ] การ์ดแสดงผลคำทำนาย: แนะนำหินมงคลที่เหมาะสม (เช่น ลาพิส ลาซูลี, โรสควอตซ์, ซิทริน), โทนสีเชือกมงคลเสริมดวง, และสีกาลกิณีที่ควรเลี่ยง
-    - [ ] Carousel/Grid แนะนำสินค้ากำไลข้อมือและข้อเท้าในระบบที่ตรงกับหิน/สีมงคลของผลทำนาย พร้อมปุ่มคลิกดูสินค้า/เพิ่มลงตะกร้า
-* **API ที่ต้องใช้ (ประสานกับคนที่ 4):**
-  - `GET /api/products` (พร้อม query: search, category, type, minWrist, maxWrist)
+    - [ ] Interactive Form: เลือกวันเกิด (จันทร์-อาทิตย์), ราศี (12 ราศี), และด้านที่ต้องการเสริมดวง (การงาน, การเงิน, ความรัก, สุขภาพ)
+    - [ ] Result Card: แสดงการ์ดผลการทำนาย (หินมงคลหลัก-รอง, โทนสีมงคล, สีกาลกิณีที่ควรหลีกเลี่ยง)
+    - [ ] Matched Products Carousel: แสดงรายการกำไล/ข้อเท้าในระบบที่มีหินและสีตรงกับคำทำนาย พร้อมปุ่มคลิกสั่งซื้อทันที
+* **API Endpoints ที่ต้องประสานงานกับ Role 4:**
+  - `GET /api/products` (query: search, category, type, minPrice, maxPrice, minWrist, maxWrist)
   - `GET /api/products/:id`
-  - `GET /api/products/:id/reviews` (ดึงรายการรีวิวและคะแนนดาว)
-  - `POST /api/recommend/gemstones` (ส่งวันเกิด/ราศี/ด้านที่ต้องการเสริม ➔ รับผลคำทำนายและลิสต์สินค้าแนะนำ)
+  - `GET /api/products/:id/reviews`
+  - `POST /api/recommend/gemstones`
   - `GET /api/shops/:slug`
   - `GET/POST/DELETE /api/wishlist`
 
 ---
 
-### 🟢 คนที่ 2 — Frontend: ตะกร้า, การสั่งซื้อ & ติดตามพัสดุ (Cart, Checkout & Order Tracking)
+### 🟢 Role 2: Frontend Engineer — Cart, Checkout, Order Tracking & Reviews
+* **บทบาท / ตำแหน่ง:** Frontend Developer (Transaction, Post-Purchase & Customer Portal)
+* **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** ผู้ซื้อ (Buyer / Customer)
 * **โฟลเดอร์หลัก:** `bareandbold_front/`
-* **ขอบเขต:** พัฒนาหน้าการทำธุรกรรมฝั่งผู้ซื้อ, ระบบสมาชิก, ตะกร้าแยกตามร้าน, การชำระเงิน, ไทม์ไลน์ติดตามพัสดุ และการยืนยันรับของ
-* **งานที่ต้องทำ:**
-  - [ ] **Auth Flow สำหรับผู้ซื้อ (`/auth/login`, `/auth/register`)**: เชื่อม API จริง, จัดเก็บ Cookie/JWT Token
-  - [ ] **Shopping Cart (`/cart`)**:
-    - [ ] แสดงรายการสินค้า **จัดกลุ่มแยกตามร้านค้า (Group by Shop)** เหมือน Shopee
-    - [ ] ปรับลด/เพิ่มจำนวน, เลือกลบสินค้า, แสดงรายละเอียดขนาด Custom ที่เลือกไว้
-    - [ ] คำนวณสรุปราคาสินค้ารวมและค่าจัดส่งแยกรายร้าน
+* **เทคโนโลยี:** Next.js (App Router), Tailwind CSS, Omise.js SDK, Cookie Management
+* **ความรับผิดชอบหลัก (Core Duties):**
+  - [ ] **Customer Authentication Flow**:
+    - [ ] หน้าเข้าสู่ระบบ (`/auth/login`) และหน้าสมัครสมาชิก (`/auth/register`)
+    - [ ] จัดการ Auth State, HTTP-only Cookie, JWT Session
+    - [ ] หน้าจัดการข้อมูลส่วนตัว (`/account/profile`) และจัดการสมุดที่อยู่ (`/account/addresses`)
+  - [ ] **Multi-Vendor Shopping Cart (`/cart`)**:
+    - [ ] แสดงรายการสินค้า **จัดกลุ่มแยกตามร้านค้า (Group by Shop)** แบบเดียวกับ Shopee
+    - [ ] ปรับเพิ่ม/ลดจำนวน, เลือกลบสินค้า, และแสดงตัวเลือกขนาด Custom ที่ลูกค้าเลือกไว้
+    - [ ] Checkbox เลือกสั่งซื้อเฉพาะบางร้านค้า หรือเลือกทั้งหมด
+    - [ ] คำนวณสรุปราคาสินค้ารวมและค่าจัดส่งแยกรายร้านค้าแบบ Dynamic
   - [ ] **Checkout Page (`/checkout`)**:
-    - [ ] ฟอร์มเลือก/ระบุที่อยู่จัดส่ง, ชื่อและเบอร์โทรผู้รับ
-    - [ ] หน้าชำระเงินรองรับ Omise (แสดง PromptPay QR Code หรือฟอร์มกรอกบัตร)
+    - [ ] ฟอร์มเลือกที่อยู่จัดส่งจากสมุดที่อยู่ หรือเพิ่มที่อยู่ใหม่
+    - [ ] สรุปคำสั่งซื้อแยกตามร้านค้าก่อนชำระเงิน
+    - [ ] Integration กับ Omise Payment Gateway UI:
+      - ชำระเงินด้วย PromptPay QR Code (แสดงตัวจับเวลานับถอยหลัง และปุ่มบันทึกรูป QR)
+      - ชำระเงินด้วยบัตรเครดิต/เดบิต (Omise Tokenization)
   - [ ] **Order Tracking & History (`/account/orders`)**:
-    - [ ] แสดงประวัติคำสั่งซื้อทั้งหมด
-    - [ ] แสดง **Timeline สถานะคำสั่งซื้อ** แบบละเอียด:
-      `รอชำระเงิน` ➔ `ชำระเงินแล้ว` ➔ `ร้านกำลังผลิต (สำหรับ Custom)` ➔ `จัดส่งแล้ว (มีเลข Tracking + ขนส่ง)` ➔ `สำเร็จ`
-  - [ ] **Order Confirmation, Review & Dispute**:
+    - [ ] หน้าประวัติคำสั่งซื้อทั้งหมด พร้อมแท็บแยกสถานะ: `ทั้งหมด`, `รอชำระ`, `กำลังผลิต`, `จัดส่งแล้ว`, `สำเร็จ`, `ยกเลิก`
+    - [ ] แสดง **Timeline สถานะออเดอร์** ชัดเจน:
+      `รอชำระเงิน` ➔ `ชำระเงินแล้ว` ➔ `ร้านกำลังผลิต (สำหรับ Custom)` ➔ `จัดส่งแล้ว (แสดงเลขพัสดุ + ลิงก์เช็คขนส่ง)` ➔ `สำเร็จ`
+  - [ ] **Order Confirmation & Review Modal**:
     - [ ] ปุ่ม **"ยืนยันการรับสินค้า (Confirm Received)"** เพื่อส่งสัญญาณปลดล็อกเงินให้ร้านค้า
     - [ ] **Modal / หน้ารีวิวสินค้า (`/account/orders/[id]/review`)**:
-      - [ ] ให้คะแนนดาว (1 - 5 ดาว) ⭐⭐⭐⭐⭐
-      - [ ] กล่องข้อความแสดงความคิดเห็น (Comment Text)
-      - [ ] อัปโหลดรูปภาพสินค้าจริงที่ได้รับ (Review Images)
-    - [ ] ฟอร์มยื่นคำร้องขอคืนเงิน/แจ้งปัญหา (`/account/orders/[id]/refund`)
-* **API ที่ต้องใช้ (ประสานกับคนที่ 4):**
+      - ให้คะแนนดาว 1-5 ดาว ⭐⭐⭐⭐⭐
+      - กล่องข้อความคอมเมนต์แสดงความคิดเห็น
+      - อัปโหลดรูปภาพสินค้าจริงที่ได้รับ (Review Images)
+  - [ ] **Refund / Dispute System (`/account/orders/[id]/refund`)**:
+    - [ ] ฟอร์มยื่นขอคืนเงิน/คืนสินค้า กรณีสินค้าแตกหัก หรือร้านไม่ส่งตามกำหนด (แนบรูปภาพหลักฐาน)
+* **API Endpoints ที่ต้องประสานงานกับ Role 4:**
   - `POST /api/auth/login`, `POST /api/auth/register`, `GET /api/auth/profile`
+  - `GET/POST/PUT/DELETE /api/addresses`
   - `GET/POST/PUT/DELETE /api/cart`
   - `POST /api/orders/checkout`
   - `GET /api/orders/my-orders`, `GET /api/orders/:id`
   - `POST /api/orders/:subOrderId/confirm-received`
-  - `POST /api/reviews` (ส่งคะแนนดาว, คอมเมนต์, รูปภาพรีวิว)
+  - `POST /api/reviews`
+  - `POST /api/refunds/request`
 
 ---
 
-### 🟠 คนที่ 3 — Seller Portal & Admin Backoffice (ระบบร้านค้า & ผู้ดูแลตัวกลาง)
-* **โฟลเดอร์หลัก:** `bareandbold_front/src/app/seller/` (พอร์ทัลร้านค้า) & `bareandbold_backoffice/` (หลังบ้านแอดมิน)
-* **ขอบเขต:** พัฒนาระบบให้ร้านค้าจัดการของตนเองได้ (Seller Center) และพัฒนาระบบผู้ดูแลตัวกลางในการอนุมัติร้านค้า/เงิน (Admin Backoffice)
-* **งานที่ต้องทำ:**
-  - [ ] **ระบบสมัครเปิดร้านค้า (`/become-seller`)**:
-    - [ ] ฟอร์มกรอกชื่อร้าน, Slug, รายละเอียดร้าน, อัปโหลดโลโก้
-    - [ ] ฟิลด์บังคับยืนยันตัวตน: **เลขประจำตัวผู้เสียภาษี (Tax ID)**, บัญชีธนาคารสำหรับรับเงิน
-    - [ ] หน้าแสดงสถานะ "รอการตรวจสอบจากแอดมิน (Pending)"
+### 🟠 Role 3: Fullstack / Portal Engineer — Seller Center & Admin Backoffice
+* **บทบาท / ตำแหน่ง:** Fullstack & Platform Operations Developer
+* **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** ผู้ขาย (Seller / Artisan) และ ผู้ดูแลระบบกลาง (Admin / Staff)
+* **โฟลเดอร์หลัก:** `bareandbold_front/src/app/seller/` (พอร์ทัลร้านค้า) & `bareandbold_backoffice/` (ระบบแอดมิน)
+* **เทคโนโลยี:** Next.js, Ant Design / Tailwind CSS, Cloudflare R2 Upload Client, Chart.js / Recharts
+* **ความรับผิดชอบหลัก (Core Duties):**
+  - [ ] **ระบบสมัครเปิดร้านค้าสำหรับผู้ขาย (`/become-seller`)**:
+    - [ ] ฟอร์มกรอกชื่อร้าน, URL Slug, คำอธิบายร้าน, อัปโหลดโลโก้และภาพแบนเนอร์
+    - [ ] ฟิลด์บังคับยืนยันตัวตน (KYC): **เลขประจำตัวผู้เสียภาษี (Tax ID)**, ชื่อบัญชีและเลขที่บัญชีธนาคาร
+    - [ ] หน้าแสดงสถานะ "รอการตรวจสอบและอนุมัติจากแอดมิน (Pending Approval)"
   - [ ] **Seller Center Dashboard (`/seller/dashboard`)**:
-    - [ ] สรุปภาพรวมยอดขาย, ออเดอร์ที่ต้องทำ, สินค้าพร้อมส่ง
+    - [ ] KPI Cards: ยอดขายรวมประจำเดือน, จำนวนออเดอร์ใหม่, สินค้าที่ต้องจัดส่ง/ผลิต
+    - [ ] กราฟแสดงแนวโน้มยอดขายย้อนหลัง
   - [ ] **Seller Product Management (`/seller/products`)**:
-    - [ ] ตารางแสดงสินค้าทั้งหมดของร้านตนเอง
-    - [ ] ฟอร์มเพิ่ม/แก้ไขสินค้า: อัปโหลดรูปขึ้น Cloudflare R2, กำหนดเป็น "พร้อมส่ง" หรือ "สั่งทำ (Made-to-Order)" พร้อมระบุจำนวนวันผลิต
-    - [ ] ตั้งค่าตัวเลือกขนาดรอบข้อมือ/ข้อเท้าที่ร้านรับทำ
+    - [ ] ตารางสินค้าของร้านตนเอง (แสดงรูป, ชื่อ, สต็อก, ประเภท, ราคา)
+    - [ ] ฟอร์มสร้าง/แก้ไขสินค้า:
+      - อัปโหลดรูปภาพสินค้าขึ้น Cloudflare R2 (เลือกรูปหน้าปก + รูปแกลเลอรี)
+      - กำหนดประเภท: พร้อมส่ง (READY_TO_SHIP) หรือ สั่งทำ (MADE_TO_ORDER พร้อมระบุจำนวนวันผลิต เช่น 3, 7, 14 วัน)
+      - กำหนดขนาดรอบข้อมือ/ข้อเท้าที่ร้านรับทำ (Wrist Size Min - Max)
+      - จัดการตัวเลือก Custom Options (ขนาด, สีเชือก, จี้ที่เลือกได้)
+    - [ ] ปุ่มเปิด-ปิดการขายสินค้า และปุ่มลบสินค้า (Soft Delete)
   - [ ] **Seller Order Fulfillment (`/seller/orders`)**:
-    - [ ] รายการคำสั่งซื้อที่เข้ามายังร้าน (SubOrders)
-    - [ ] ปุ่มอัปเดตสถานะเป็น "กำลังผลิต (In Production)"
-    - [ ] ฟอร์มระบุการจัดส่ง: เลือกบริษัทขนส่ง (ไปรษณีย์ไทย, Flash, Kerry) และกรอกเลขพัสดุ (Tracking Number)
-  - [ ] **Seller Wallet & Payout (`/seller/wallet`)**:
-    - [ ] แสดงยอดเงินคงเหลือที่ถอนได้ (Available Balance)
-    - [ ] ประวัติเงินเข้า/ออก (ยอดขาย, หักค่าคอมมิชชัน 5%)
-    - [ ] ฟอร์มกดยื่นขอถอนเงินเข้าบัญชีธนาคาร (Request Payout)
-  - [ ] **Admin Backoffice (`bareandbold_backoffice/`)**:
-    - [ ] **หน้าอนุมัติร้านค้า (`/backoffice/shops`)**: ตรวจสอบข้อมูลร้านและเลข Tax ID กด Approve หรือ Reject
-    - [ ] **หน้าอนุมัติการถอนเงิน (`/backoffice/payouts`)**: ดูรายการขอถอนเงิน, แนบสลิปโอนเงิน และกดยืนยันการโอนเงิน (Transferred)
-    - [ ] **หน้าตรวจสอบสินค้า (Product Moderation)**: ซ่อนหรือระงับสินค้าที่ผิดกฎ
-* **API ที่ต้องใช้ (ประสานกับคนที่ 4):**
-  - `POST /api/shops/apply`, `GET /api/shops/my-shop`
+    - [ ] หน้ารายการออเดอร์ของร้านตนเอง (SubOrders) แยกแท็บสถานะ
+    - [ ] ปุ่มอัปเดตสถานะเป็น "กำลังผลิต (In Production)" สำหรับงาน Made-to-Order
+    - [ ] ฟอร์มบันทึกการจัดส่ง: เลือกบริษัทขนส่ง (ไปรษณีย์ไทย, Flash Express, Kerry, J&T) และกรอกเลข Tracking Number
+  - [ ] **Seller Wallet & Payout System (`/seller/wallet`)**:
+    - [ ] แสดงยอดเงินคงเหลือที่ถอนได้ (Available Balance) และยอดที่รอดำเนินการ (Pending Balance)
+    - [ ] ตารางประวัติรายการเดินบัญชี (รายรับจากออเดอร์, การหักค่าธรรมเนียม GP 5%)
+    - [ ] ฟอร์มกดยื่นคำขอถอนเงิน (Request Payout) ไปยังบัญชีธนาคารที่ผูกไว้
+  - [ ] **Admin Backoffice System (`bareandbold_backoffice/`)**:
+    - [ ] **หน้าอนุมัติร้านค้าใหม่ (`/backoffice/shops`)**: ตรวจสอบข้อมูลร้านและเลข Tax ID กด Approve หรือ Reject
+    - [ ] **หน้าอนุมัติการถอนเงิน (`/backoffice/payouts`)**: ตรวจสอบรายการขอถอนเงินของร้านค้า, แนบสลิปหลักฐานการโอน และกดยืนยันการโอนเงิน (Transferred)
+    - [ ] **หน้าตรวจสอบสินค้า (Product Moderation)**: ตรวจสอบและระงับสินค้าที่ไม่เหมาะสม
+    - [ ] **หน้าจัดการข้อพิพาท/คืนเงิน (`/backoffice/refunds`)**: ตรวจสอบคำขอคืนเงินของลูกค้าและไกล่เกลี่ย
+* **API Endpoints ที่ต้องประสานงานกับ Role 4:**
+  - `POST /api/shops/apply`, `GET /api/shops/my-shop`, `PUT /api/shops/my-shop`
   - `GET/POST/PUT/DELETE /api/seller/products`
-  - `GET/PUT /api/seller/orders` & `POST /api/seller/orders/:id/ship`
-  - `GET /api/seller/wallet` & `POST /api/seller/payouts/request`
-  - `GET/PUT /api/admin/shops/:id/approve` & `GET/PUT /api/admin/payouts/:id`
+  - `GET /api/seller/orders`, `PUT /api/seller/orders/:id/status`, `POST /api/seller/orders/:id/ship`
+  - `GET /api/seller/wallet`, `POST /api/seller/payouts/request`
+  - `GET/PUT /api/admin/shops/:id/approve`
+  - `GET/PUT /api/admin/payouts/:id/approve`
+  - `GET/PUT /api/admin/refunds/:id`
 
 ---
 
-### 🟣 คนที่ 4 — Backend API & Architecture (ระบบหลังบ้าน, ธุรกรรม & ฐานข้อมูล)
+### 🟣 Role 4: Backend & Database Engineer — Architecture, Escrow & REST APIs
+* **บทบาท / ตำแหน่ง:** Backend, Database & Payment System Engineer
+* **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** Core Platform, Financial Escrow Engine, Integration Services
 * **โฟลเดอร์หลัก:** `bareandbold_backend/`
-* **ขอบเขต:** สร้าง REST API ด้วย Hono/Bun + Prisma ดูแลความปลอดภัย, เชื่อมต่อ Payment Gateway (Omise) และระบบการเงินตัวกลาง (Escrow & Split Order)
-* **งานที่ต้องทำ:**
-  - [ ] **Auth & Role Authorization**:
-    - [ ] ปรับปรุง JWT Middleware ให้ตรวจสอบสิทธิ์ `isSeller`, `isApprovedSeller`, `isAdmin`
-  - [ ] **Shop & Seller APIs**:
-    - [ ] `POST /api/shops/apply`: รับสมัครร้านค้า บันทึกสถานะเป็น `PENDING`
-    - [ ] `GET /api/shops/my-shop`: ดึงข้อมูลร้านค้าของ User ปัจจุบัน
-    - [ ] `PUT /api/shops/my-shop`: แก้ไขโปรไฟล์ร้านค้า/โลโก้
-  - [ ] **Product Catalog APIs (Multi-Vendor)**:
-    - [ ] `GET /api/products`: รองรับ Search, Filter ตามหมวดหมู่ (ข้อมือ/ข้อเท้า/ขนาด/ประเภทสินค้า/ร้านค้า)
-    - [ ] `GET /api/products/:id`: ดึงรายละเอียดสินค้าพร้อม Options และข้อมูลร้านค้า
-    - [ ] `POST/PUT/DELETE /api/seller/products`: API จัดการสินค้าโดยเช็กว่าแก้ไขได้เฉพาะสินค้าของร้านตนเอง
-    - [ ] `POST /api/upload`: อัปโหลดรูปภาพเข้า Cloudflare R2
-  - [ ] **Cart & Split Order APIs (หัวใจของระบบตัวกลาง)**:
-    - [ ] `GET/POST/PUT/DELETE /api/cart`: จัดการตะกร้าสินค้า (รองรับ Custom Options)
-    - [ ] `POST /api/orders/checkout`: สร้าง `Order` (Master) และแตกย่อยเป็น `SubOrder` ตามแต่ละร้านค้าที่อยู่ในตะกร้า
-  - [ ] **Payment & Escrow System (Omise API)**:
-    - [ ] `POST /api/payments/create-charge`: สร้างรายการชำระเงินกับ Omise (PromptPay QR / Card)
-    - [ ] `POST /api/payments/webhook`: ดักฟังสถานะชำระเงิน เมื่อสำเร็จ ➔ เปลี่ยนสถานะ `Order` & `SubOrders` เป็น `PAID`
-  - [ ] **Fulfillment & Confirmation APIs**:
+* **เทคโนโลยี:** Hono Framework, Bun Runtime, PostgreSQL (Neon), Prisma ORM (Multi-File Schema), Omise API, Cloudflare R2 SDK
+* **ความรับผิดชอบหลัก (Core Duties):**
+  - [ ] **Database Architecture & Multi-File Schema Management**:
+    - [ ] ดูแลความสมบูรณ์ของโครงสร้างตาราง 26 โมเดล ในโฟลเดอร์ `prisma/schema/*.prisma`
+    - [ ] ควบคุม Data Migration, Indexing, Performance Query และ Seed Data
+  - [ ] **Authentication & Role Authorization Middleware**:
+    - [ ] ระบบ JWT Authentication (Sign / Verify / HTTP-only Cookie)
+    - [ ] Middleware ตรวจสอบสิทธิ์: `isBuyer`, `isSeller`, `isApprovedSeller`, `isAdmin`, `isStaff`
+  - [ ] **Multi-Vendor Product Catalog APIs**:
+    - [ ] `GET /api/products`: Full-text Search, Filtering (ข้อมือ/ข้อเท้า, พร้อมส่ง/สั่งทำ, ขนาด, ราคา) และ Pagination
+    - [ ] `GET /api/products/:id`: ดึงข้อมูลสินค้าพร้อม Images, Custom Options, Accessories และ Shop Info
+    - [ ] `POST/PUT/DELETE /api/seller/products`: จัดการสินค้าเฉพาะของร้านค้าตนเอง (Seller Guard)
+    - [ ] `POST /api/upload`: อัปโหลดรูปภาพสินค้าขึ้น Cloudflare R2
+  - [ ] **Multi-Vendor Cart & Split Order Engine (หัวใจของระบบตัวกลาง)**:
+    - [ ] `GET/POST/PUT/DELETE /api/cart`: จัดการตะกร้าสินค้า (รองรับ Custom Options & Accessories)
+    - [ ] `POST /api/orders/checkout`: บันทึก Master Order และ**แตก SubOrder ตามแต่ละร้านค้าโดยอัตโนมัติ (Split Order Logic)**
+  - [ ] **Omise Payment Gateway & Escrow Webhook**:
+    - [ ] `POST /api/payments/checkout`: สร้าง Charge กับ Omise (รองรับ PromptPay QR Code และ Credit Card)
+    - [ ] `POST /api/payments/webhook`: Webhook Listener รับสถานะการจ่ายเงินแบบ Realtime ➔ ปรับสถานะเป็น `PAID` ทั้ง Master Order และ SubOrders
+    - [ ] ระบบ Escrow (พักเงินไว้ที่ระบบตัวกลาง): ยังไม่โอนเงินเข้าร้านค้าจนกว่าลูกค้าจะยืนยันรับของ
+  - [ ] **Fulfillment, Confirmation & Escrow Release APIs**:
     - [ ] `PUT /api/seller/orders/:subOrderId/status`: ร้านค้าเปลี่ยนสถานะเป็นกำลังผลิต
-    - [ ] `POST /api/seller/orders/:subOrderId/ship`: ร้านค้าบันทึกชื่อขนส่งและเลข Tracking
-    - [ ] `POST /api/orders/:subOrderId/confirm-received`: ลูกค้ายืนยันรับของ ➔ คำนวณหักคอมมิชชัน ➔ โอนยอด Net Amount เข้า `Shop.balance` และบันทึก `ShopTransaction`
+    - [ ] `POST /api/seller/orders/:subOrderId/ship`: ร้านค้าบันทึกชื่อขนส่งและเลข Tracking Number
+    - [ ] `POST /api/orders/:subOrderId/confirm-received`: ลูกค้ายืนยันรับของ ➔ **ปลดล็อกเงิน Escrow** (คำนวณหักค่าธรรมเนียม GP 5% ➔ โอนเงิน Net Amount เข้า `Shop.balance` ➔ บันทึกประวัติ `ShopTransaction`)
   - [ ] **Reviews & Ratings APIs**:
-    - [ ] `POST /api/reviews`: ส่งรีวิว (ตรวจสอบว่าเป็นผู้ซื้อจริง `orderItemId`, ให้คะแนน 1-5 ดาว, บันทึกข้อความและรูปภาพ)
-    - [ ] คำนวณคะแนนเฉลี่ย (`rating`) และจำนวนรีวิว (`reviewCount`) อัปเดตกลับไปยัง `Product` อัตโนมัติ
-    - [ ] `GET /api/products/:id/reviews`: ดึงรายการรีวิวทั้งหมดของสินค้านั้น
-    - [ ] `GET /api/shops/:id/reviews`: ดึงคะแนนรีวิวเฉลี่ยและคอมเมนต์ของร้านค้านั้น
-  - [ ] **🔮 Gemstone & Astrology Recommender API (AI / Algorithmic)**:
-    - [ ] `POST /api/recommend/gemstones`: Endpoint รับข้อมูล `{ dayOfWeek, zodiacSign, focusArea }`
-    - [ ] ตารางจับคู่ความเชื่อ (Gemstone Knowledge Base / Algorithm หรือเชื่อมต่อ Gemini API):
-      - คำนวณหินมงคลที่ช่วยเสริมดวงด้านที่เลือก
-      - ระบุสีเชือกมงคลและสีกาลกิณีห้ามใช้ประจำวันเกิด
-    - [ ] Query ค้นหาสินค้ากำไล/ข้อเท้าในระบบที่มีหินหรือสีตรงกับผลทำนาย แล้วส่งกลับพร้อมคำอธิบายความหมาย
-  - [ ] **Wallet, Payout & Admin APIs**:
-    - [ ] `GET /api/seller/wallet`: ดึงยอดคงเหลือและประวัติธุรกรรม
-    - [ ] `POST /api/seller/payouts/request`: ร้านค้ายื่นขอถอนเงิน
-    - [ ] `GET/PUT /api/admin/shops`: ดึงรายชื่อร้านและกดยอมรับ/ปฏิเสธร้านค้า
-    - [ ] `GET/PUT /api/admin/payouts`: ดึงรายการคำขอถอนเงินและอัปเดตสถานะการโอนเงิน
+    - [ ] `POST /api/reviews`: ส่งรีวิว (ตรวจสอบสิทธิ์ว่าต้องซื้อจริง `orderItemId`, ให้คะแนน 1-5 ดาว, บันทึกรูป)
+    - [ ] อัปเดตคำนวณคะแนนเฉลี่ย (`rating`) และจำนวนรีวิว (`reviewCount`) บนตาราง `Product` อัตโนมัติ
+    - [ ] `GET /api/products/:id/reviews` & `GET /api/shops/:id/reviews`
+  - [ ] **🔮 Gemstone & Astrology Recommendation API (AI / Algorithmic)**:
+    - [ ] `POST /api/recommend/gemstones`: รับข้อมูล `{ dayOfWeek, zodiacSign, focusArea }`
+    - [ ] Gemstone Knowledge Algorithm: วิเคราะห์หินมงคล + สีเชือกมงคล + สีกาลกิณีประจำวันเกิด
+    - [ ] Query ค้นหาสินค้ากำไล/ข้อเท้าในระบบที่มีหินหรือสีตรงกับผลทำนาย แล้วส่งกลับให้หน้าบ้าน
+  - [ ] **Wallet, Payouts & Admin Management APIs**:
+    - [ ] `GET /api/seller/wallet`: ดึงยอดคงเหลือและประวัติธุรกรรมกระเป๋าเงิน
+    - [ ] `POST /api/seller/payouts/request`: ร้านค้ายื่นคำขอถอนเงินเข้าบัญชีธนาคาร
+    - [ ] `GET/PUT /api/admin/shops`: ดึงรายชื่อร้านค้าเพื่อกด Approve/Reject
+    - [ ] `GET/PUT /api/admin/payouts`: ดึงรายการคำขอถอนเงินเพื่ออนุมัติและบันทึกสลิปโอน
+    - [ ] `POST/GET/PUT /api/refunds`: จัดการคำร้องขอคืนเงิน
 * **เครื่องมือและบริการที่ต้องดูแล:**
   - Neon PostgreSQL, Cloudflare R2, Omise Payment Sandbox
+
+---
 
 ---
 
