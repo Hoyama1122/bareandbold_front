@@ -98,11 +98,6 @@
 - Backend Shop API: apply / my-shop / update
 - Admin/Staff แยกสิทธิ์ + mask ข้อมูล KYC สำหรับ staff
 
-**ถูกลบ / ส่งต่อให้เพื่อน**
-
-- UI Seller Center ทั้งหมด: `/seller/dashboard`, `/seller/products`, `/seller/shop`
-- `components/seller/*` และ `services/seller.service.js`
-
 **เหลือทำ**
 
 - Seller Center UI — ต่อ API ที่พร้อมแล้ว
@@ -151,7 +146,7 @@
 | ลำดับ | งาน                                                       | เจ้าของ             | ต้องรอ           |
 | :--------: | :----------------------------------------------------------- | :------------------------- | :--------------------- |
 |     1     | Split Order Engine (`checkout` → `SubOrder`)            | Role 4                     | —                     |
-|     2     | Seller Center UI (dashboard / products / shop)               | Role 3                    | API พร้อมแล้ว |
+|     2     | Seller Center UI (dashboard / products / shop)               | Role 3                     | API พร้อมแล้ว |
 |     3     | Seller Orders + Fulfillment (ผลิต/จัดส่ง/tracking) | Role 3 + 4                 | ข้อ 1               |
 |     4     | Escrow + Confirm Received + Wallet                           | Role 4                     | ข้อ 1               |
 |     5     | Admin Payout / Moderation / Analytics (UI + API)             | Role 3                     | ข้อ 4               |
@@ -313,10 +308,10 @@
 
 | Role / ตำแหน่งงาน                                                  | ขอบเขตรับผิดชอบหลัก (Domain)                                                                                                             | กลุ่มผู้ใช้ที่ดูแล (Actors) | โฟลเดอร์ที่รับผิดชอบ                                                                                               |
 | :--------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| **🔵 Role 1: Frontend Engineer***(Storefront & Catalog)*             | หน้าร้านค้า, แคตตาล็อกสินค้า, ค้นหา/กรอง, หน้าร้านผู้ขาย, ระบบดูดวงหินมงคล                 | Guest, Buyer                                  | `bareandbold_front/`                                                                                                                 |
-| **🟢 Role 2: Frontend Engineer***(Transaction & Orders)*             | ตะกร้าสินค้าแยกตามร้าน, Checkout, ชำระเงิน Omise, ไทม์ไลน์ติดตามพัสดุ, รีวิว                          | Buyer                                         | `bareandbold_front/`                                                                                                                 |
-| **🟠 Role 3: Fullstack / Portal Engineer***(Seller Center & Admin)*  | ระบบสมัครเปิดร้าน, แดชบอร์ดผู้ขาย, จัดการสินค้า/ออเดอร์ร้านค้า, ระบบแอดมินอนุมัติ | Seller, Admin, Staff                          | `bareandbold_backoffice/`*(Seller UI: `bareandbold_front/src/app/seller/` — ถูกลบชั่วคราว รอทีมทำใหม่)* |
-| **🟣 Role 4: Backend & Database Engineer***(API & Financial Escrow)* | REST APIs ทั้งหมด, ฐานข้อมูล Prisma, ระบบพักเงิน Escrow, Omise Webhook, Wallet                                                   | System, DB, Payment                           | `bareandbold_backend/`                                                                                                               |
+| **🔵 Role 1: Frontend Engineer\***(Storefront & Catalog)\*             | หน้าร้านค้า, แคตตาล็อกสินค้า, ค้นหา/กรอง, หน้าร้านผู้ขาย, ระบบดูดวงหินมงคล                 | Guest, Buyer                                  | `bareandbold_front/`                                                                                                                 |
+| **🟢 Role 2: Frontend Engineer\***(Transaction & Orders)\*             | ตะกร้าสินค้าแยกตามร้าน, Checkout, ชำระเงิน Omise, ไทม์ไลน์ติดตามพัสดุ, รีวิว                          | Buyer                                         | `bareandbold_front/`                                                                                                                 |
+| **🟠 Role 3: Fullstack / Portal Engineer\***(Seller Center & Admin)\*  | ระบบสมัครเปิดร้าน, แดชบอร์ดผู้ขาย, จัดการสินค้า/ออเดอร์ร้านค้า, ระบบแอดมินอนุมัติ | Seller, Admin, Staff                          | `bareandbold_backoffice/`_(Seller UI: `bareandbold_front/src/app/seller/` — ถูกลบชั่วคราว รอทีมทำใหม่)_ |
+| **🟣 Role 4: Backend & Database Engineer\***(API & Financial Escrow)\* | REST APIs ทั้งหมด, ฐานข้อมูล Prisma, ระบบพักเงิน Escrow, Omise Webhook, Wallet                                                   | System, DB, Payment                           | `bareandbold_backend/`                                                                                                               |
 
 ---
 
@@ -337,12 +332,12 @@
 
 ### 🔵 Role 1: Frontend Engineer — Storefront, Product Experience & AI Recommender
 
-* **ภาระงานเทอมนี้:** ~20 วัน (Storefront + Gemstone KB/API/UI + งานรายงาน/demo)
-* **บทบาท / ตำแหน่ง:** Frontend Developer (Customer Discovery & Experience)
-* **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** ผู้เยี่ยมชมทั่วไป (Guest) และ ผู้ซื้อ (Buyer)
-* **โฟลเดอร์หลัก:** `bareandbold_front/`
-* **เทคโนโลยี:** Next.js (App Router), Tailwind CSS, Lucide Icons, Fetch API
-* **ความรับผิดชอบหลัก (Core Duties):**
+- **ภาระงานเทอมนี้:** ~20 วัน (Storefront + Gemstone KB/API/UI + งานรายงาน/demo)
+- **บทบาท / ตำแหน่ง:** Frontend Developer (Customer Discovery & Experience)
+- **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** ผู้เยี่ยมชมทั่วไป (Guest) และ ผู้ซื้อ (Buyer)
+- **โฟลเดอร์หลัก:** `bareandbold_front/`
+- **เทคโนโลยี:** Next.js (App Router), Tailwind CSS, Lucide Icons, Fetch API
+- **ความรับผิดชอบหลัก (Core Duties):**
   - [ ] **Homepage (`/`)**:
     - [ ] เชื่อมต่อ API ดึงสินค้าแนะนำและสินค้ามาใหม่
     - [ ] แสดงหมวดหมู่สินค้าหลัก (กำไลข้อมือ BRACELET, กำไลข้อเท้า ANKLET)
@@ -374,11 +369,11 @@
     - [ ] Interactive Form: เลือกวันเกิด (จันทร์-อาทิตย์), ราศี (12 ราศี), และด้านที่ต้องการเสริมดวง (การงาน, การเงิน, ความรัก, สุขภาพ)
     - [ ] Result Card: แสดงการ์ดผลการทำนาย (หินมงคลหลัก-รอง, โทนสีมงคล, สีกาลกิณีที่ควรหลีกเลี่ยง)
     - [ ] Matched Products Carousel: แสดงรายการกำไล/ข้อเท้าในระบบที่มีหินและสีตรงกับคำทำนาย พร้อมปุ่มคลิกสั่งซื้อทันที
-* **API Endpoints ที่ต้องประสานงานกับ Role 4:**
+- **API Endpoints ที่ต้องประสานงานกับ Role 4:**
   - `GET /api/products` (query: search, category, type, minPrice, maxPrice, minWrist, maxWrist)
   - `GET /api/products/:id`
   - `GET /api/products/:id/reviews`
-  - `POST /api/recommend/gemstones` *(Role 1 ดูแล knowledge base/logic, Role 4 review)*
+  - `POST /api/recommend/gemstones` _(Role 1 ดูแล knowledge base/logic, Role 4 review)_
   - `GET /api/shops/:slug`
   - `GET/POST/DELETE /api/wishlist`
 
@@ -386,12 +381,12 @@
 
 ### 🟢 Role 2: Frontend Engineer — Cart, Checkout, Order Tracking & Reviews
 
-* **ภาระงานเทอมนี้:** ~20 วัน (Buyer flow + Reviews + Refund UI ทั้ง buyer/admin + UAT)
-* **บทบาท / ตำแหน่ง:** Frontend Developer (Transaction, Post-Purchase & Customer Portal)
-* **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** ผู้ซื้อ (Buyer / Customer)
-* **โฟลเดอร์หลัก:** `bareandbold_front/`
-* **เทคโนโลยี:** Next.js (App Router), Tailwind CSS, Omise.js SDK, Cookie Management
-* **ความรับผิดชอบหลัก (Core Duties):**
+- **ภาระงานเทอมนี้:** ~20 วัน (Buyer flow + Reviews + Refund UI ทั้ง buyer/admin + UAT)
+- **บทบาท / ตำแหน่ง:** Frontend Developer (Transaction, Post-Purchase & Customer Portal)
+- **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** ผู้ซื้อ (Buyer / Customer)
+- **โฟลเดอร์หลัก:** `bareandbold_front/`
+- **เทคโนโลยี:** Next.js (App Router), Tailwind CSS, Omise.js SDK, Cookie Management
+- **ความรับผิดชอบหลัก (Core Duties):**
   - [X] **Customer Authentication Flow**:
     - [X] หน้าเข้าสู่ระบบ (`/login`) และสมัครสมาชิกผ่าน Auth Modal
     - [ ] จัดการ Auth State, HTTP-only Cookie, JWT Session (ตอนนี้ใช้ Bearer token ใน localStorage; ยังไม่ย้ายเป็น httpOnly cookie)
@@ -423,7 +418,7 @@
     - [ ] ตารางคำขอคืนเงิน + ตัวกรองสถานะ
     - [ ] หน้ารายละเอียดคำขอ + รูปหลักฐาน
     - [ ] ปุ่มอนุมัติ/ปฏิเสธ + กรอกหมายเหตุ (ใช้ API จาก Role 4)
-* **API Endpoints ที่ต้องประสานงานกับ Role 4:**
+- **API Endpoints ที่ต้องประสานงานกับ Role 4:**
   - `POST /api/auth/login`, `POST /api/auth/register`, `GET /api/auth/profile`
   - `GET/POST/PUT/DELETE /api/addresses`
   - `GET/POST/PUT/DELETE /api/cart`
@@ -432,26 +427,26 @@
   - `POST /api/orders/:subOrderId/confirm-received`
   - `POST /api/reviews`
   - `POST /api/refunds/request`
-  - `GET/PUT /api/admin/refunds` *(Role 2 ใช้ UI, Role 4 ทำ API)*
+  - `GET/PUT /api/admin/refunds` _(Role 2 ใช้ UI, Role 4 ทำ API)_
 
 ---
 
 ### 🟠 Role 3: Fullstack / Portal Engineer — Seller Center & Admin Backoffice
 
-* **ภาระงานเทอมนี้:** ~20 วัน (Seller Center UI + Admin UI/API + UAT)
-* **บทบาท / ตำแหน่ง:** Fullstack & Platform Operations Developer
-* **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** ผู้ขาย (Seller / Artisan) และ ผู้ดูแลระบบกลาง (Admin / Staff)
-* **โฟลเดอร์หลัก:** `bareandbold_backoffice/` (ระบบแอดมิน) & `bareandbold_front/src/app/seller/` (พอร์ทัลร้านค้า — **ถูกลบชั่วคราว รอทีมทำใหม่**)
-* **เทคโนโลยี:** Next.js, Ant Design / Tailwind CSS, Cloudflare R2 Upload Client, Chart.js / Recharts
-* **ความรับผิดชอบหลัก (Core Duties):**
+- **ภาระงานเทอมนี้:** ~20 วัน (Seller Center UI + Admin UI/API + UAT)
+- **บทบาท / ตำแหน่ง:** Fullstack & Platform Operations Developer
+- **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** ผู้ขาย (Seller / Artisan) และ ผู้ดูแลระบบกลาง (Admin / Staff)
+- **โฟลเดอร์หลัก:** `bareandbold_backoffice/` (ระบบแอดมิน) & `bareandbold_front/src/app/seller/` (พอร์ทัลร้านค้า — **ถูกลบชั่วคราว รอทีมทำใหม่**)
+- **เทคโนโลยี:** Next.js, Ant Design / Tailwind CSS, Cloudflare R2 Upload Client, Chart.js / Recharts
+- **ความรับผิดชอบหลัก (Core Duties):**
   - [X] **ระบบสมัครเปิดร้านค้าสำหรับผู้ขาย (`/become-seller`)**:
     - [X] ฟอร์มกรอกชื่อร้าน, URL Slug, คำอธิบายร้าน, อัปโหลดโลโก้และภาพแบนเนอร์
     - [X] ฟิลด์บังคับยืนยันตัวตน (KYC): **เลขประจำตัวผู้เสียภาษี (Tax ID)**, ชื่อบัญชีและเลขที่บัญชีธนาคาร
     - [X] หน้าแสดงสถานะ "รอการตรวจสอบและอนุมัติจากแอดมิน (Pending Approval)" + แก้ไขส่งใหม่เมื่อถูกปฏิเสธ
-  - [ ] **Seller Center Dashboard (`/seller/dashboard`)** — *UI ถูกลบเพื่อให้เพื่อนทำ; API พร้อมแล้ว*:
+  - [ ] **Seller Center Dashboard (`/seller/dashboard`)** — _UI ถูกลบเพื่อให้เพื่อนทำ; API พร้อมแล้ว_:
     - [ ] KPI Cards: ยอดขายรวมประจำเดือน, จำนวนออเดอร์ใหม่, สินค้าที่ต้องจัดส่ง/ผลิต (API มี product counts + balance)
     - [ ] กราฟแสดงแนวโน้มยอดขายย้อนหลัง
-  - [ ] **Seller Product Management (`/seller/products`)** — *UI ถูกลบเพื่อให้เพื่อนทำ; API พร้อมแล้ว*:
+  - [ ] **Seller Product Management (`/seller/products`)** — _UI ถูกลบเพื่อให้เพื่อนทำ; API พร้อมแล้ว_:
     - [ ] ตารางสินค้าของร้านตนเอง (แสดงรูป, ชื่อ, สต็อก, ประเภท, ราคา)
     - [ ] ฟอร์มสร้าง/แก้ไขสินค้า:
       - อัปโหลดรูปภาพสินค้าขึ้น Cloudflare R2 (เลือกรูปหน้าปก + รูปแกลเลอรี) — API พร้อม
@@ -477,29 +472,29 @@
     - [ ] `GET/PUT /api/admin/payouts`: อนุมัติ/บันทึกสลิปโอน
     - [ ] `GET/PUT /api/admin/products/:id/moderate`: ระงับ/ซ่อนสินค้า
     - [ ] `GET /api/admin/analytics`: GMV + commission summary
-* **API Endpoints ที่ต้องประสานงานกับ Role 4:**
+- **API Endpoints ที่ต้องประสานงานกับ Role 4:**
   - `POST /api/shops/apply`, `GET /api/shops/my-shop`, `PUT /api/shops/my-shop`
   - `GET/POST/PUT/DELETE /api/seller/products`
   - `GET /api/seller/orders`, `PUT /api/seller/orders/:id/status`, `POST /api/seller/orders/:id/ship`
   - `GET /api/seller/wallet`, `POST /api/seller/payouts/request`
   - `GET/PUT /api/admin/shops/:id/approve`
-  - `GET/PUT /api/admin/payouts/:id/approve` *(Role 3)*
-  - `GET/PUT /api/admin/products/:id/moderate` *(Role 3)*
-  - `GET /api/admin/analytics` *(Role 3)*
-  - `GET/PUT /api/admin/settings` *(Role 3 — Platform Settings)*
-  - `GET /api/settings/public` *(Role 4 wire เข้า checkout)*
-  - `GET/PUT /api/admin/refunds/:id` *(Role 4 ทำ API, Role 2 ทำ UI)*
+  - `GET/PUT /api/admin/payouts/:id/approve` _(Role 3)_
+  - `GET/PUT /api/admin/products/:id/moderate` _(Role 3)_
+  - `GET /api/admin/analytics` _(Role 3)_
+  - `GET/PUT /api/admin/settings` _(Role 3 — Platform Settings)_
+  - `GET /api/settings/public` _(Role 4 wire เข้า checkout)_
+  - `GET/PUT /api/admin/refunds/:id` _(Role 4 ทำ API, Role 2 ทำ UI)_
 
 ---
 
 ### 🟣 Role 4: Backend & Database Engineer — Architecture, Escrow & REST APIs
 
-* **ภาระงานเทอมนี้:** ~20 วัน (Core financial/order + review/support + deploy/docs)
-* **บทบาท / ตำแหน่ง:** Backend, Database & Payment System Engineer
-* **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** Core Platform, Financial Escrow Engine, Integration Services
-* **โฟลเดอร์หลัก:** `bareandbold_backend/`
-* **เทคโนโลยี:** Hono Framework, Bun Runtime, PostgreSQL (Neon), Prisma ORM (Multi-File Schema), Omise API, Cloudflare R2 SDK
-* **ความรับผิดชอบหลัก (Core Duties):**
+- **ภาระงานเทอมนี้:** ~20 วัน (Core financial/order + review/support + deploy/docs)
+- **บทบาท / ตำแหน่ง:** Backend, Database & Payment System Engineer
+- **กลุ่มผู้ใช้งานที่ดูแล (Target Actors):** Core Platform, Financial Escrow Engine, Integration Services
+- **โฟลเดอร์หลัก:** `bareandbold_backend/`
+- **เทคโนโลยี:** Hono Framework, Bun Runtime, PostgreSQL (Neon), Prisma ORM (Multi-File Schema), Omise API, Cloudflare R2 SDK
+- **ความรับผิดชอบหลัก (Core Duties):**
   - [X] **Database Architecture & Multi-File Schema Management**:
     - [X] ดูแลความสมบูรณ์ของโครงสร้างตาราง 26 โมเดล ในโฟลเดอร์ `prisma/schema/*.prisma`
     - [X] ควบคุม Data Migration, Indexing, Performance Query และ Seed Data
@@ -535,7 +530,7 @@
     - [X] `GET/PUT /api/admin/shops`: ดึงรายชื่อร้านค้าเพื่อกด Approve/Reject (staff ดูได้, admin อนุมัติ)
     - [ ] `GET/PUT /api/admin/payouts`: **ย้ายไป Role 3** (Role 4 review)
     - [ ] `POST/GET/PUT /api/refunds`: จัดการคำร้องขอคืนเงิน (Role 4 ทำ API, Role 2 ทำ UI)
-* **เครื่องมือและบริการที่ต้องดูแล:**
+- **เครื่องมือและบริการที่ต้องดูแล:**
   - Neon PostgreSQL, Cloudflare R2, Omise Payment Sandbox
 
 ---
@@ -605,7 +600,7 @@
 
 ### ฝั่ง Backend
 
-- [ ] **3.1 API สินค้าสำหรับผู้ซื้อ (Public Catalog)**
+- [X] **3.1 API สินค้าสำหรับผู้ซื้อ (Public Catalog)**
   - [X] `GET /api/products`: ค้นหา + ตัวกรอง (กำไลข้อมือ/ข้อเท้า, พร้อมส่ง/สั่งทำ, ร้าน) — ยังไม่มีช่วงราคา/ขนาด/หินมงคล/เรียงลำดับ
   - [X] `GET /api/products/:id`: ดูรายละเอียดสินค้าพร้อมข้อมูลร้านค้า
   - [X] `GET /api/shops/:slug`: ข้อมูลร้านค้าและสินค้าทั้งหมดของร้านนั้น (เฉพาะร้าน APPROVED)
@@ -634,11 +629,11 @@
 
 ## 🔮 Phase 3.5 (Feature Highlight): ระบบจับคู่หินมงคลและราศี (AI / Algorithmic Gemstone Recommender)
 
-*จุดเด่นประจำเทอมใหม่: ตอบโจทย์ตลาดกำไล/เครื่องประดับสายมูในไทย ยกระดับโปรเจกต์ด้วยการนำ Logic & AI เข้ามาเชื่อมโยงกับแคตตาล็อกสินค้าจริงในระบบ*
+_จุดเด่นประจำเทอมใหม่: ตอบโจทย์ตลาดกำไล/เครื่องประดับสายมูในไทย ยกระดับโปรเจกต์ด้วยการนำ Logic & AI เข้ามาเชื่อมโยงกับแคตตาล็อกสินค้าจริงในระบบ_
 
 ### ฝั่ง Backend
 
-- [ ] **3.5.1 พัฒนา Gemstone Knowledge Base & Recommendation Logic** *(Role 1 รับผิดชอบ, Role 4 review)*
+- [ ] **3.5.1 พัฒนา Gemstone Knowledge Base & Recommendation Logic** _(Role 1 รับผิดชอบ, Role 4 review)_
   - [ ] ฐานข้อมูลจับคู่ความเชื่อ: วันเกิด (จันทร์-อาทิตย์), ราศี (12 ราศี), ด้านที่เสริมดวง (การงาน, การเงิน, ความรัก, สุขภาพ, โชคลาภ)
   - [ ] ข้อมูลหินมงคลประจำด้าน: เช่น ลาพิส ลาซูลี (การงาน/สติปัญญา), โรสควอตซ์ (ความรัก), ซิทริน/ไหมทอง (การเงิน), นิลดำ (ป้องกันภัย)
   - [ ] กฎเกณฑ์สีมงคลและสีกาลกิณีประจำวันเกิด
@@ -647,7 +642,7 @@
 
 ### ฝั่ง Frontend
 
-- [ ] **3.5.2 พัฒนาหน้าระบบดูดวงและแนะนำเครื่องประดับ (`/horoscope` หรือ `/gemstone-guide`)** *(Role 1)*
+- [ ] **3.5.2 พัฒนาหน้าระบบดูดวงและแนะนำเครื่องประดับ (`/horoscope` หรือ `/gemstone-guide`)** _(Role 1)_
   - [ ] Interactive Form: เลือกวันเกิด (จันทร์-อาทิตย์), ราศี, และด้านที่ต้องการเสริมดวง
   - [ ] Result Card: แสดงการ์ดผลการทำนาย (หินมงคลที่แนะนำ, โทนสีมงคล, สีกาลกิณีที่ควรหลีกเลี่ยง)
   - [ ] Matched Products Shelf: แสดงรายการกำไลข้อมือ/ข้อเท้าจากร้านค้าต่างๆ ที่มีหินและสีตรงกับคำทำนาย พร้อมปุ่มคลิกสั่งซื้อทันที
@@ -696,17 +691,17 @@
     - สถานะเปลี่ยนเป็น `COMPLETED`
     - ปลดล็อกเงินเข้ากระเป๋าเงิน (Wallet) ของร้านค้าโดยอัตโนมัติ
   - [ ] ระบบ Auto-Complete: ยืนยันอัตโนมัติหากพัสดุส่งถึงเกิน 7 วันแล้วผู้ซื้อไม่ได้กดยืนยันหรือเปิดข้อพิพาท
-- [ ] **5.4 ระบบขอคืนเงิน/คืนสินค้า (Refund / Dispute)** *(Role 2 UI, Role 4 API)*
+- [ ] **5.4 ระบบขอคืนเงิน/คืนสินค้า (Refund / Dispute)** _(Role 2 UI, Role 4 API)_
   - [ ] แบบฟอร์มยื่นขอคืนเงินกรณีสินค้าเสียหายหรือไม่ได้รับสินค้าภายในกำหนด
 
 ---
 
 ## 💼 Phase 6: พอร์ทัลผู้ขาย & กระเป๋าเงิน (Seller Center & Wallet)
 
-- [ ] **6.1 แดชบอร์ดสรุปภาพรวมร้านค้า (`/seller/dashboard`)** — *UI ถูกลบเพื่อให้เพื่อนทำ; API `GET /api/seller/dashboard` พร้อมแล้ว*
+- [ ] **6.1 แดชบอร์ดสรุปภาพรวมร้านค้า (`/seller/dashboard`)** — _UI ถูกลบเพื่อให้เพื่อนทำ; API `GET /api/seller/dashboard` พร้อมแล้ว_
   - [ ] การ์ดยอดขายรวม, จำนวนออเดอร์ใหม่, สินค้าที่ต้องจัดส่ง (API มี product counts + balance แล้ว)
   - [ ] กราฟยอดขายย้อนหลัง
-- [ ] **6.2 หน้ารายการสินค้าของร้าน (`/seller/products`)** — *UI ถูกลบเพื่อให้เพื่อนทำ; API พร้อมแล้ว*
+- [ ] **6.2 หน้ารายการสินค้าของร้าน (`/seller/products`)** — _UI ถูกลบเพื่อให้เพื่อนทำ; API พร้อมแล้ว_
   - [ ] ฟอร์มเพิ่ม/แก้ไขสินค้า พร้อมกำหนดเป็นแบบ Made-to-Order หรือ Ready-to-Ship
 - [ ] **6.3 ระบบกระเป๋าเงินและถอนเงิน (`/seller/wallet`)**
   - [ ] แสดงยอดเงินคงเหลือที่ถอนได้ (Available Balance)
@@ -725,11 +720,11 @@
 - [ ] **7.2 ระบบตรวจสอบและควบคุมสินค้า (Product Moderation)**
   - [ ] รายการสินค้าทั้งหมดในแพลตฟอร์ม พร้อมตัวกรองตามร้านค้า
   - [ ] ปุ่มระงับสินค้าที่ไม่เหมาะสม (Take Down / Hide)
-- [ ] **7.3 ระบบอนุมัติการถอนเงิน (Payout Approvals)** *(Role 3)*
+- [ ] **7.3 ระบบอนุมัติการถอนเงิน (Payout Approvals)** _(Role 3)_
   - [ ] หน้าตรวจสอบรายการคำขอถอนเงินของร้านค้า (`/dashboard/payouts`)
   - [ ] แสดงยอดเงิน, บัญชีธนาคารปลายทาง, หลักฐานการโอน
   - [ ] ปุ่มกดบันทึกการโอนเงินสำเร็จ (`TRANSFERRED`)
-- [ ] **7.4 รายงานสถิติแพลตฟอร์ม (Platform Analytics)** *(Role 3)*
+- [ ] **7.4 รายงานสถิติแพลตฟอร์ม (Platform Analytics)** _(Role 3)_
   - [ ] สรุปยอดขายรวมทั้งระบบ (GMV - Gross Merchandise Value)
   - [ ] รายได้ค่าคอมมิชชันของแพลตฟอร์ม (Platform Net Revenue)
 
@@ -768,7 +763,7 @@
   - [ ] Model/API: coupon code, ส่วนลด %, จำนวนเงิน, ขั้นต่ำ, วันหมดอายุ, จำกัดจำนวนใช้
   - [ ] UI: ช่องกรอกโค้ดใน `/cart` และ `/checkout` + แสดงส่วนลด
   - [ ] Admin: หน้าจัดการ coupon (`/dashboard/coupons`)
-- [ ] **Platform Settings (ค่ากลางของแพลตฟอร์ม)** — *Role 3 + Role 4*
+- [ ] **Platform Settings (ค่ากลางของแพลตฟอร์ม)** — _Role 3 + Role 4_
   - [ ] Model `PlatformSetting` (key/value หรือ singleton config): `commissionRate`, `defaultShippingFee`, `freeShippingThreshold`, `shippingConditions`
   - [ ] API: `GET/PUT /api/admin/settings` (Admin), `GET /api/settings/public` (checkout ใช้ค่าส่ง/ฟรีส่ง)
   - [ ] UI Backoffice: `/dashboard/settings/platform` — ฟอร์ม GP %, ค่าส่ง, ยอดฟรีส่ง, เงื่อนไข + preview
@@ -803,6 +798,6 @@
 ## 📌 สรุปหน้าที่ตามโปรเจกต์เดิมใน Workspace
 
 1. **`bareandbold_front/`:** ใช้เป็นหน้าร้านค้าหลัก (Storefront) สำหรับผู้ซื้อ และขยายเพิ่มส่วน Seller Portal สำหรับร้านค้า
-   - *หมายเหตุ:* UI Seller Center (`src/app/seller/`) ถูกนำออกชั่วคราวเพื่อให้ทีมอื่นพัฒนาใหม่ — Backend Seller API ยังพร้อมใช้งาน
+   - _หมายเหตุ:_ UI Seller Center (`src/app/seller/`) ถูกนำออกชั่วคราวเพื่อให้ทีมอื่นพัฒนาใหม่ — Backend Seller API ยังพร้อมใช้งาน
 2. **`bareandbold_backoffice/`:** ใช้เป็นระบบ Admin ตัวกลาง (Platform Admin) สำหรับตรวจรับร้านค้า, อนุมัติถอนเงิน และดูสถิติ
 3. **`bareandbold_backend/`:** พัฒนา REST API และปรับ Prisma Schema ให้รองรับ Multi-Vendor Architecture
