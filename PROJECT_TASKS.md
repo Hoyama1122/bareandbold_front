@@ -201,7 +201,7 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 | Seller Fulfillment           | ผลิต/จัดส่ง/tracking         | ❌         | —                                                  | status + ship APIs                | `/api/seller/orders`                       |
 | Reviews API + Reiew ร้าน | รีวิว + rating                    | ❌         | —                                                  | POST + GET + อัปเดต rating  | `/api/reviews`                             |
 | Wallet / Payout API          | ยอดเงิน + ถอนเงิน        | ❌         | —                                                  | wallet + payout request           | `/api/seller/wallet`                       |
-| Refund API                   | คำขอคืนเงิน                 | ❌         | —                                                  | buyer + admin                     | `/api/refunds`                             |
+| Refund API                   | คำขอคืนเงิน                 | ❌         | —                                                  | buyer + seller                    | `/api/refunds`                             |
 | Admin APIs                   | Payout/Moderation/Analytics            | ❌         | —                                                  | APIs สำหรับ Backoffice      | `/api/admin/...`                           |
 | Platform Settings API        | GP/ค่าส่ง/ฟรีส่ง           | ❌         | —                                                  | settings + public config          | `/api/admin/settings`                      |
 | Gemstone Support             | รีวิว API ของ Role 1           | ❌         | —                                                  | review route + query              | `/api/recommend/gemstones`                 |
