@@ -31,15 +31,15 @@
 
 ## 1.2 ฟังก์ชันที่รับผิดชอบ
 
-| ฟังก์ชัน     | คืออะไร                                           | สถานะ | ทำแล้ว                                                               | เหลือทำ                                               | ไฟล์ / API                                                      |
-| -------------------- | -------------------------------------------------------- | ---------- | -------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------- |
-| Product Catalog      | หน้ารวมสินค้า + ค้นหา + กรอง       | 🟡         | ค้นหาชื่อ, กรองหมวด/ประเภท                          | กรองราคา/ขนาด, sort, ค้นหาชื่อร้าน  | `products/page.jsx`, `ProductFilter.jsx`, `GET /api/products` |
-| Product Detail       | หน้ารายละเอียดสินค้า                 | 🟡         | แกลเลอรี, badge สั่งทำ, ตัวเลือกขนาด/accessories | การ์ดร้าน + ลิงก์ `/shop/[slug]`, reviews UI | `products/[id]/`, `GET /api/products/:id`                       |
-| Shop Profile         | หน้าร้าน public ของผู้ขาย               | 🟡         | แบนเนอร์, โลโก้, grid สินค้า                            | คะแนนร้าน, ตัวกรองในร้าน               | `shop/[slug]/page.jsx`, `GET /api/shops/:slug`                  |
-| Wishlist             | รายการสินค้าโปรด                         | 🟡         | dropdown + service                                                         | หน้า `/account/wishlist`                               | `wishlist.service.js`, `/api/wishlist`                          |
-| Reviews Display      | แสดงรีวิวในหน้ารายละเอียด       | ❌         | —                                                                         | สรุปดาว + คอมเมนต์ + รูป                   | `GET /api/products/:id/reviews`                                   |
-| Horoscope / Gemstone | ดูดวง + แนะนำหิน/สินค้า               | ❌         | —                                                                         | KB + API + หน้า UI                                       | `/gemstone-guide`, `POST /api/recommend/gemstones`              |
-| SEO / Accessibility  | ทำเว็บให้ค้นเจอและใช้งานง่าย | ❌         | —                                                                         | meta/OG, sitemap, alt text, keyboard nav                     | ทุกหน้า storefront                                           |
+| ฟังก์ชัน     | คืออะไร                                       | สถานะ | ทำแล้ว                                                               | เหลือทำ                                               | ไฟล์ / API                                                      |
+| -------------------- | ---------------------------------------------------- | ---------- | -------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------- |
+| Product Catalog      | หน้ารวมสินค้า + ค้นหา + กรอง   | 🟡         | ค้นหาชื่อ, กรองหมวด/ประเภท                          | กรองราคา/ขนาด, sort, ค้นหาชื่อร้าน  | `products/page.jsx`, `ProductFilter.jsx`, `GET /api/products` |
+| Product Detail       | หน้ารายละเอียดสินค้า             | 🟡         | แกลเลอรี, badge สั่งทำ, ตัวเลือกขนาด/accessories | การ์ดร้าน + ลิงก์ `/shop/[slug]`, reviews UI | `products/[id]/`, `GET /api/products/:id`                       |
+| Shop Profile         | หน้าร้าน public ของผู้ขาย           | 🟡         | แบนเนอร์, โลโก้, grid สินค้า                            | คะแนนร้าน, ตัวกรองในร้าน               | `shop/[slug]/page.jsx`, `GET /api/shops/:slug`                  |
+| Wishlist             | รายการสินค้าโปรด                     | 🟡         | dropdown + service                                                         | หน้า `/account/wishlist`                               | `wishlist.service.js`, `/api/wishlist`                          |
+| Reviews Display      | แสดงรีวิวในหน้ารายละเอียด   | ❌         | —                                                                         | สรุปดาว + คอมเมนต์ + รูป                   | `GET /api/products/:id/reviews`                                   |
+| Horoscope / Gemstone | แนะนำหิน/สินค้า + การ์ดเลือก | ❌         | —                                                                         | KB + API + หน้า UI                                       | `/gemstone-guide`, `POST /api/recommend/gemstones`              |
+| review shop          | รีวิวรา้านค้าได้                     | ❌         |                                                                            |                                                              |                                                                     |
 
 ## 1.3 งานที่ต้องส่ง
 
@@ -74,16 +74,15 @@
 
 ## 2.2 ฟังก์ชันที่รับผิดชอบ
 
-| ฟังก์ชัน  | คืออะไร                                       | สถานะ | ทำแล้ว                                                  | เหลือทำ                                                         | ไฟล์ / API                                                     |
-| ----------------- | ---------------------------------------------------- | ---------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Auth Flow         | เข้าสู่ระบบ/โปรไฟล์/ที่อยู่ | ✅         | `/login`, AuthContext, `/profile`, สมุดที่อยู่ | ย้าย token เป็น httpOnly cookie                                | `login/`, `profile/`, `auth.service.js`                      |
-| Cart              | ตะกร้าสินค้า                             | 🟡         | เพิ่ม/ลด/ลบ, ค่าส่ง, promo                     | จัดกลุ่มตามร้าน + checkbox + ค่าส่งแยกร้าน | `cart/page.jsx`, `/api/cart`                                   |
-| Checkout          | สรุปคำสั่งซื้อ + จ่ายเงิน      | 🟡         | ที่อยู่, PromptPay QR                                  | สรุปแยกตามร้าน                                           | `checkout/page.jsx`, `/api/orders`, `/api/payments`          |
-| Orders / Tracking | ประวัติ + สถานะพัสดุ                | 🟡         | แท็บสถานะ, QR modal                                  | Timeline ตรงกับ SubOrder                                         | `orders/page.jsx`                                                |
-| Confirm Received  | ลูกค้ายืนยันรับของ                 | ❌         | —                                                            | ปุ่ม + API ปลดเงิน                                          | `orders/[id]`, `POST /api/orders/:subOrderId/confirm-received` |
-| Reviews           | ให้ดาว/คอมเมนต์/รูป                 | ❌         | —                                                            | Modal/หน้า review + อัปโหลดรูป                           | `/account/orders/[id]/review`, `POST /api/reviews`             |
-| Refund Buyer      | ขอคืนเงิน/แจ้งปัญหา                | ❌         | —                                                            | ฟอร์ม + แนบหลักฐาน                                      | `/account/orders/[id]/refund`, `POST /api/refunds/request`     |
-| Admin Refund UI   | หน้าแอดมินตรวจคำขอคืนเงิน   | ❌         | —                                                            | ตาราง + อนุมัติ/ปฏิเสธ                               | `backoffice /dashboard/refunds`, `GET/PUT /api/admin/refunds`  |
+| ฟังก์ชัน                            | คืออะไร                                       | สถานะ | ทำแล้ว                                                  | เหลือทำ                                                         | ไฟล์ / API                                                     |
+| ------------------------------------------- | ---------------------------------------------------- | ---------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Auth Flow                                   | เข้าสู่ระบบ/โปรไฟล์/ที่อยู่ | ✅         | `/login`, AuthContext, `/profile`, สมุดที่อยู่ | ย้าย token เป็น httpOnly cookie                                | `login/`, `profile/`, `auth.service.js`                      |
+| Cart                                        | ตะกร้าสินค้า                             | 🟡         | เพิ่ม/ลด/ลบ, ค่าส่ง, promo                     | จัดกลุ่มตามร้าน + checkbox + ค่าส่งแยกร้าน | `cart/page.jsx`, `/api/cart`                                   |
+| Checkout                                    | สรุปคำสั่งซื้อ + จ่ายเงิน      | 🟡         | ที่อยู่, PromptPay QR                                  | สรุปแยกตามร้าน                                           | `checkout/page.jsx`, `/api/orders`, `/api/payments`          |
+| Orders / Tracking                           | ประวัติ + สถานะพัสดุ                | 🟡         | แท็บสถานะ, QR modal                                  | Timeline ตรงกับ SubOrder                                         | `orders/page.jsx`                                                |
+| Confirm Received                            | ลูกค้ายืนยันรับของ                 | ❌         | —                                                            | ปุ่ม + API ปลดเงิน                                          | `orders/[id]`, `POST /api/orders/:subOrderId/confirm-received` |
+| Refund Buyer                                | ขอคืนเงิน/แจ้งปัญหา                | ❌         | —                                                            | ฟอร์ม + แนบหลักฐาน                                      | `/account/orders/[id]/refund`, `POST /api/refunds/request`     |
+| seller Refund UI<br />card random animation | หน้าsellerตรวจคำขอคืนเงิน         | ❌         | —                                                            | ตาราง + อนุมัติ/ปฏิเสธ                               | `backoffice /dashboard/refunds`, `GET/PUT /api/admin/refunds`  |
 
 ## 2.3 งานที่ต้องส่ง
 
@@ -116,20 +115,16 @@
 
 ## 3.2 ฟังก์ชันที่รับผิดชอบ
 
-| ฟังก์ชัน    | คืออะไร                              | สถานะ | ทำแล้ว                                     | เหลือทำ                                  | ไฟล์ / API                                               |
-| ------------------- | ------------------------------------------- | ---------- | ------------------------------------------------ | ----------------------------------------------- | ------------------------------------------------------------ |
-| Seller Onboarding   | สมัครเปิดร้าน + KYC            | ✅         | ฟอร์ม, สถานะ PENDING/REJECTED/APPROVED | —                                              | `(storefront)/become-seller/`, `/api/shops/apply`        |
-| Admin Shop Approval | อนุมัติ/ปฏิเสธร้าน         | ✅         | หน้า `/dashboard/shops` + API + mask KYC   | Audit log                                       | `backoffice /dashboard/shops`, `/api/admin/shops`        |
-| Seller Shell        | โครง Seller Center + guard              | ✅         | layout, topbar, guard, placeholder               | —                                              | `(seller)/seller/layout.jsx`                               |
-| Seller Dashboard    | สรุปยอด/สินค้า/เงิน        | 🟡         | API พร้อม                                   | หน้า dashboard + KPI + กราฟ             | `seller/dashboard/page.jsx`, `GET /api/seller/dashboard` |
-| Seller Products     | จัดการสินค้า                    | 🟡         | API CRUD + upload พร้อม                     | หน้า list/new/edit                          | `seller/products/...`, `/api/seller/products`            |
-| Shop Settings       | แก้ข้อมูลร้าน                  | 🟡         | API พร้อม                                   | หน้า `seller/shop/page.jsx`               | `/api/shops/my-shop`                                       |
-| Seller Orders       | ดูออเดอร์ + อัปเดตสถานะ | ❌         | —                                               | รอ Split Order                                | `seller/orders/page.jsx`                                   |
-| Seller Wallet       | ยอดเงิน + ถอนเงิน             | ❌         | —                                               | รอ Wallet/Payout API                          | `seller/wallet/page.jsx`                                   |
-| Admin Payout        | อนุมัติถอนเงิน                | ❌         | —                                               | API + หน้า `/dashboard/payouts`           | `/api/admin/payouts`                                       |
-| Admin Moderation    | ซ่อน/ระงับสินค้า             | ❌         | —                                               | API + หน้า moderation                       | `/api/admin/products/:id/moderate`                         |
-| Admin Analytics     | GMV + commission                            | ❌         | —                                               | API + หน้า dashboard                        | `/api/admin/analytics`                                     |
-| Platform Settings   | GP/ค่าส่ง/ฟรีส่ง                | ❌         | —                                               | API + หน้า `/dashboard/settings/platform` | `/api/admin/settings`                                      |
+| ฟังก์ชัน    | คืออะไร                      | สถานะ | ทำแล้ว                                     | เหลือทำ                                  | ไฟล์ / API                                        |
+| ------------------- | ----------------------------------- | ---------- | ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------- |
+| Seller Onboarding   | สมัครเปิดร้าน + KYC    | ✅         | ฟอร์ม, สถานะ PENDING/REJECTED/APPROVED | —                                              | `(storefront)/become-seller/`, `/api/shops/apply` |
+| Admin Shop Approval | อนุมัติ/ปฏิเสธร้าน | ✅         | หน้า `/dashboard/shops` + API + mask KYC   | Audit log                                       | `backoffice /dashboard/shops`, `/api/admin/shops` |
+| Seller Shell        | โครง Seller Center + guard      | ✅         | layout, topbar, guard, placeholder               | —                                              | `(seller)/seller/layout.jsx`                        |
+|                     |                                     |            |                                                  |                                                 |                                                       |
+| Admin Payout        | อนุมัติถอนเงิน        | ❌         | —                                               | API + หน้า `/dashboard/payouts`           | `/api/admin/payouts`                                |
+| Admin Moderation    | ซ่อน/ระงับสินค้า     | ❌         | —                                               | API + หน้า moderation                       | `/api/admin/products/:id/moderate`                  |
+| Admin Analytics     | GMV + commission                    | ❌         | —                                               | API + หน้า dashboard                        | `/api/admin/analytics`                              |
+| Platform Settings   | GP/ค่าส่ง/ฟรีส่ง        | ❌         | —                                               | API + หน้า `/dashboard/settings/platform` | `/api/admin/settings`                               |
 
 ## 3.3 งานด่วนของเพื่อน: Seller Center
 
@@ -192,26 +187,26 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 ## 4.2 ฟังก์ชันที่รับผิดชอบ
 
-| ฟังก์ชัน      | คืออะไร                         | สถานะ | ทำแล้ว                                        | เหลือทำ                    | Endpoint / ไฟล์                          |
-| --------------------- | -------------------------------------- | ---------- | --------------------------------------------------- | --------------------------------- | -------------------------------------------- |
-| Auth & Role           | Login + แยกสิทธิ์             | ✅         | JWT, middleware, profile                            | httpOnly cookie                   | `auth.middleware.js`, `/api/auth`        |
-| Shop API              | เปิดร้าน/ดู/แก้ร้าน   | ✅         | apply, my-shop, update, public shop                 | —                                | `/api/shops`                               |
-| Seller Product API    | CRUD สินค้าร้านตัวเอง  | ✅         | list/create/update/delete/toggle + ownership        | —                                | `/api/seller/products`                     |
-| Upload                | อัปโหลดรูป                   | ✅         | R2 + folder ตามร้าน + ตรวจเจ้าของ | —                                | `/api/upload`                              |
-| Public Catalog        | สินค้า public                    | 🟡         | search/category/type/shop + shop info               | price/wrist filter, pagination    | `GET /api/products`                        |
-| Admin Approval        | อนุมัติร้าน                 | ✅         | list/approve/reject + role update                   | audit log                         | `/api/admin/shops`                         |
-| Payment / Omise       | ตัดเงิน + webhook               | 🟡         | charge + webhook + mock                             | Escrow + SubOrder PAID            | `/api/payments`                            |
-| Split Order           | แตกออเดอร์ตามร้าน     | ❌         | —                                                  | checkout → SubOrder              | `POST /api/orders/checkout`                |
-| Escrow / Confirm      | ปลดเงินให้ร้าน           | ❌         | —                                                  | confirm + GP 5% + ShopTransaction | `/api/orders/:subOrderId/confirm-received` |
-| Seller Fulfillment    | ผลิต/จัดส่ง/tracking         | ❌         | —                                                  | status + ship APIs                | `/api/seller/orders`                       |
-| Reviews API           | รีวิว + rating                    | ❌         | —                                                  | POST + GET + อัปเดต rating  | `/api/reviews`                             |
-| Wallet / Payout API   | ยอดเงิน + ถอนเงิน        | ❌         | —                                                  | wallet + payout request           | `/api/seller/wallet`                       |
-| Refund API            | คำขอคืนเงิน                 | ❌         | —                                                  | buyer + admin                     | `/api/refunds`                             |
-| Admin APIs            | Payout/Moderation/Analytics            | ❌         | —                                                  | APIs สำหรับ Backoffice      | `/api/admin/...`                           |
-| Platform Settings API | GP/ค่าส่ง/ฟรีส่ง           | ❌         | —                                                  | settings + public config          | `/api/admin/settings`                      |
-| Gemstone Support      | รีวิว API ของ Role 1           | ❌         | —                                                  | review route + query              | `/api/recommend/gemstones`                 |
-| Auto-complete         | ปิดออเดอร์อัตโนมัติ | ❌         | —                                                  | job หลังส่ง 7 วัน       | cron/job                                     |
-| Deploy                | ขึ้นเซิร์ฟเวอร์จริง | ❌         | —                                                  | env + hosting                     | —                                           |
+| ฟังก์ชัน             | คืออะไร                         | สถานะ | ทำแล้ว                                        | เหลือทำ                    | Endpoint / ไฟล์                          |
+| ---------------------------- | -------------------------------------- | ---------- | --------------------------------------------------- | --------------------------------- | -------------------------------------------- |
+| Auth & Role                  | Login + แยกสิทธิ์             | ✅         | JWT, middleware, profile                            | httpOnly cookie                   | `auth.middleware.js`, `/api/auth`        |
+| Shop API                     | เปิดร้าน/ดู/แก้ร้าน   | ✅         | apply, my-shop, update, public shop                 | —                                | `/api/shops`                               |
+| Seller Product API           | CRUD สินค้าร้านตัวเอง  | ✅         | list/create/update/delete/toggle + ownership        | —                                | `/api/seller/products`                     |
+| Upload                       | อัปโหลดรูป                   | ✅         | R2 + folder ตามร้าน + ตรวจเจ้าของ | —                                | `/api/upload`                              |
+| Public Catalog               | สินค้า public                    | 🟡         | search/category/type/shop + shop info               | price/wrist filter, pagination    | `GET /api/products`                        |
+| Admin Approval               | อนุมัติร้าน                 | ✅         | list/approve/reject + role update                   | audit log                         | `/api/admin/shops`                         |
+| Payment / Omise              | ตัดเงิน + webhook               | 🟡         | charge + webhook + mock                             | Escrow + SubOrder PAID            | `/api/payments`                            |
+| Split Order                  | แตกออเดอร์ตามร้าน     | ❌         | —                                                  | checkout → SubOrder              | `POST /api/orders/checkout`                |
+| Escrow / Confirm             | ปลดเงินให้ร้าน           | ❌         | —                                                  | confirm + GP 5% + ShopTransaction | `/api/orders/:subOrderId/confirm-received` |
+| Seller Fulfillment           | ผลิต/จัดส่ง/tracking         | ❌         | —                                                  | status + ship APIs                | `/api/seller/orders`                       |
+| Reviews API + Reiew ร้าน | รีวิว + rating                    | ❌         | —                                                  | POST + GET + อัปเดต rating  | `/api/reviews`                             |
+| Wallet / Payout API          | ยอดเงิน + ถอนเงิน        | ❌         | —                                                  | wallet + payout request           | `/api/seller/wallet`                       |
+| Refund API                   | คำขอคืนเงิน                 | ❌         | —                                                  | buyer + admin                     | `/api/refunds`                             |
+| Admin APIs                   | Payout/Moderation/Analytics            | ❌         | —                                                  | APIs สำหรับ Backoffice      | `/api/admin/...`                           |
+| Platform Settings API        | GP/ค่าส่ง/ฟรีส่ง           | ❌         | —                                                  | settings + public config          | `/api/admin/settings`                      |
+| Gemstone Support             | รีวิว API ของ Role 1           | ❌         | —                                                  | review route + query              | `/api/recommend/gemstones`                 |
+| Auto-complete                | ปิดออเดอร์อัตโนมัติ | ❌         | —                                                  | job หลังส่ง 7 วัน       | cron/job                                     |
+| Deploy                       | ขึ้นเซิร์ฟเวอร์จริง | ❌         | —                                                  | env + hosting                     | —                                           |
 
 ## 4.3 Definition of Done
 
