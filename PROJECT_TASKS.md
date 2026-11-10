@@ -1,32 +1,32 @@
 # 📋 PROJECT_TASKS — Bare & Bold Marketplace
 
 > อัปเดตล่าสุด: **10 พ.ย. 2026**
-> ทีม 4–5 คน · เป้าหมายเทอมนี้: ปิด core flow + Seller Center + Admin approval
-> ถ้ามี 4 คน: ให้ Role 2 หรือ Role 3 สวมหมวก Tester สัปดาห์ละ 1–2 วัน หรือ rotate กัน
+> ทีม **4 คน** · เป้าหมายเทอมนี้: ปิด core flow + Seller Center + Admin approval
+> **Tester = Role 1** (บทบาทที่ 2 ของ Role 1) — ไม่มีคนที่ 5 (ดูข้อ 5)
 
 **สัญลักษณ์:** ✅ เสร็จแล้ว · 🟡 ทำบางส่วน/API พร้อมแต่ UI ยังไม่ทำ · ❌ ยังไม่เริ่ม
 
 ---
 
-## 0. ทีม 4–5 คน — ใครทำอะไร (ภาพรวม)
+## 0. ทีม 4 คน — ใครทำอะไร (ภาพรวม)
 
 | Role | ตำแหน่ง | ดูแลอะไร | โฟลเดอร์หลัก | สถานะรวม |
 |---|---|---|---|---|
-| 🔵 **Role 1** | Frontend Engineer (Storefront & Catalog) | หน้าร้านผู้ซื้อ, ค้นหา/กรอง, หน้าร้าน public, ดูดวง/หินมงคล | `bareandbold_front/src/app/(storefront)/` | 🟡 |
+| 🔵 **Role 1** | Frontend Engineer (Storefront & Catalog) + **Tester/QA** | หน้าร้านผู้ซื้อ, ค้นหา/กรอง, หน้าร้าน public, ดูดวง/หินมงคล + test plan/UAT | `bareandbold_front/src/app/(storefront)/` + `bareandbold_backend/k6/` | 🟡 |
 | 🟢 **Role 2** | Frontend Engineer (Cart, Checkout & Orders) | ตะกร้า, ชำระเงิน, ประวัติออเดอร์, รีวิว, คืนเงิน | `bareandbold_front/src/app/(storefront)/` | 🟡 |
 | 🟠 **Role 3** | Fullstack Engineer (Seller Center & Admin) | เปิดร้าน, Seller Center, หลังบ้านแอดมิน | `bareandbold_front/src/app/(seller)/` + `bareandbold_backoffice/` | 🟡 |
 | 🟣 **Role 4** | Backend & Database Engineer | API, ฐานข้อมูล, เงิน/Escrow, Payment, Deploy | `bareandbold_backend/` | 🟡 |
-| 🧪 **Role 5** | Tester / QA Engineer | Test plan, API test, E2E, k6, regression, UAT | `bareandbold_backend/k6/` + test docs | 🟡 |
 
-> **งานกลางที่ทุกคนช่วย:** code review, integration test สิ้นสัปดาห์, demo, เอกสาร  
-> **Tester เป็นเจ้าของ UAT/regression** — คนอื่นช่วยเตรียม test data และแก้บั๊ก
+> **Tester ไม่ใช่คนที่ 5:** Role 1 รับบทบาท Tester/QA เพิ่มจากงาน Storefront (ดูข้อ 5)
+> **ทุกคนยังต้องเขียน test case ของฟีเจอร์ตัวเอง** — Role 1 เป็นคนรวบรวม/regression/UAT
 
 ---
 
-# 🔵 Role 1 — Frontend Engineer (Storefront & Catalog)
+# 🔵 Role 1 — Frontend Engineer (Storefront & Catalog) + Tester/QA
 
 ## 1.1 ดูแลอะไร
 หน้าเว็บที่ผู้ซื้อและผู้เยี่ยมชมเห็น ได้แก่ หน้าแรก หน้ารวมสินค้า หน้ารายละเอียดสินค้า หน้าร้านของผู้ขาย และระบบดูดวง/แนะนำหินมงคล
+**เพิ่มเติม:** รับบทบาท **Tester/QA** ดูแล test plan, regression, UAT และประสาน API smoke/k6 กับ Role 4 (~1–2 วัน/สัปดาห์)
 
 ## 1.2 ฟังก์ชันที่รับผิดชอบ
 
@@ -46,6 +46,7 @@
 - หน้า Wishlist เต็มรูปแบบ
 - หน้า Horoscope + ผลทำนาย + สินค้าที่ตรง
 - Reviews UI ในหน้ารายละเอียด
+- **งาน QA:** test plan, permission matrix, regression, UAT report (รายละเอียดข้อ 5)
 
 ## 1.4 Definition of Done
 - มี loading / empty / error state
@@ -54,8 +55,10 @@
 - ข้อมูลร้าน/สินค้าตรงกับ API จริง
 
 ## 1.5 ต้องประสานกับ
-- **Role 4** — API filter/reviews/gemstone
-- **Role 2** — รีวิวที่แสดงต้องมาจากการซื้อจริง
+- **Role 4** — API filter/reviews/gemstone + test data/k6
+- **Role 2** — รีวิวที่แสดงต้องมาจากการซื้อจริง + E2E buyer
+- **Role 3** — E2E seller/admin
+- **ทุกคน** — เก็บ bug และ retest
 
 ---
 
@@ -208,49 +211,77 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 ---
 
-# 🧪 Role 5 — Tester / QA Engineer
+# 🧪 5. Tester — Role 1 (บทบาทที่ 2 ของ Role 1)
 
-## 5.1 ดูแลอะไร
-วางแผนทดสอบ เขียน test case ทดสอบ API/UI/สิทธิ์ ทำ load test (k6) ทดสอบ E2E, regression, UAT และรายงานบั๊กให้แต่ละ Role แก้
+## 5.1 ใครเป็น Tester
 
-> **เริ่มงานได้เลย:** API smoke, permission matrix, k6 baseline ทำได้ก่อน feature อื่นเสร็จ  
-> **รอ feature:** E2E buyer (หลัง Role 2), E2E seller/admin (หลัง Role 3), UAT (สัปดาห์ที่ 4)
+**Role 1 = Frontend Storefront + Tester/QA**
 
-## 5.2 ฟังก์ชันที่รับผิดชอบ
+เหตุผลที่เลือก Role 1:
+- งานพัฒนาหลักน้อยที่สุด (~14 วัน เทียบกับ Role 2 ~16, Role 3 ~20, Role 4 ~18)
+- dependency น้อย ไม่ได้เป็น blocker เรื่องเงิน/ออเดอร์
+- ดูแล storefront อยู่แล้ว จึงทดสอบ flow ผู้ซื้อได้ตรง
+- แบ่งเวลาได้ประมาณ **3–4 วัน/สัปดาห์ทำงานพัฒนา + 1–2 วัน/สัปดาห์ทำงาน QA**
 
-| ฟังก์ชัน | คืออะไร | สถานะ | ทำแล้ว | เหลือทำ | ไฟล์ / เครื่องมือ |
-|---|---|---|---|---|---|
-| Test Plan | แผนทดสอบรวมทุก flow | 🟡 | ทดสอบ role/seller flow แล้ว | เขียน test plan + scope + ตารางรอบทดสอบ | `TEST_PLAN.md` |
-| API Smoke Test | ตรวจ endpoint หลักตอบถูก | ✅ | 18/18 checks ผ่าน | รันก่อน merge ทุกครั้ง | `bareandbold_backend/k6/smoke.js` |
-| Permission Matrix | buyer/seller/admin ทำได้/ไม่ได้ | ✅ | role test 52/52, security 9/9 | เพิ่มเคสเมื่อมี API ใหม่ | test script + `PROJECT_TASKS.md` |
-| Load Test (k6) | วัด latency/error rate | ✅ | public load + auth load ผ่าน | stress test + baseline ใน CI | `bareandbold_backend/k6/` |
-| E2E Buyer | สมัคร→ซื้อ→จ่าย→ติดตาม→รีวิว | ❌ | — | เขียนชุดทดสอบ (Playwright หรือ manual script) | `e2e/buyer/` |
-| E2E Seller/Admin | เปิดร้าน→อนุมัติ→ลงสินค้า→ออเดอร์ | 🟡 | flow เปิดร้าน/อนุมัติ/ลงสินค้าทดสอบแล้ว | ทำเป็นชุดอัตโนมัติ + เพิ่ม orders/wallet | `e2e/seller/` |
-| Regression Test | ทดสอบซ้ำหลังแก้โค้ด | ❌ | — | checklist + รันก่อนส่งงาน | `TEST_PLAN.md` |
-| UAT | ทดสอบตาม scenario ผู้ใช้จริง | ❌ | — | UAT cases + report + เก็บ feedback | `UAT_REPORT.md` |
-| Bug Report | บันทึก bug + หลักฐาน | 🟡 | พบช่องโหว่ backoffice register/KYC และแก้แล้ว | ใช้ template + ติดตามสถานะปิด bug | issue tracker |
-| Test Data | seed/บัญชีทดสอบ | ✅ | `seed_roles.js` + บัญชีทดสอบครบ | เพิ่ม seed order/review/refund | `bareandbold_backend/seed_roles.js` |
+| Role | งานพัฒนาหลัก (ประมาณ) | งาน QA | รวม |
+|---|---:|---:|---:|
+| 🔵 Role 1 | ~14 วัน | ~4 วัน | **~18 วัน** |
+| 🟢 Role 2 | ~16 วัน | ช่วย E2E buyer | ~17 วัน |
+| 🟠 Role 3 | ~20 วัน | ช่วย E2E seller/admin | ~20 วัน |
+| 🟣 Role 4 | ~18 วัน | ช่วย API/k6/test data | ~18 วัน |
 
-## 5.3 งานที่ต้องส่ง
-- Test plan + test cases แยกตาม flow
-- ผล k6 (smoke / public / auth) + baseline
-- Permission matrix (buyer/seller/admin)
-- E2E buyer + seller/admin
+## 5.2 หน้าที่ QA ของ Role 1
+- เขียน test plan + test case
+- ประสาน API smoke test กับ Role 4
+- ทำ permission matrix (buyer/seller/admin)
+- ทดสอบ E2E buyer/storefront และช่วย E2E seller/admin
+- ทำ regression checklist + UAT report
+- triage bug และติดตามจนปิด
+- ทำ release checklist ก่อน deploy
+
+## 5.3 งาน QA ที่ Role 1 ต้องทำ
+
+| งาน | สถานะ | ทำแล้ว | เหลือทำ | ไฟล์ |
+|---|---|---|---|---|
+| Test Plan | 🟡 | ทดสอบ role/seller flow แล้ว | เขียนแผนรวม + รอบทดสอบ | `TEST_PLAN.md` |
+| API Smoke | ✅ | 18/18 checks | รันก่อน merge ทุกครั้ง | `bareandbold_backend/k6/smoke.js` |
+| Permission Matrix | ✅ | role test 52/52, security 9/9 | เพิ่มเคสเมื่อมี API ใหม่ | test script |
+| k6 Load | ✅ | public + auth load ผ่าน | stress test + baseline | `k6/load-public.js`, `k6/load-auth.js` |
+| E2E Buyer | ❌ | — | เขียนชุดทดสอบ | `e2e/buyer/` |
+| E2E Seller/Admin | 🟡 | flow เปิดร้าน/อนุมัติ/ลงสินค้าทดสอบแล้ว | ทำเป็นชุดอัตโนมัติ | `e2e/seller/` |
+| Regression | ❌ | — | checklist + รันก่อนส่ง | `TEST_PLAN.md` |
+| UAT | ❌ | — | UAT cases + report | `UAT_REPORT.md` |
+| Test Data | ✅ | `seed_roles.js` + บัญชีทดสอบ | เพิ่ม seed order/review/refund | `seed_roles.js` |
+
+## 5.4 การแบ่งงาน QA กับคนอื่น
+
+| งาน QA | Role 1 (Tester) | ผู้ช่วย |
+|---|---|---|
+| Test Plan | เขียนและดูแล | ทุกคน |
+| API Smoke | รัน + สรุปผล | Role 4 |
+| Permission Matrix | ออกแบบเคส + รัน | Role 4 |
+| k6 Load | วิเคราะห์ผล | Role 4 |
+| E2E Buyer | เจ้าของ | Role 2 |
+| E2E Seller/Admin | ช่วยทดสอบ | Role 3 |
+| Regression | เจ้าของ | ทุกคน |
+| UAT | เจ้าของ + รายงาน | ทุกคน |
+| Bug Report / Triage | triage + ติดตาม | ทุกคน |
+| Test Data | ขอข้อมูล | Role 4 |
+
+## 5.5 สิ่งที่ Role 1 ต้องส่ง
+- Test plan + test cases
+- ผล k6 (smoke/public/auth) + baseline
+- Permission matrix
+- E2E buyer + ช่วย E2E seller/admin
 - UAT report + bug list
 - Release checklist ก่อน deploy
 
-## 5.4 Definition of Done
+## 5.6 Definition of Done ของ QA
 - ทุก feature ใหม่มี test case อย่างน้อย 1 เคส
 - test ผ่านก่อน merge (หรือมี bug ticket ถ้าไม่ผ่าน)
-- bug ต้องมี severity + วิธี reproduce + หลักฐาน
+- bug มี severity + วิธี reproduce + หลักฐาน
 - อัปเดตผลทดสอบใน `PROJECT_TASKS.md` / report
 - ไม่ปิดงานถ้า regression ยังไม่ผ่าน
-
-## 5.5 ต้องประสานกับ
-- **Role 1** — storefront filter/detail/reviews
-- **Role 2** — cart/checkout/orders/reviews/refund
-- **Role 3** — seller center/admin
-- **Role 4** — test data, seed, API contract, environment
 
 ---
 
@@ -260,7 +291,7 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 |---|---|---|
 | Code Review | ห้าม merge งานตัวเองโดยไม่มีคนreview | ทุก PR |
 | Integration Checkpoint | รวม branch + รัน E2E | สิ้นสัปดาห์ |
-| UAT | Tester เป็นเจ้าของ, คนอื่นช่วยเตรียมข้อมูล | สัปดาห์ที่ 4 |
+| UAT | Role 1 (Tester) เป็นเจ้าของ, ทุกคนช่วยเตรียมข้อมูล | สัปดาห์ที่ 4 |
 | Demo / Slides | ซ้อมเดโม + ทำสไลด์ | ปลายเดือน |
 | เอกสาร | อัปเดต `PROJECT_TASKS.md` + API docs | เมื่อเสร็จงาน |
 
@@ -281,14 +312,15 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 > เริ่มได้เลยไม่ต้องรอ: Seller Dashboard, Seller Products, Shop Settings, Storefront filter, Wishlist, Horoscope, SEO
 
-### Tester เริ่มได้เลย / ต้องรอ
-| งาน Tester | เริ่มได้เมื่อ |
-|---|---|
-| Test plan + API smoke + permission matrix | เริ่มได้เลย |
-| k6 public/auth load | เริ่มได้เลย |
-| E2E buyer | Role 2 ทำ cart/checkout/orders เสร็จ |
-| E2E seller/admin | Role 3 ทำ seller/admin pages เสร็จ |
-| Full regression + UAT | สัปดาห์ที่ 4 |
+### QA เริ่มได้เลย / ต้องรอ (เจ้าของ: Role 1)
+| งาน QA | เจ้าของ | ผู้ช่วย | เริ่มได้เมื่อ |
+|---|---|---|---|
+| Test plan + permission matrix | Role 1 (Tester) | Role 4 | เริ่มได้เลย |
+| API smoke | Role 1 (Tester) | Role 4 | เริ่มได้เลย |
+| k6 public/auth load | Role 4 | Role 1 (Tester) | เริ่มได้เลย |
+| E2E buyer | Role 1 (Tester) | Role 2 | cart/checkout/orders เสร็จ |
+| E2E seller/admin | Role 1 (Tester) | Role 3 | seller/admin pages เสร็จ |
+| Full regression + UAT | Role 1 (Tester) | ทุกคน | สัปดาห์ที่ 4 |
 
 ---
 
@@ -304,19 +336,21 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 | 5. Fulfillment & Tracking | ❌ |
 | 6. Seller Center & Wallet | 🟡 |
 | 7. Admin Backoffice | 🟡 |
-| 8. Testing & Deploy | 🟡 (Tester: smoke/permission/k6 ผ่าน; E2E/UAT ยังไม่ทำ) |
+| 8. Testing & Deploy | 🟡 (Role 1: smoke/permission/k6 ผ่าน; E2E/UAT ยังไม่ทำ) |
 | 9. Extended Scope | ❌ |
 
 ---
 
 # 🗓️ 9. แผน 4 สัปดาห์
 
-| สัปดาห์ | Role 1 | Role 2 | Role 3 | Role 4 | 🧪 Role 5 (Tester) |
-|---|---|---|---|---|---|
-| 1 | Filter + Sort | Cart group by shop | Seller dashboard + products | Split Order | Test plan + API smoke + permission matrix |
-| 2 | Shop card + Reviews UI | Checkout + Timeline | Product form + shop settings | Escrow + Confirm | E2E buyer + regression รอบแรก |
-| 3 | Wishlist + Gemstone | Review + Refund UI | Orders + Wallet + Admin pages | Wallet + Reviews API | E2E seller/admin + k6 load |
-| 4 | Responsive | E2E Buyer | E2E Seller/Admin | Refund + Deploy | Full regression + UAT report |
+| สัปดาห์ | Role 1 | Role 2 | Role 3 | Role 4 |
+|---|---|---|---|---|
+| 1 | Filter + Sort | Cart group by shop | Seller dashboard + products | Split Order |
+| 2 | Shop card + Reviews UI | Checkout + Timeline | Product form + shop settings | Escrow + Confirm |
+| 3 | Wishlist + Gemstone | Review + Refund UI | Orders + Wallet + Admin pages | Wallet + Reviews API |
+| 4 | Responsive | E2E Buyer | E2E Seller/Admin | Refund + Deploy |
+
+**Tester = Role 1:** ทำงาน QA ควบคู่ทุกสัปดาห์ — Week 1 test plan/API smoke · Week 2 E2E buyer · Week 3 E2E seller/admin · Week 4 regression/UAT
 
 > Feature Freeze สัปดาห์ที่ 3 · สัปดาห์ที่ 4 เน้น integration / bug fix / UAT / demo
 
