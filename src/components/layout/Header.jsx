@@ -345,16 +345,26 @@ setAvatar(null);
                     </p>
                   </div>
 
-                  {/* Seller zone (Seller Center UI ถูกนำออกแล้ว) */}
+                  {/* Seller zone */}
                   {shop?.status === "APPROVED" ? (
-                    <Link
-                      href={`/shop/${shop.slug}`}
-                      onClick={() => setIsProfileOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-sm font-bold text-earth-olive transition"
-                    >
-                      <ShoppingBag01Icon size={18} />
-                      ดูร้านของฉัน
-                    </Link>
+                    <>
+                      <Link
+                        href="/seller"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-sm font-bold text-earth-olive transition"
+                      >
+                        <Settings02Icon size={18} />
+                        Seller Center
+                      </Link>
+                      <Link
+                        href={`/shop/${shop.slug}`}
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F5EE] text-sm font-bold text-earth-dark transition"
+                      >
+                        <ShoppingBag01Icon size={18} />
+                        ดูร้านของฉัน
+                      </Link>
+                    </>
                   ) : shop ? (
                     <Link
                       href="/become-seller"

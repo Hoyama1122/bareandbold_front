@@ -1,6 +1,4 @@
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata = {
@@ -10,18 +8,9 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html
-      lang="th"
-      className="h-full antialiased"
-    >
+    <html lang="th" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-[#FDFBF7] text-[#3C322A] font-anuphan antialiased">
-        <AuthProvider>
-          <Header />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
