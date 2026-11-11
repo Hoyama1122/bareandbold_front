@@ -2,9 +2,14 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, X, ChevronLeft, ShoppingBag, Truck, Tag, Heart } 
+import { Minus, Plus, X, ChevronLeft, ShoppingBag, Truck, Heart }
 from "lucide-react";
 import { cartService } from "@/services/cart.service";
+import {
+  DEFAULT_PLATFORM_SETTINGS,
+  platformService,
+} from "@/services/platform.service";
+import { calculateCartPricing } from "@/lib/pricing";
 
 const INK = "#2B2118";
 const CREAM = "#F2ECDD";
@@ -14,8 +19,6 @@ const OLIVE_DEEP = "#4F5B38";
 const BORDER = "#E1D8C0";
 const MUTED = "#8C8577";
 
-const FREE_SHIP_THRESHOLD = 300;
-
 function baht(n) {
   return n.toLocaleString("th-TH");
 }
@@ -23,6 +26,9 @@ function baht(n) {
 export default function CartSummaryPage() {
   const router = useRouter();
   const [items, setItems] = useState([]);
+  const [shippingSettings, setShippingSettings] = useState(
+    DEFAULT_PLATFORM_SETTINGS,
+  );
 
   useEffect(() => {
     const loadCart = () => {
@@ -36,15 +42,16 @@ export default function CartSummaryPage() {
 
     loadCart();
     cartService.fetchCart();
+    platformService
+      .getPublicSettings()
+      .then(setShippingSettings)
+      .catch((err) => console.error("Failed to load shipping settings:", err));
 
     window.addEventListener("cartUpdated", loadCart);
     return () => {
       window.removeEventListener("cartUpdated", loadCart);
     };
   }, []);
-
-  const [promo, setPromo] = useState("");
-  const [promoApplied, setPromoApplied] = useState(false);
 
   const updateQty = async (id, delta) => {
     const item = items.find((it) => it.id === id);
@@ -72,7 +79,10 @@ export default function CartSummaryPage() {
     }
   };
 
-  const subtotal = useMemo(() => items.reduce((s, it) => s + it.price * it.quantity, 0), [items]);
+  const pricing = useMemo(
+    () => calculateCartPricing(items, shippingSettings),
+    [items, shippingSettings],
+  );
   const savings = useMemo(
     () =>
       items.reduce(
@@ -81,16 +91,14 @@ export default function CartSummaryPage() {
       ),
     [items]
   );
-  const promoDiscount = promoApplied ? Math.round(subtotal * 0.1) : 0;
-  const shipping = subtotal === 0 || subtotal >= FREE_SHIP_THRESHOLD ? 0 : 50;
-  const total = Math.max(0, subtotal - promoDiscount + shipping);
-  const remainingForFreeShip = Math.max(0, FREE_SHIP_THRESHOLD - subtotal);
-  const shipProgress = Math.min(100, (subtotal / FREE_SHIP_THRESHOLD) * 100);
-  const itemCount = items.reduce((s, it) => s + it.quantity, 0);
-
-  const applyPromo = () => {
-    if (promo.trim().length > 0) setPromoApplied(true);
-  };
+  const {
+    subtotal,
+    shipping,
+    total,
+    itemCount,
+    remainingForFreeShipping: remainingForFreeShip,
+    shipProgress,
+  } = pricing;
 
   return (
     <div style={{ background: CREAM, minHeight: "100vh", fontFamily: "'Sarabun', sans-serif", color: INK }}>
@@ -171,6 +179,9 @@ export default function CartSummaryPage() {
                 <div className="flex-1 flex flex-col justify-between min-w-0">
                 <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
+                <p className="text-xs font-medium mb-0.5" style={{ color: OLIVE_DEEP }}>
+                  {it.shopName}
+                </p>
                 <p className="font-medium truncate">{it.name}</p>
                 <p className="text-sm" style={{ color: MUTED }}>
                   {it.variant || ""}
@@ -233,31 +244,6 @@ export default function CartSummaryPage() {
               >
                 <h2 className="kanit text-lg font-semibold mb-4">สรุปคำสั่งซื้อ</h2>
 
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex-1 relative">
-                    <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: MUTED }} />
-                    <input
-                      value={promo}
-                      onChange={(e) => setPromo(e.target.value)}
-                      placeholder="โค้ดส่วนลด"
-                      className="w-full pl-9 pr-3 py-2 rounded-lg text-sm outline-none"
-                      style={{ border: `1px solid ${BORDER}`, background: CREAM }}
-                    />
-                  </div>
-                  <button
-                    onClick={applyPromo}
-                    className="px-4 py-2 rounded-lg text-sm font-medium"
-                    style={{ border: `1px solid ${INK}`, color: INK }}
-                  >
-                    ใช้โค้ด
-                  </button>
-                </div>
-                {promoApplied && (
-                  <p className="text-xs mb-4" style={{ color: OLIVE_DEEP }}>
-                    ใช้ส่วนลด 10% เรียบร้อยแล้ว
-                  </p>
-                )}
-
                 <div className="flex flex-col gap-3 text-sm pb-4" style={{ borderBottom: `1px solid ${BORDER}` }}>
                   <div className="flex justify-between">
                     <span style={{ color: MUTED }}>ยอดรวมสินค้า</span>
@@ -269,16 +255,20 @@ export default function CartSummaryPage() {
                       <span style={{ color: OLIVE_DEEP }}>-฿{baht(savings)}</span>
                     </div>
                   )}
-                  {promoApplied && (
-                    <div className="flex justify-between">
-                      <span style={{ color: MUTED }}>โค้ดส่วนลด</span>
-                      <span style={{ color: OLIVE_DEEP }}>-฿{baht(promoDiscount)}</span>
-                    </div>
-                  )}
                   <div className="flex justify-between">
-                    <span style={{ color: MUTED }}>ค่าจัดส่ง</span>
+                    <span style={{ color: MUTED }}>ค่าจัดส่ง (แยกตามร้าน)</span>
                     <span>{shipping === 0 ? "ฟรี" : `฿${baht(shipping)}`}</span>
                   </div>
+                  {pricing.groups.length > 1 && (
+                    <div className="rounded-lg px-3 py-2 text-xs" style={{ background: CREAM }}>
+                      {pricing.groups.map((group) => (
+                        <div key={group.key} className="flex justify-between gap-2">
+                          <span className="truncate">{group.shopName}</span>
+                          <span>{group.shipping === 0 ? "ฟรีส่ง" : `ค่าส่ง ฿${baht(group.shipping)}`}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-center py-4">

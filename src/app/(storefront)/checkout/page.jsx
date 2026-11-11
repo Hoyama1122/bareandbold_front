@@ -6,6 +6,11 @@ import { cartService } from "@/services/cart.service";
 import { orderService } from "@/services/order.service";
 import { paymentService } from "@/services/payment.service";
 import { authService } from "@/services/auth.service";
+import {
+  DEFAULT_PLATFORM_SETTINGS,
+  platformService,
+} from "@/services/platform.service";
+import { calculateCartPricing } from "@/lib/pricing";
 import { ChevronLeft, QrCode } from "lucide-react";
 
 import { CREAM, INK, MUTED, WHITE, BORDER, OLIVE } from "@/components/checkout/constants";
@@ -36,6 +41,9 @@ export default function CheckoutPage() {
   const [orderItems, setOrderItems] = useState([]);
   const [savedTotal, setSavedTotal] = useState(0);
   const [profile, setProfile] = useState(null);
+  const [shippingSettings, setShippingSettings] = useState(
+    DEFAULT_PLATFORM_SETTINGS,
+  );
 
   useEffect(() => {
     authService.getProfile()
@@ -258,6 +266,10 @@ export default function CheckoutPage() {
 
     loadCart();
     cartService.fetchCart();
+    platformService
+      .getPublicSettings()
+      .then(setShippingSettings)
+      .catch((err) => console.error("Failed to load shipping settings:", err));
 
     window.addEventListener("cartUpdated", loadCart);
     return () => {
@@ -291,10 +303,11 @@ export default function CheckoutPage() {
     return () => clearInterval(interval);
   }, [orderId, showQR]);
 
-  const subtotal = useMemo(() => orderItems.reduce((s, it) => s + it.price * it.quantity, 0), [orderItems]);
-  const shipping = subtotal >= 300 ? 0 : 50;
-  const total = subtotal + shipping;
-  const itemCount = orderItems.reduce((s, it) => s + it.quantity, 0);
+  const pricing = useMemo(
+    () => calculateCartPricing(orderItems, shippingSettings),
+    [orderItems, shippingSettings],
+  );
+  const { subtotal, shipping, total, itemCount } = pricing;
 
   const [selectedAddress, setSelectedAddress] = useState(null);
 
@@ -346,7 +359,9 @@ export default function CheckoutPage() {
 
       setOrderId(orderRes.orderId);
       setOrderNumber(orderRes.orderId);
-      setSavedTotal(total);
+      setSavedTotal(
+        typeof orderRes.totalPrice === "number" ? orderRes.totalPrice : total,
+      );
 
       // 2. Process checkout payment
       const paymentMethodMapped = payment === "promptpay" ? "PROMPTPAY" : (payment === "card" ? "CREDIT_CARD" : payment.toUpperCase());

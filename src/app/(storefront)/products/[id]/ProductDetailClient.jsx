@@ -163,6 +163,8 @@ export default function ProductDetailClient({ nameSlug }) {
         name: product.name,
         image: currentImage,
         price: unitPrice,
+        shopId: product.shop?.id || null,
+        shopName: product.shop?.name || "Bare & Bold",
       });
       showToast("เพิ่มลงตะกร้าสินค้าเรียบร้อยแล้ว", "success");
     } catch (error) {
@@ -192,6 +194,8 @@ export default function ProductDetailClient({ nameSlug }) {
         name: product.name,
         image: currentImage,
         price: unitPrice,
+        shopId: product.shop?.id || null,
+        shopName: product.shop?.name || "Bare & Bold",
       });
       router.push("/checkout");
     } catch (error) {

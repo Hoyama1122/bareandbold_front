@@ -61,7 +61,11 @@ export default function SellerLayout({ children }) {
         </h1>
         <p className="text-sm text-neutral-500">
           สถานะปัจจุบัน: <span className="font-bold">{shop.status}</span>
-          {shop.rejectionReason ? ` — ${shop.rejectionReason}` : ""}
+          {shop.status === "SUSPENDED" && shop.suspendedReason
+            ? ` — ${shop.suspendedReason}`
+            : shop.rejectionReason
+              ? ` — ${shop.rejectionReason}`
+              : ""}
         </p>
         <Link
           href="/become-seller"

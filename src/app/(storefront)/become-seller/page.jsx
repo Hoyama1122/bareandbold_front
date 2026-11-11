@@ -225,6 +225,17 @@ export default function BecomeSellerPage() {
                   <span className="font-bold">เหตุผล:</span> {shop.rejectionReason}
                 </p>
               )}
+              {shop.status === "SUSPENDED" && shop.suspendedReason && (
+                <p className="mt-3 rounded-xl bg-white/70 px-4 py-3 text-sm">
+                  <span className="font-bold">เหตุผลที่ถูกระงับ:</span>{" "}
+                  {shop.suspendedReason}
+                </p>
+              )}
+              {shop.status === "SUSPENDED" && (
+                <p className="mt-3 text-sm opacity-80">
+                  ร้านค้าถูกปิดการมองเห็นชั่วคราว กรุณาติดต่อผู้ดูแลระบบ
+                </p>
+              )}
               <div className="mt-5 flex flex-wrap gap-3">
                 {shop.status === "APPROVED" && (
                   <Link

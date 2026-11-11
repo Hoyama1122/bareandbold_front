@@ -61,6 +61,8 @@ const mapBackendCartToLocal = (backendCart) => {
     return {
       id: item.id,
       productId: item.productId,
+      shopId: item.product?.shop?.id || null,
+      shopName: item.product?.shop?.name || "Bare & Bold",
       name: item.product?.name || "",
       image: image,
       price: finalPrice,
@@ -162,6 +164,8 @@ export const cartService = {
       cart.push({
         id: Date.now(), // Unique ID for guest cart item
         productId,
+        shopId: productDetails.shopId || null,
+        shopName: productDetails.shopName || "Bare & Bold",
         name: productDetails.name || "",
         image: productDetails.image || "",
         price: productDetails.price || 0,
