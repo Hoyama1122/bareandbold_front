@@ -23,6 +23,7 @@ const NAV_LINKS = [
   { label: "ร้านค้า", href: "/products" },
   { label: "ติดต่อเรา", href: "/contact" },
   { label: "เอกสารระบบ", href: "/docs" },
+  { label: "การ์ดสุ่มดวง", href: "/fortune-card" }
 ];
 
 export default function Header({
