@@ -23,12 +23,13 @@
 
 ---
 
-# 🔵 Role 1 — Frontend Engineer (Storefront & Catalog) + Tester/QA
+# 🔵 Role 1 — Frontend Engineer (Storefront & Catalog) + Tester/QA + Coupon/Voucher Owner
 
 ## 1.1 ดูแลอะไร
 
 หน้าเว็บที่ผู้ซื้อและผู้เยี่ยมชมเห็น ได้แก่ หน้าแรก หน้ารวมสินค้า หน้ารายละเอียดสินค้า หน้าร้านของผู้ขาย และระบบดูดวง/แนะนำหินมงคล
-**เพิ่มเติม:** รับบทบาท **Tester/QA** ดูแล test plan, regression, UAT และประสาน API smoke/k6 กับ Role 4 (~1–2 วัน/สัปดาห์)
+**เพิ่มเติม 1:** รับบทบาท **Tester/QA** ดูแล test plan, regression, UAT และประสาน API smoke/k6 กับ Role 4 (~1–2 วัน/สัปดาห์)
+**เพิ่มเติม 2:** เป็นเจ้าของ **Coupon/Voucher Vertical** ทั้ง Buyer, Seller, Admin ตามที่ได้รับมอบหมาย (ดูข้อ 1.6)
 
 ## 1.2 ฟังก์ชันที่รับผิดชอบ
 
@@ -40,7 +41,7 @@
 | Wishlist             | รายการสินค้าโปรด                     | 🟡         | dropdown + service                                                         | หน้า `/account/wishlist`                               | `wishlist.service.js`, `/api/wishlist`                          |
 | Reviews Display      | แสดงรีวิวในหน้ารายละเอียด   | ❌         | —                                                                         | สรุปดาว + คอมเมนต์ + รูป                   | `GET /api/products/:id/reviews`                                   |
 | Horoscope / Gemstone | แนะนำหิน/สินค้า + การ์ดเลือก | ❌         | —                                                                         | KB + API + หน้า UI                                       | `/gemstone-guide`, `POST /api/recommend/gemstones`              |
-| review shop          | รีวิวรา้านค้าได้                     | ❌         |                                                                            |                                                              |                                                                     |
+| Review Shop          | รีวิวร้านค้าได้                     | ❌         | —                                                                          | รีวิว/คะแนนร้าน + moderation                                                 | `GET/POST /api/shops/:id/reviews`                                   |
 | **Coupon / Voucher** | คูปองแพลตฟอร์ม + คูปองร้าน, เก็บโค้ด, ใช้ที่ Cart/Checkout และหน้าจัดการ Seller/Admin | ❌         | —                                                                         | ทั้ง Vertical ตามข้อ 1.6                     | `/vouchers`, `/account/vouchers`, `/seller/vouchers`, `/dashboard/vouchers` |
 
 ## 1.3 งานที่ต้องส่ง
@@ -57,7 +58,7 @@
 
 - มี loading / empty / error state
 - ใช้งานได้บนมือถือและเดสก์ท็อป
-- ไม่แก้ backend เองโดยไม่แจ้ง Role 4
+- Backend ที่อยู่นอก scope Voucher ต้องแจ้ง Role 4; Voucher backend ต้องให้ Role 4 review schema/migration/เงินก่อน merge
 - ข้อมูลร้าน/สินค้าตรงกับ API จริง
 
 ## 1.5 ต้องประสานกับ
@@ -144,7 +145,7 @@ src/app/dashboard/vouchers/*
 - Platform voucher หลายร้านกระจายส่วนลดถูกต้อง
 - GP/เงินร้านถูกต้องตาม `fundedBy`
 - ใช้คูปองซ้ำไม่ได้
-- ทุก endpoint มี permission test และ KEK เงิน/Escrow ไม่เพี้ยน
+- ทุก endpoint มี permission test และยอดเงิน/Escrow ไม่เพี้ยน
 
 ---
 
@@ -152,7 +153,7 @@ src/app/dashboard/vouchers/*
 
 ## 2.1 ดูแลอะไร
 
--flow ฝั่งผู้ซื้อตั้งแต่หยิบสินค้าใส่ตะกร้า จ่ายเงิน ติดตามพัสดุ จนถึงรีวิวและขอคืนเงิน
+Flow ฝั่งผู้ซื้อตั้งแต่หยิบสินค้าใส่ตะกร้า จ่ายเงิน ติดตามพัสดุ จนถึงรีวิวและขอคืนเงิน
 
 ## 2.2 ฟังก์ชันที่รับผิดชอบ
 
@@ -164,13 +165,14 @@ src/app/dashboard/vouchers/*
 | Orders / Tracking                           | ประวัติ + สถานะพัสดุ                | 🟡         | แท็บสถานะ, QR modal                                  | Timeline ตรงกับ SubOrder, แสดงส่วนลดคูปอง                         | `orders/page.jsx`                                                |
 | Confirm Received                            | ลูกค้ายืนยันรับของ                 | ❌         | —                                                            | ปุ่ม + API ปลดเงิน                                          | `orders/[id]`, `POST /api/orders/:subOrderId/confirm-received` |
 | Refund Buyer                                | ขอคืนเงิน/แจ้งปัญหา                | ❌         | —                                                            | ฟอร์ม + แนบหลักฐาน                                      | `/account/orders/[id]/refund`, `POST /api/refunds/request`     |
-| seller Refund UI<br />card random animation | หน้าsellerตรวจคำขอคืนเงิน         | ❌         | —                                                            | ตาราง + อนุมัติ/ปฏิเสธ                               | `backoffice /dashboard/refunds`, `GET/PUT /api/admin/refunds`  |
+| Seller/Admin Refund UI | หน้า Seller/Admin ตรวจคำขอคืนเงิน | ❌         | —                                                            | ตาราง + อนุมัติ/ปฏิเสธ + หลักฐาน                  | `backoffice /dashboard/refunds`, `/seller/refunds`, `GET/PUT /api/admin/refunds` |
 
 ## 2.3 งานที่ต้องส่ง
 
-- Cart จัดกลุ่มตามร้าน + ค่าส่งแยก
-- Checkout สรุปแยกตามร้าน
-- Timeline สถานะออเดอร์
+- Cart จัดกลุ่มตามร้าน + ค่าส่งแยก ✅
+- Checkout สรุปแยกตามร้าน ✅
+- Voucher selector + Server quote integration (ประสาน Role 1)
+- Timeline สถานะออเดอร์ตาม SubOrder
 - ปุ่มยืนยันรับสินค้า
 - รีวิว + อัปโหลดรูป
 - ฟอร์มขอคืนเงิน + หน้า admin refund
@@ -210,7 +212,7 @@ src/app/dashboard/vouchers/*
 | Admin Audit Log     | ประวัติการดำเนินการ      | ✅         | Shop/Product/Payout/Settings/Order actions | —                                              | `/dashboard/audit-logs`, `/api/admin/audit-logs`    |
 | Admin Product Center | ดูรายละเอียด/แก้ไข/ซ่อน/ระงับ/ลบ | ✅         | รวมในเมนูรายการสินค้าเดียว + Admin Detail API + แก้ไขสินค้าที่ถูกซ่อนได้ | —                                              | `/dashboard/products`, `/api/admin/products/:id`    |
 
-## 3.3 งานด่วนของเพื่อน: Seller Center
+## 3.3 งานหลักที่เหลือ: Seller Center
 
 **โครงที่มีแล้ว**
 
@@ -274,12 +276,12 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 | ฟังก์ชัน             | คืออะไร                         | สถานะ | ทำแล้ว                                        | เหลือทำ                    | Endpoint / ไฟล์                          |
 | ---------------------------- | -------------------------------------- | ---------- | --------------------------------------------------- | --------------------------------- | -------------------------------------------- |
-| Auth & Role                  | Login + แยกสิทธิ์             | ✅         | JWT, middleware, profile                            | httpOnly cookie                   | `auth.middleware.js`, `/api/auth`        |
+| Auth & Role                  | Login + แยกสิทธิ์             | ✅         | JWT, middleware, profile, Backend cookie          | Storefront ยังส่ง Bearer จาก localStorage | `auth.middleware.js`, `/api/auth`        |
 | Shop API                     | เปิดร้าน/ดู/แก้ร้าน   | ✅         | apply, my-shop, update, public shop                 | —                                | `/api/shops`                               |
 | Seller Product API           | CRUD สินค้าร้านตัวเอง  | ✅         | list/create/update/delete/toggle + ownership        | —                                | `/api/seller/products`                     |
 | Upload                       | อัปโหลดรูป                   | ✅         | R2 + folder ตามร้าน + ตรวจเจ้าของ | —                                | `/api/upload`                              |
 | Public Catalog               | สินค้า public                    | 🟡         | search/category/type/shop + shop info               | price/wrist filter, pagination    | `GET /api/products`                        |
-| Admin Approval               | อนุมัติร้าน                 | ✅         | list/approve/reject + role update                   | audit log                         | `/api/admin/shops`                         |
+| Admin Approval               | อนุมัติ/ระงับร้าน          | ✅         | list/approve/reject/suspend/reactivate + role update + Audit | —                          | `/api/admin/shops`                         |
 | Payment / Omise              | ตัดเงิน + webhook               | 🟡         | charge + webhook + mock, อัปเดต SubOrder เป็น PAID  | Reconciliation, payment retry, hardening webhook | `/api/payments`                            |
 | Split Order                  | แตกออเดอร์ตามร้าน     | ✅         | checkout แยก Shop → SubOrder + snapshot GP/ค่าส่ง | จัดสรรส่วนลด Voucher ต่อ SubOrder | `/api/orders`                              |
 | Escrow / Confirm             | ปลดเงินให้ร้าน           | 🟡         | Settlement หลัง Admin เปลี่ยนเป็น DELIVERED/COMPLETED + Ledger กันซ้ำ | Buyer Confirm Received + auto-complete | `/api/orders/:subOrderId/confirm-received` |
@@ -305,7 +307,7 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 ## 4.4 ต้องประสานกับ
 
-- **Role 1** — filter/reviews/gemstone
+- **Role 1** — filter/reviews/gemstone + voucher schema/migration/เงิน/Escrow
 - **Role 2** — checkout/confirm/refund
 - **Role 3** — seller/admin APIs
 
@@ -319,17 +321,19 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 เหตุผลที่เลือก Role 1:
 
-- งานพัฒนาหลักน้อยที่สุด (~14 วัน เทียบกับ Role 2 ~16, Role 3 ~20, Role 4 ~18)
-- dependency น้อย ไม่ได้เป็น blocker เรื่องเงิน/ออเดอร์
 - ดูแล storefront อยู่แล้ว จึงทดสอบ flow ผู้ซื้อได้ตรง
-- แบ่งเวลาได้ประมาณ **3–4 วัน/สัปดาห์ทำงานพัฒนา + 1–2 วัน/สัปดาห์ทำงาน QA**
+- dependency ด้านเงิน/ออเดอร์เริ่มจาก Role 1 เป็นผู้ทดสอบและประสาน integration
+- หลังรับ **Coupon/Voucher Vertical** ภาระงานพัฒนาเพิ่มขึ้น ต้องแบ่งเวลา QA อย่างชัดเจน
+- แบ่งเวลาแนะนำ **3–4 วัน/สัปดาห์ทำงานพัฒนา + 1–2 วัน/สัปดาห์ทำงาน QA** (ปรับได้ตาม sprint)
 
 | Role      | งานพัฒนาหลัก (ประมาณ) |                 งาน QA |               รวม |
 | --------- | --------------------------------------: | ------------------------: | -------------------: |
-| 🔵 Role 1 |                              ~14 วัน |                 ~4 วัน | **~18 วัน** |
+| 🔵 Role 1 |          ~22 วัน (รวม Voucher) |                 ~4 วัน | **~26 วัน** |
 | 🟢 Role 2 |                              ~16 วัน |        ช่วย E2E buyer |           ~17 วัน |
 | 🟠 Role 3 |                              ~20 วัน | ช่วย E2E seller/admin |           ~20 วัน |
 | 🟣 Role 4 |                              ~18 วัน | ช่วย API/k6/test data |           ~18 วัน |
+
+> ตัวเลขเป็นประมาณการเพื่อจัดลำดับงาน ไม่ใช่ deadline; งาน Voucher อาจแยกเป็น Phase 2 หากเวลารวมไม่พอ
 
 ## 5.2 หน้าที่ QA ของ Role 1
 
@@ -345,9 +349,9 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 | งาน            | สถานะ | ทำแล้ว                                                            | เหลือทำ                              | ไฟล์                                   |
 | ----------------- | ---------- | ----------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------ |
-| Test Plan         | 🟡         | ทดสอบ role/seller flow แล้ว                                    | เขียนแผนรวม + รอบทดสอบ   | `TEST_PLAN.md`                           |
-| API Smoke         | ✅         | 18/18 checks                                                            | รันก่อน merge ทุกครั้ง       | `bareandbold_backend/k6/smoke.js`        |
-| Permission Matrix | ✅         | role test 52/52, security 9/9                                           | เพิ่มเคสเมื่อมี API ใหม่ | test script                                |
+| Test Plan         | 🟡         | ทดสอบ role/seller/admin flow แล้ว                              | เขียนแผนรวม + รอบทดสอบ Voucher | `TEST_PLAN.md`                           |
+| API Smoke         | 🟡         | ชุดเดิม 18/18 checks ผ่าน                                             | เพิ่ม smoke ของ Admin/Seller/Wallet APIs | `bareandbold_backend/k6/smoke.js`        |
+| Permission Matrix | 🟡         | role test 52/52, security 9/9 + manual Admin/Staff tests ผ่าน          | เพิ่มเคส Voucher/Refund/Seller Orders | test script                                |
 | k6 Load           | ✅         | public + auth load ผ่าน                                             | stress test + baseline                      | `k6/load-public.js`, `k6/load-auth.js` |
 | E2E Buyer         | ❌         | —                                                                      | เขียนชุดทดสอบ                  | `e2e/buyer/`                             |
 | E2E Seller/Admin  | 🟡         | Manual flow เปิดร้าน/อนุมัติ/ลงสินค้า/Moderation/Payout ทดสอบแล้ว | ทำเป็นชุดอัตโนมัติ + เพิ่ม Seller Center UI | `e2e/seller/`                            |
@@ -377,6 +381,7 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 - ผล k6 (smoke/public/auth) + baseline
 - Permission matrix
 - E2E buyer + ช่วย E2E seller/admin
+- **Voucher QA:** claim ซ้ำ, quota, expiry, stacking, GP/`fundedBy`, multi-shop allocation
 - UAT report + bug list
 - Release checklist ก่อน deploy
 
@@ -432,32 +437,262 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 ---
 
-# 📊 8. Phase Summary
+# 📊 8. Phase Plan & Checklist
 
-| Phase                          | สถานะ                                                          |
-| ------------------------------ | ------------------------------------------------------------------- |
-| 1. Database Schema             | ✅ schema / 🟡 migration baseline ต้องทำให้ตรงก่อน deploy |
-| 2. Auth & Seller Onboarding    | ✅                                                                  |
-| 3. Catalog & Shop              | 🟡 ค้นหา/filter/review UI บางส่วนยังขาด |
-| 3.5 Horoscope                  | ❌                                                                  |
-| 4. Cart / Split Order / Escrow | 🟡 Split Order ✅ · Buyer Confirm ❌ · Refund ❌ |
-| 5. Fulfillment & Tracking      | 🟡 Admin update/settlement ✅ · Seller fulfillment ❌ |
-| 6. Seller Center & Wallet      | 🟡 Wallet/Payout API ✅ · Seller Center UI ❌ |
-| 7. Admin Backoffice            | ✅ Admin Core · Refund page ❌ |
-| 8. Testing & Deploy            | 🟡 smoke/permission/k6 มี · E2E/UAT/CI test gate ยังขาด |
-| 9. Extended Scope              | ❌                                                                  |
-| 10. Coupon / Voucher           | ❌ Role 1 เริ่มได้หลัง freeze schema + กฎเงิน |
+## 8.1 ภาพรวม Phase
+
+| Phase | เป้าหมาย | เจ้าของหลัก | สถานะ | เริ่มได้เมื่อ |
+| --- | --- | --- | --- | --- |
+| **P0** | Stabilize Foundation | Role 4 + ทุกคน | 🟡 ต้องทำก่อน | เริ่มได้เลย |
+| **P1** | Seller Center Core | Role 3 | ❌ ยังไม่เริ่ม | หลัง P0 เริ่มได้ |
+| **P2** | Fulfillment + Confirm Received | Role 3 + 2 + 4 | 🟡 Split/Settlement บางส่วน | API Seller Orders พร้อม |
+| **P3** | After-sales + Reviews | Role 2 + 1 + 3 + 4 | ❌ ยังไม่เริ่ม | หลัง P2 หลัก |
+| **P4** | Coupon / Voucher | Role 1 + 2 + 3 + 4 review | ❌ ยังไม่เริ่ม | หลัง freeze schema/กฎเงิน |
+| **P5** | Release + QA + Deploy | Role 1 + ทุกคน | 🟡 มี smoke/permission/k6 | หลัง P1–P4 พร้อม |
+
+> **สถานะปัจจุบัน:** Admin Core ✅ · Split Order ✅ · Platform Settings ✅ · Payout API ✅ · Seller Wallet API ✅
+> **งานหลักที่เหลือ:** Seller Center UI, Seller Fulfillment, Buyer Confirm, Refund/Reviews, Voucher และ Release Hardening
 
 ---
 
-# 🗓️ 9. แผนงาน 4 สัปดาห์ (ปรับตามสถานะล่าสุด)
+## 🟡 Phase 0 — Stabilize Foundation
+
+**เป้าหมาย:** ทำให้ deploy และพัฒนาแบบ Full Stack ได้อย่างปลอดภัยก่อนเพิ่มฟีเจอร์
+
+**เจ้าของ:** Role 4 เป็น lead, ทุกคนเพิ่ม test ของโดเมนตัวเอง
+
+**Checklist**
+- [ ] ทำ Prisma migration baseline ให้ตรงกับ DB จริง
+- [ ] แยก Staging DB และหยุดใช้ `db push` กับ DB ร่วม
+- [ ] เพิ่ม CI ขั้นต่ำ: lint + build + `prisma validate`
+- [ ] เพิ่ม backend integration test
+- [ ] เพิ่ม permission test สำหรับ Admin/Seller/Wallet
+- [ ] เพิ่ม Docker Compose local
+- [ ] เพิ่ม seed scenarios: multi-shop, paid order, pending payout, hidden product
+- [ ] ตรวจ deploy workflow ว่าไม่ deploy ก่อน test ผ่าน
+
+**Phase Gate**
+- [ ] CI ผ่านทุก repo
+- [ ] Migration จาก DB ว่างผ่าน
+- [ ] Deploy staging ผ่าน
+- [ ] Test data พร้อมใช้ทุก role
+
+---
+
+## ❌ Phase 1 — Seller Center Core
+
+**เป้าหมาย:** Seller ใช้งาน Seller Center ได้จริง ไม่ใช่แค่ placeholder
+
+**เจ้าของ:** Role 3
+
+**Checklist**
+- [ ] Seller Sidebar + Navigation
+- [ ] `/seller/dashboard` KPI จาก API จริง
+- [ ] `/seller/products` ตารางสินค้า + ค้นหา/กรอง + toggle + ลบ
+- [ ] แสดงสถานะ `VISIBLE / HIDDEN / SUSPENDED` และเหตุผลจาก Admin
+- [ ] `/seller/products/new` สร้างสินค้า + รูป + custom options + accessories
+- [ ] `/seller/products/[id]/edit` แก้ไขสินค้า
+- [ ] `/seller/shop` แก้ข้อมูลร้าน/โลโก้/บัญชี
+- [ ] `/seller/wallet` แสดง balance, held, available, Ledger
+- [ ] ฟอร์มขอถอนเงิน + ประวัติ Payout
+- [ ] ทดสอบ Seller A แก้สินค้า Seller B ไม่ได้
+- [ ] ทดสอบร้าน PENDING/SUSPENDED เขียนข้อมูลไม่ได้
+
+**Phase Gate**
+- [ ] Seller สร้าง/แก้ไข/ลบสินค้าตัวเองได้
+- [ ] Seller แก้ข้อมูลร้านได้
+- [ ] Seller เห็นยอดเงินและขอถอนได้
+- [ ] Staff/Admin ไม่สามารถใช้ Seller API แทน Seller ได้
+
+---
+
+## 🟡 Phase 2 — Fulfillment + Confirm Received
+
+**เป้าหมาย:** ปิดวงจร `ขาย → ส่ง → รับของ → เงินเข้าร้าน`
+
+**เจ้าของ:** Role 4 (API), Role 3 (Seller UI), Role 2 (Buyer UI)
+
+**มีแล้ว**
+- [x] Split Order ตามร้าน
+- [x] Settlement แบบ Admin/Manual fallback
+- [x] Ledger กันเครดิตซ้ำ
+- [x] SubOrder ที่ถูกยกเลิกไม่ถูกเครดิต
+
+### 2A — Seller Fulfillment
+- [ ] API `GET /api/seller/orders`
+- [ ] Seller เห็นเฉพาะ SubOrder ของร้านตัวเอง
+- [ ] Seller เปลี่ยน `PAID → PRODUCING`
+- [ ] Seller บันทึก carrier + tracking
+- [ ] Seller เปลี่ยน `PRODUCING → SHIPPED`
+- [ ] หน้า `/seller/orders`
+- [ ] Filter ตามสถานะ/วันที่
+- [ ] Permission test Seller A เห็นออเดอร์ Seller B ไม่ได้
+
+### 2B — Buyer Confirm Received
+- [ ] Buyer เห็นปุ่ม “ยืนยันรับสินค้า” เมื่อ `SHIPPED`
+- [ ] API confirm received
+- [ ] เปลี่ยน SubOrder เป็น `DELIVERED/COMPLETED`
+- [ ] ปลดเงินเข้ากระเป๋าร้าน
+- [ ] สร้าง Ledger แบบ idempotent
+- [ ] Auto-complete หลังส่ง 7 วัน
+
+### 2C — Notification พื้นฐาน
+- [ ] แจ้งเตือน Seller เมื่อมีออเดอร์ใหม่
+- [ ] แจ้งเตือน Buyer เมื่อ Seller ส่งของ
+- [ ] แจ้งเตือน Seller เมื่อเงินเข้ากระเป๋า
+
+**Phase Gate**
+- [ ] Buyer จ่าย → Seller ส่ง → Buyer ยืนยัน → Wallet เพิ่มครั้งเดียว
+- [ ] SubOrder ยกเลิก/คืนเงินไม่ถูกเครดิต
+- [ ] Tracking แสดงทั้ง Buyer/Seller/Admin
+
+---
+
+## ❌ Phase 3 — After-sales + Reviews
+
+**เป้าหมาย:** เพิ่มความน่าเชื่อถือและรองรับปัญหาหลังการขาย
+
+**เจ้าของ:** Role 2 (lead), Role 1 (Reviews UI), Role 3 (Admin/Seller Refund UI), Role 4 (API/เงิน)
+
+### 3A — Reviews
+- [ ] รีวิวได้เฉพาะ OrderItem ที่ซื้อจริง
+- [ ] ให้ดาว 1–5 + comment
+- [ ] อัปโหลดรูป
+- [ ] แก้ไข/ลบรีวิวตามเงื่อนไข
+- [ ] แสดงรีวิวใน Product Detail
+- [ ] อัปเดต rating สินค้า
+- [ ] Seller/Admin ซ่อนรีวิวไม่เหมาะสม
+- [ ] รีวิวร้านค้า/คะแนนร้าน
+
+### 3B — Refund / Return
+- [ ] Buyer ยื่นคำขอคืนเงินพร้อมหลักฐาน
+- [ ] Seller อนุมัติ/ปฏิเสธ
+- [ ] Admin ตัดสินข้อพิพาท
+- [ ] หน้า `/dashboard/refunds`
+- [ ] หน้า `/seller/refunds`
+- [ ] Reverse Wallet/GP/Ledger
+- [ ] คืน/ระงับ stock ตามนโยบาย
+- [ ] Notification ผลการตัดสิน
+
+**Phase Gate**
+- [ ] รีวิวได้เฉพาะผู้ซื้อจริง
+- [ ] Refund ซ้ำไม่ได้
+- [ ] เงินร้าน/GP ถูก reverse ถูกต้อง
+- [ ] Admin/Seller permission ถูกต้อง
+
+---
+
+## ❌ Phase 4 — Coupon / Voucher
+
+**เป้าหมาย:** คูปองคล้าย Shopee ทั้งของแพลตฟอร์มและของร้าน
+
+**เจ้าของ:** Role 1 เป็นเจ้าของ Vertical, Role 2 ช่วย Cart/Checkout, Role 3 ช่วย Seller/Admin UI, Role 4 review schema/เงิน
+
+### 4A — Voucher Core
+- [ ] `voucher.prisma`
+- [ ] Platform Voucher
+- [ ] Shop Voucher
+- [ ] Fixed amount / Percent + max discount
+- [ ] Minimum spend
+- [ ] Quota total / per-user
+- [ ] Start/end date
+- [ ] Claim code
+- [ ] My Vouchers
+
+### 4B — Checkout Integration
+- [ ] Voucher selector ใน Cart
+- [ ] Voucher selector ใน Checkout
+- [ ] Server-authoritative quote
+- [ ] Validate claim/ownership/scope/quota
+- [ ] `fundedBy = PLATFORM | SHOP`
+- [ ] Snapshot discount ลง Order/SubOrder
+- [ ] Multi-shop allocation ตามสัดส่วน
+- [ ] GP/เงินร้านถูกต้อง
+- [ ] ป้องกันใช้ซ้ำ
+
+### 4C — Seller/Admin UI
+- [ ] `/seller/vouchers`
+- [ ] `/dashboard/vouchers`
+- [ ] สร้าง/แก้ไข/หยุดคูปอง
+- [ ] Budget/statistics
+- [ ] Audit Log
+
+### 4D — Advanced
+- [ ] Shipping Voucher
+- [ ] Product/Category Voucher
+- [ ] Private Code
+- [ ] Auto-best voucher
+- [ ] Voucher analytics
+
+**Phase Gate**
+- [ ] เก็บโค้ดซ้ำไม่ได้
+- [ ] Quota/expiry ถูกต้อง
+- [ ] ใช้คูปองซ้ำไม่ได้
+- [ ] Platform voucher หลายร้านกระจายส่วนลดถูกต้อง
+- [ ] Platform-funded discount ไม่ลดรายได้ร้าน
+- [ ] Shop-funded discount ลด GP ถูกต้อง
+
+---
+
+## 🟡 Phase 5 — Release + QA + Deploy
+
+**เป้าหมาย:** รวมทุกอย่างและพร้อมส่ง
+
+**เจ้าของ:** Role 1 (QA owner) + ทุกคน
+
+**Checklist**
+- [ ] E2E Buyer
+- [ ] E2E Seller/Admin
+- [ ] E2E Voucher
+- [ ] E2E Refund
+- [ ] Permission matrix รอบสุดท้าย
+- [ ] Regression test
+- [ ] k6 load test
+- [ ] UAT report
+- [ ] API docs อัปเดต
+- [ ] Migration/backup production
+- [ ] Demo script + slides
+- [ ] Release checklist
+
+**Phase Gate**
+- [ ] Feature freeze
+- [ ] ไม่มี blocker bug
+- [ ] CI/CD ผ่าน
+- [ ] UAT sign-off
+- [ ] Production deploy สำเร็จ
+
+---
+
+## 8.2 ลำดับและงานที่ทำขนานได้
+
+```text
+P0 → P1 → P2 → P3 → P5
+              ↘ P4 ↗
+```
+
+- **P0 ต้องเริ่มก่อน**
+- **P1 (Role 3)** และ **P2A (Role 4)** เริ่มขนานได้
+- **P4A Voucher backend (Role 1)** เริ่มขนานกับ P1–P2 ได้หลัง freeze schema/กฎเงิน
+- **P3 Reviews/Refund** ต้องรอ P2 และ Order ที่ COMPLETED
+- **P5** เริ่มได้เมื่อ P1–P4 ผ่าน Phase Gate หลัก
+
+## 8.3 ถ้าเวลาน้อย — Priority Cut
+
+1. **ต้องมี:** P0 + P1 + P2
+2. **ควรมี:** P3 Reviews + Refund พื้นฐาน
+3. **ถ้ามีเวลา:** P4 Coupon
+4. **ก่อนส่งจริง:** P5
+
+---
+
+# 🗓️ 9. แผนงาน 4 สัปดาห์ — Mapping กับ Phase
 
 | สัปดาห์ | Role 1 | Role 2 | Role 3 | Role 4 |
 | -------------- | ---------------------- | ------------------- | ----------------------------- | -------------------- |
-| 1 | Coupon schema + buyer voucher discovery/claim | Buyer Confirm Received UI + Refund form | Seller Dashboard + Products UI | Seller Orders API + CI/migration baseline |
-| 2 | My Vouchers + Cart/Checkout selector + Seller voucher UI | Confirm Received flow + Refund integration | Product Create/Edit + Shop Settings | Refund API + Escrow review |
-| 3 | Admin voucher UI + quota/money tests | Order timeline ตาม SubOrder + voucher summary | Seller Wallet UI + Orders UI | Reviews API + notification/event foundation |
-| 4 | E2E Voucher + regression | E2E Buyer + Refund E2E | E2E Seller/Admin + docs | Deploy hardening + full regression |
+| 1 | **P4A** Coupon schema + buyer voucher discovery/claim | **P2B/P3B** Buyer Confirm UI + Refund form | **P1** Seller Dashboard + Products UI | **P0/P2A** CI/migration baseline + Seller Orders API |
+| 2 | **P4B/C** My Vouchers + Cart/Checkout + Seller voucher UI | **P2B/P3B** Confirm Received flow + Refund integration | **P1** Product Create/Edit + Shop Settings | **P2B/P3B** Escrow confirm + Refund API |
+| 3 | **P4C/D** Admin voucher UI + quota/money tests | **P3** Order timeline ตาม SubOrder + voucher summary | **P1/P2C** Seller Wallet UI + Orders UI | **P3A** Reviews API + notification/event foundation |
+| 4 | **P5** E2E Voucher + regression | **P5** E2E Buyer + Refund E2E | **P5** E2E Seller/Admin + docs | **P0/P5** Deploy hardening + full regression |
 
 **Tester = Role 1:** ทำงาน QA ควบคู่ทุกสัปดาห์ — voucher permission/quota, E2E buyer/seller/admin, regression/UAT
 
@@ -469,7 +704,7 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 ```bash
 # Backend :8000
-cd bareandbold_backend && bun run src/app.js
+cd bareandbold_backend && bun run dev
 
 # Storefront :3000
 cd bareandbold_front && bun run dev
