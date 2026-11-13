@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import Header from "@/components/layout/Header";
+import Link from "next/link";
 
 export default function FortuneCardPage() {
   const productDatabase = [
@@ -113,34 +115,16 @@ export default function FortuneCardPage() {
   const monthNames = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
   return (
-    <div className="min-h-[calc(100vh-4.5rem)] bg-[#FAF8F5] text-[#3C322A] flex flex-col justify-between items-center relative overflow-x-hidden p-6 font-anuphan">
+    <div className="min-h-screen bg-[#FAF8F5] text-[#3C322A] flex flex-col justify-between relative overflow-x-hidden font-anuphan">
+      {/* Navbar / Header หลักของเว็บ BARE & BOLD */}
+      <Header />
+
       {/* Background Soft Glows */}
-      <div className="absolute top-12 left-12 w-80 h-80 bg-[#E7DDC8]/40 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute top-32 left-12 w-80 h-80 bg-[#E7DDC8]/40 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-12 right-12 w-96 h-96 bg-[#556B2F]/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* Title Banner */}
-      <div className="w-full max-w-4xl pt-4 pb-6 flex justify-between items-center z-10 border-b border-[#E7DDC8]">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#556B2F] flex items-center justify-center shadow-md text-[#FAF8F5]">
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/>
-            </svg>
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-[#3C322A] font-sans tracking-wide uppercase">
-              BARE & BOLD FORTUNE
-            </h1>
-            <p className="text-xs text-[#8B5A2B] font-medium">สุ่มการ์ดเลือกสินค้าตามดวงวันเกิด</p>
-          </div>
-        </div>
-        <a href="/products" className="text-xs bg-[#F5F0E6] hover:bg-[#E7DDC8] border border-[#E7DDC8] px-4 py-2 rounded-xl text-[#3C322A] font-bold transition flex items-center gap-2">
-          <span>ไปหน้าร้านค้า</span>
-          <span className="text-sm">→</span>
-        </a>
-      </div>
-
       {/* Main Content Area */}
-      <main className="w-full max-w-4xl my-auto py-10 z-10 flex flex-col items-center">
+      <main className="w-full max-w-4xl mx-auto my-auto py-10 z-10 flex flex-col items-center px-4">
         {/* STEP 1: Form */}
         {step === 1 && (
           <section className="w-full max-w-md bg-white border border-[#E7DDC8] rounded-3xl p-8 shadow-xl shadow-[#3C322A]/5">

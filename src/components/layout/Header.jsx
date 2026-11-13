@@ -21,6 +21,7 @@ import { useAuth } from "@/context/AuthContext";
 const NAV_LINKS = [
   { label: "หน้าแรก", href: "/" },
   { label: "ร้านค้า", href: "/products" },
+  { label: "คูปองส่วนลด", href: "/coupons" },
   { label: "ติดต่อเรา", href: "/contact" },
   { label: "เอกสารระบบ", href: "/docs" },
   { label: "การ์ดสุ่มดวง", href: "/fortune-card" }
