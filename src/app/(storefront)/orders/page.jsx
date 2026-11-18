@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { orderService } from "@/services/order.service";
 import { cartService } from "@/services/cart.service";
 import { paymentService } from "@/services/payment.service";
-import { Package, Clock, MapPin, Truck, ChevronRight, AlertCircle, ShoppingBag, Store, ChevronDown, ChevronUp } from "lucide-react";
+import {Clock,MapPin,Truck,AlertCircle,ShoppingBag,Store,ChevronDown,ChevronUp,RotateCcw,ImagePlus,} from "lucide-react";
 
 // Theme color constants matching f:/GitHub/CSI204-BareAndBold/bareandbold_front/src/app/globals.css
 const CREAM = "#FDFBF7";       // earth-cream
@@ -108,12 +108,22 @@ export default function OrderHistoryPage() {
     return () => clearInterval(interval);
   }, [showQRModal, selectedOrder]);
 
-  const filteredOrders = useMemo(() => {
+    const filteredOrders = useMemo(() => {
     if (activeTab === "ALL") return orders;
+
     if (activeTab === "PAID") {
-      return orders.filter((o) => o.status === "PAID" || o.status === "PRODUCING");
+      return orders.filter(
+        (order) => order.status === "PAID" || order.status === "PRODUCING"
+      );
     }
-    return orders.filter((o) => o.status === activeTab);
+
+    if (activeTab === "DELIVERED") {
+      return orders.filter((order) =>
+        ["DELIVERED", "COMPLETED"].includes(order.status)
+      );
+    }
+
+    return orders.filter((order) => order.status === activeTab);
   }, [orders, activeTab]);
 
   const toggleExpand = (orderId) => {
@@ -171,13 +181,14 @@ export default function OrderHistoryPage() {
     }
   };
 
-  const getStatusText = (status) => {
+    const getStatusText = (status) => {
     switch (status) {
       case "PENDING": return "ที่ต้องชำระ";
       case "PAID": return "ต้องจัดส่ง";
       case "PRODUCING": return "กำลังผลิต";
       case "SHIPPED": return "ต้องได้รับ";
-      case "DELIVERED": return "สำเร็จแล้ว";
+      case "DELIVERED":
+      case "COMPLETED": return "สำเร็จแล้ว";
       case "CANCELLED": return "ยกเลิกแล้ว";
       default: return status;
     }
@@ -187,13 +198,72 @@ export default function OrderHistoryPage() {
     switch (status) {
       case "PENDING": return WALNUT;
       case "PAID": return OLIVE;
-      case "PRODUCING": return "#8B5CF6"; // Purple status color for producing
+      case "PRODUCING": return "#8B5CF6";
       case "SHIPPED": return "#2563EB";
-      case "DELIVERED": return "#059669";
+      case "DELIVERED":
+      case "COMPLETED": return "#059669";
       case "CANCELLED": return "#DC2626";
       default: return MUTED;
     }
   };
+
+const [showReturnModal, setShowReturnModal] = useState(false);
+const [returnOrderId, setReturnOrderId] = useState("");
+const [returnReason, setReturnReason] = useState("");
+const [returnItemId, setReturnItemId] = useState("");
+const [returnCondition, setReturnCondition] = useState("");
+const [returnDetails, setReturnDetails] = useState("");
+const [returnFiles, setReturnFiles] = useState([]);
+const [returnPreviews, setReturnPreviews] = useState([]);
+const [returnNotice, setReturnNotice] = useState("");
+
+const eligibleReturnOrders = orders.filter((order) =>
+  ["DELIVERED", "COMPLETED"].includes(order.status)
+);
+
+useEffect(() => {
+  const urls = returnFiles.map((file) => URL.createObjectURL(file));
+  setReturnPreviews(urls);
+
+  return () => urls.forEach((url) => URL.revokeObjectURL(url));
+}, [returnFiles]);
+
+const openReturnModal = (order = null) => {
+  const defaultOrder = order || eligibleReturnOrders[0] || null;
+  setReturnOrderId(defaultOrder?.id || "");
+  setReturnItemId("");
+  setReturnReason("");
+  setReturnCondition("");
+  setReturnDetails("");
+  setReturnFiles([]);
+  setReturnNotice("");
+  setShowReturnModal(true);
+};
+
+const handleConfirmReceived = (order) => {
+  if (!window.confirm(`ยืนยันว่าได้รับสินค้าในออเดอร์ ${order.id} แล้วใช่ไหม?`)) {
+    return;
+  }
+
+  // ตัวอย่าง UI เท่านั้น: เปลี่ยนสถานะในหน้าจอ ยังไม่ส่งไปบันทึกใน API
+  setOrders((current) =>
+    current.map((item) =>
+      item.id === order.id ? { ...item, status: "COMPLETED" } : item
+    )
+  );
+};
+
+const handleReturnFormSubmit = (event) => {
+  event.preventDefault();
+
+  if (!returnOrderId || !returnReason || !returnCondition) {
+    setReturnNotice("กรุณาเลือกออเดอร์ เหตุผล และสภาพสินค้าให้ครบ");
+    return;
+  }
+
+  // ขั้นนี้ยังไม่บันทึกหรืออัปโหลดรูป เพราะยังไม่ได้เชื่อม API
+  setReturnNotice("กรอกข้อมูลเรียบร้อยแล้ว ขั้นต่อไปจะเชื่อมการส่งคำขอกับ API");
+};
 
   if (loading) {
     return (
@@ -236,17 +306,31 @@ export default function OrderHistoryPage() {
       {/* Earth Theme Status Tabs */}
       <div className="sticky top-0 z-20 " style={{ borderColor: BORDER }}>
         <div className="max-w-5xl mx-auto flex justify-between overflow-x-auto">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="flex-1 py-4 text-center text-sm font-semibold transition-colors whitespace-nowrap px-4 cursor-pointer"
-              style={{ color: activeTab === tab.id ? OLIVE : MUTED }}
-            >
-              <span className={`pb-3 ${activeTab === tab.id ? "tab-active" : ""}`}>
-                {tab.label}
-              </span>
-            </button>
+                    {TABS.map((tab) => (
+            <React.Fragment key={tab.id}>
+              <button
+                onClick={() => setActiveTab(tab.id)}
+                className="flex-1 py-4 text-center text-sm font-semibold transition-colors whitespace-nowrap px-4 cursor-pointer"
+                style={{ color: activeTab === tab.id ? OLIVE : MUTED }}
+              >
+                <span className={`pb-3 ${activeTab === tab.id ? "tab-active" : ""}`}>
+                  {tab.label}
+                </span>
+              </button>
+
+              {tab.id === "CANCELLED" && (
+                <button
+                  onClick={() => openReturnModal()}
+                  className="my-2 px-4 rounded-lg text-xs font-semibold whitespace-nowrap border cursor-pointer"
+                  style={{ borderColor: BORDER, color: WALNUT, background: WHITE }}
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <RotateCcw size={14} />
+                    คืนสินค้า
+                  </span>
+                </button>
+              )}
+            </React.Fragment>
           ))}
         </div>
       </div>
@@ -413,16 +497,37 @@ export default function OrderHistoryPage() {
                         </button>
                       </>
                     )}
-                    {order.status === "DELIVERED" && (
-                      <button
-                        onClick={() => router.push("/")}
-                        className="px-5 py-2 border rounded-lg text-xs font-semibold cursor-pointer transition-colors"
-                        style={{ borderColor: BORDER, color: WALNUT, background: WHITE }}
-                        onMouseEnter={(e) => { e.target.style.background = BEIGE; }}
-                        onMouseLeave={(e) => { e.target.style.background = WHITE; }}
-                      >
-                        ซื้ออีกครั้ง
-                      </button>
+                                        {["DELIVERED", "COMPLETED"].includes(order.status) && (
+                      <>
+                        {order.status === "DELIVERED" && (
+                          <button
+                            onClick={() => handleConfirmReceived(order)}
+                            className="px-5 py-2 rounded-lg text-xs font-semibold text-white cursor-pointer hover:opacity-95"
+                            style={{ background: OLIVE }}
+                          >
+                            ยืนยันรับสินค้า
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => openReturnModal(order)}
+                          className="px-5 py-2 border rounded-lg text-xs font-semibold cursor-pointer"
+                          style={{ borderColor: BORDER, color: WALNUT, background: WHITE }}
+                        >
+                          <span className="inline-flex items-center gap-1.5">
+                            <RotateCcw size={14} />
+                            คืนสินค้า
+                          </span>
+                        </button>
+
+                        <button
+                          onClick={() => router.push("/")}
+                          className="px-5 py-2 border rounded-lg text-xs font-semibold cursor-pointer"
+                          style={{ borderColor: BORDER, color: WALNUT, background: WHITE }}
+                        >
+                          ซื้ออีกครั้ง
+                        </button>
+                      </>
                     )}
                     {order.status === "PAID" && (
                       <span className="text-xs border px-3 py-1.5 rounded-lg select-none" style={{ background: BEIGE, borderColor: BORDER, color: MUTED }}>
@@ -437,6 +542,228 @@ export default function OrderHistoryPage() {
           </div>
         )}
       </main>
+
+      {showReturnModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div
+            className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
+            style={{ border: `1px solid ${BORDER}` }}
+          >
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold" style={{ color: DARK }}>
+                  คำขอคืนสินค้า
+                </h2>
+                <p className="mt-1 text-sm" style={{ color: MUTED }}>
+                  กรุณาระบุรายละเอียดและแนบรูปหลักฐานประกอบคำขอ
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowReturnModal(false)}
+                className="rounded-lg px-3 py-1 text-sm"
+                style={{ color: MUTED }}
+              >
+                ปิด
+              </button>
+            </div>
+
+            {eligibleReturnOrders.length === 0 ? (
+              <div
+                className="rounded-xl p-4 text-sm"
+                style={{ background: BEIGE, color: DARK }}
+              >
+                ยังไม่มีออเดอร์สถานะ “สำเร็จแล้ว” ที่สามารถส่งคำขอคืนสินค้าได้
+              </div>
+            ) : (
+              <form onSubmit={handleReturnFormSubmit} className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-sm font-semibold" style={{ color: DARK }}>
+                    ออเดอร์ที่ต้องการคืนสินค้า *
+                  </label>
+                  <select
+                    value={returnOrderId}
+                    onChange={(event) => {
+                      setReturnOrderId(event.target.value);
+                      setReturnItemId("");
+                    }}
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                    style={{ borderColor: BORDER, color: DARK }}
+                    required
+                  >
+                    <option value="">เลือกออเดอร์</option>
+                    {eligibleReturnOrders.map((order) => (
+                      <option key={order.id} value={order.id}>
+                        {order.id} — ฿{baht(order.totalPrice)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {returnOrderId && (
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold" style={{ color: DARK }}>
+                      สินค้าที่ต้องการคืน
+                    </label>
+                    <select
+                      value={returnItemId}
+                      onChange={(event) => setReturnItemId(event.target.value)}
+                      className="w-full rounded-lg border px-3 py-2 text-sm"
+                      style={{ borderColor: BORDER, color: DARK }}
+                    >
+                      <option value="">สินค้าทั้งออเดอร์</option>
+                      {orders
+                        .find((order) => order.id === returnOrderId)
+                        ?.items?.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.product?.name || "สินค้า"} (จำนวน {item.quantity})
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                )}
+
+                <div>
+                  <label className="mb-1 block text-sm font-semibold" style={{ color: DARK }}>
+                    เหตุผลในการคืนสินค้า *
+                  </label>
+                  <select
+                    value={returnReason}
+                    onChange={(event) => setReturnReason(event.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                    style={{ borderColor: BORDER, color: DARK }}
+                    required
+                  >
+                    <option value="">เลือกเหตุผล</option>
+                    <option value="ได้รับสินค้าไม่ตรงกับที่สั่ง">ได้รับสินค้าไม่ตรงกับที่สั่ง</option>
+                    <option value="สินค้าเสียหายหรือมีตำหนิ">สินค้าเสียหายหรือมีตำหนิ</option>
+                    <option value="ได้รับสินค้าไม่ครบ">ได้รับสินค้าไม่ครบ</option>
+                    <option value="สินค้าไม่ตรงตามรายละเอียด">สินค้าไม่ตรงตามรายละเอียด</option>
+                    <option value="เปลี่ยนใจ">เปลี่ยนใจ</option>
+                    <option value="อื่น ๆ">อื่น ๆ</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-semibold" style={{ color: DARK }}>
+                    สภาพสินค้า *
+                  </label>
+                  <select
+                    value={returnCondition}
+                    onChange={(event) => setReturnCondition(event.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 text-sm"
+                    style={{ borderColor: BORDER, color: DARK }}
+                    required
+                  >
+                    <option value="">เลือกสภาพสินค้า</option>
+                    <option value="ยังไม่ได้ใช้งาน">ยังไม่ได้ใช้งาน</option>
+                    <option value="ทดลองสวมใส่แล้ว">ทดลองสวมใส่แล้ว</option>
+                    <option value="สินค้าเสียหาย">สินค้าเสียหาย</option>
+                    <option value="บรรจุภัณฑ์ไม่ครบหรือชำรุด">บรรจุภัณฑ์ไม่ครบหรือชำรุด</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-semibold" style={{ color: DARK }}>
+                    รายละเอียดเพิ่มเติม
+                  </label>
+                  <textarea
+                    value={returnDetails}
+                    onChange={(event) => setReturnDetails(event.target.value)}
+                    maxLength={2000}
+                    rows={4}
+                    placeholder="อธิบายปัญหาหรือข้อมูลเพิ่มเติม (ไม่เกิน 2,000 ตัวอักษร)"
+                    className="w-full resize-y rounded-lg border px-3 py-2 text-sm"
+                    style={{ borderColor: BORDER, color: DARK }}
+                  />
+                  <p className="mt-1 text-right text-xs" style={{ color: MUTED }}>
+                    {returnDetails.length}/2000
+                  </p>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-semibold" style={{ color: DARK }}>
+                    รูปหลักฐาน (สูงสุด 5 รูป, รูปละไม่เกิน 5 MB)
+                  </label>
+                  <label
+                    className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-sm"
+                    style={{ borderColor: BORDER, color: WALNUT, background: CREAM }}
+                  >
+                    <ImagePlus size={18} />
+                    เลือกรูปภาพ
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(event) => {
+                        const files = Array.from(event.target.files || []);
+                        const validFiles = files
+                          .filter(
+                            (file) =>
+                              file.type.startsWith("image/") &&
+                              file.size <= 5 * 1024 * 1024
+                          )
+                          .slice(0, 5);
+
+                        setReturnFiles(validFiles);
+                        setReturnNotice(
+                          files.length !== validFiles.length
+                            ? "รับเฉพาะไฟล์รูปภาพไม่เกิน 5 MB และแนบได้สูงสุด 5 รูป"
+                            : ""
+                        );
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+
+                  {returnPreviews.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {returnPreviews.map((url, index) => (
+                        <img
+                          key={`${url}-${index}`}
+                          src={url}
+                          alt={`รูปหลักฐาน ${index + 1}`}
+                          className="h-20 w-20 rounded-lg border object-cover"
+                          style={{ borderColor: BORDER }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {returnNotice && (
+                  <p
+                    className="rounded-lg px-3 py-2 text-sm"
+                    style={{ background: BEIGE, color: WALNUT }}
+                  >
+                    {returnNotice}
+                  </p>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowReturnModal(false)}
+                    className="rounded-lg border px-4 py-2 text-sm"
+                    style={{ borderColor: BORDER, color: WALNUT }}
+                  >
+                    ยกเลิก
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-lg px-5 py-2 text-sm font-semibold text-white"
+                    style={{ background: WALNUT }}
+                  >
+                    ตรวจสอบข้อมูล
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
 
       {/* PromtPay QR Code Popup Modal */}
       {showQRModal && (
