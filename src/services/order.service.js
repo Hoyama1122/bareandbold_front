@@ -38,21 +38,34 @@ export const orderService = {
     return await apiFetch("/orders");
   },
 
-  getOrderById: async (orderId) => {
+    getOrderById: async (orderId) => {
     try {
       const data = await apiFetch(`/orders/${orderId}`);
       if (data && data.success) return data;
       return { success: true, order: data };
     } catch (e) {
-      // Fallback: search in list
+
       const data = await apiFetch("/orders");
       if (data.success && data.orders) {
-        const order = data.orders.find(o => o.id === orderId) || null;
+        const order = data.orders.find((o) => o.id === orderId) || null;
         return { success: true, order };
       }
       return { success: false, error: e.message };
     }
-  }
+  },
+
+  confirmOrderReceived: async (orderId) => {
+    return await apiFetch(`/orders/${orderId}/confirm-received`, {
+      method: "POST",
+    });
+  },
+
+  createRefundRequest: async (orderId, requestData) => {
+    return await apiFetch(`/orders/${orderId}/refund-requests`, {
+      method: "POST",
+      body: JSON.stringify(requestData),
+    });
+  },
 };
 
 // Named exports to maintain compatibility with other branches/components
@@ -70,4 +83,12 @@ export async function getOrderHistory() {
 
 export async function getOrderById(orderId) {
   return await orderService.getOrderById(orderId);
+}
+
+export async function confirmOrderReceived(orderId) {
+  return await orderService.confirmOrderReceived(orderId);
+}
+
+export async function createRefundRequest(orderId, requestData) {
+  return await orderService.createRefundRequest(orderId, requestData);
 }
