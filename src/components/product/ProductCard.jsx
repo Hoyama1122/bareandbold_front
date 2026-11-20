@@ -26,9 +26,10 @@ export default function ProductCard({ product }) {
     }
   };
 
-  const mainImage = product.images && product.images.length > 0 
-    ? product.images[0].url 
-    : "/images/placeholder.jpg"; 
+  const mainImage =
+    product.images && product.images.length > 0
+      ? (typeof product.images[0] === "object" ? product.images[0]?.url : product.images[0]) || "/images/placeholder.jpg"
+      : product.imageUrl || "/images/placeholder.jpg"; 
 
   const isMadeToOrder = product.type === "MADE_TO_ORDER";
 
@@ -97,9 +98,16 @@ export default function ProductCard({ product }) {
       {/* 📝 ส่วนข้อมูลรายละเอียดสินค้า */}
       <div className="p-5 flex flex-col flex-grow justify-between font-anuphan">
         <div className="space-y-2">
-          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
-            {product.brand || "BARE & BOLD"}
-          </span>
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+            {product.shop?.name ? (
+              <span className="text-earth-olive flex items-center gap-1 font-extrabold truncate">
+                <span>🏪</span>
+                <span>{product.shop.name}</span>
+              </span>
+            ) : (
+              <span>{product.brand || "BARE & BOLD"}</span>
+            )}
+          </div>
           
           <h3 className="text-base font-extrabold text-[#3C322A] line-clamp-2 min-h-[3rem] leading-snug">
             {product.name}

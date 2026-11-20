@@ -6,6 +6,10 @@ export default function ProductInfo({
   setMaterial,
   size,
   setSize,
+  selectedOptions = {},
+  setSelectedOptions,
+  optionErrors = {},
+  setOptionErrors,
   selectedAccessories = [],
   setSelectedAccessories,
   qty,
@@ -15,10 +19,18 @@ export default function ProductInfo({
   isLiked,
   toggleWishlist
 }) {
+  const isCustomProduct =
+    product.type === "MADE_TO_ORDER" ||
+    product.type === "CUSTOM" ||
+    product.isCustom ||
+    (product.customOptions && product.customOptions.length > 0) ||
+    product.name?.toLowerCase().includes("custom");
+
   const customOptionsPrice = product.customOptions?.reduce((sum, opt) => {
+    const chosenValName = selectedOptions[opt.name] || size || material;
     const selectedVal = opt.values?.find(val => {
       const valName = typeof val === "string" ? val : (val.value || val.name);
-      return valName === size || valName === material;
+      return valName === chosenValName;
     });
     const adj = selectedVal?.priceAdjustment ? Number(selectedVal.priceAdjustment) : 0;
     return sum + adj;
@@ -85,89 +97,226 @@ export default function ProductInfo({
           )}
         </div>
 
-        {/* OPTIONS - MADE TO ORDER */}
-        {product.type === "MADE_TO_ORDER" && (
-          <div className="mt-8 space-y-6">
+        {/* OPTIONS - MADE TO ORDER / CUSTOM */}
+        {isCustomProduct && (
+          <div id="custom-options-container" className="mt-8 space-y-6">
             {product.customOptions && product.customOptions.length > 0 ? (
-              product.customOptions.map((opt) => (
-                <div key={opt.id || opt.name}>
-                  <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
-                    {opt.name}
-                  </p>
-                  <div className="flex flex-wrap gap-2.5">
-                    {opt.values && opt.values.map((val) => {
-                      const valName = typeof val === "string" ? val : (val.value || val.name);
-                      const isSelected = (material === valName || size === valName);
-                      const priceAdj = val.priceAdjustment ? Number(val.priceAdjustment) : 0;
-                      return (
-                        <button
-                          key={val.id || valName}
-                          type="button"
-                          onClick={() => {
-                            if (opt.name.toLowerCase().includes("ขนาด") || opt.name.toLowerCase().includes("size")) {
-                              setSize(valName);
-                            } else {
-                              setMaterial(valName);
-                            }
-                          }}
-                          className={`px-5 py-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                            isSelected
-                              ? "border-[#7a5b46] bg-[#7a5b46] text-white"
-                              : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                          }`}
-                        >
-                          {valName}
-                          {priceAdj > 0 && ` (+฿${priceAdj})`}
-                        </button>
-                      );
-                    })}
+              product.customOptions.map((opt, optIdx) => {
+                const optName = opt.name;
+                const chosenValue = selectedOptions[optName];
+                const hasError = !!optionErrors[optName];
+
+                return (
+                  <div
+                    key={opt.id ? `custom-opt-${opt.id}` : `custom-opt-${optIdx}-${optName}`}
+                    className={`rounded-2xl p-4 transition-all duration-300 ${
+                      hasError
+                        ? "bg-rose-50/60 border border-rose-300 ring-2 ring-rose-200/60 shadow-xs"
+                        : "bg-zinc-50/50 border border-transparent"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                      <p className="font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 text-gray-800">
+                        <span>{optName}</span>
+                        {opt.isRequired !== false && (
+                          <span className="text-rose-500 font-bold">*</span>
+                        )}
+                      </p>
+                      {chosenValue ? (
+                        <span className="text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full border border-[#556B2F]/20">
+                          ✓ เลือกแล้ว: {chosenValue}
+                        </span>
+                      ) : hasError ? (
+                        <span className="text-xs font-bold text-rose-600 bg-rose-100 px-2.5 py-0.5 rounded-full animate-pulse border border-rose-200">
+                          * กรุณาเลือกตัวเลือกนี้
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-medium text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/70">
+                          * จำเป็นต้องเลือก
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2.5">
+                      {opt.values &&
+                        opt.values.map((val, valIdx) => {
+                          const valName = typeof val === "string" ? val : val.value || val.name;
+                          const isSelected = chosenValue === valName;
+                          const priceAdj = val.priceAdjustment ? Number(val.priceAdjustment) : 0;
+
+                          return (
+                            <button
+                              key={val.id ? `val-${val.id}` : `val-${optIdx}-${valIdx}-${valName}`}
+                              type="button"
+                              onClick={() => {
+                                if (setSelectedOptions) {
+                                  setSelectedOptions((prev) => ({
+                                    ...prev,
+                                    [optName]: valName,
+                                  }));
+                                }
+                                if (setOptionErrors) {
+                                  setOptionErrors((prev) => {
+                                    const next = { ...prev };
+                                    delete next[optName];
+                                    return next;
+                                  });
+                                }
+                                const lower = optName.toLowerCase();
+                                if (lower.includes("ขนาด") || lower.includes("size") || lower.includes("รอบ") || lower.includes("ยาว")) {
+                                  setSize(valName);
+                                } else {
+                                  setMaterial(valName);
+                                }
+                              }}
+                              className={`px-5 py-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                                isSelected
+                                  ? "border-[#7a5b46] bg-[#7a5b46] text-white shadow-sm scale-102"
+                                  : hasError
+                                  ? "border-rose-300 bg-white text-gray-700 hover:border-rose-400 hover:bg-rose-50/20"
+                                  : "border-gray-200 bg-white text-gray-700 hover:border-[#7a5b46] hover:bg-gray-50"
+                              }`}
+                            >
+                              {valName}
+                              {priceAdj > 0 && ` (+฿${priceAdj})`}
+                            </button>
+                          );
+                        })}
+                    </div>
+                    {hasError && (
+                      <p className="text-xs text-rose-600 font-medium mt-2.5 flex items-center gap-1.5 animate-fadeIn">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+                        <span>{optionErrors[optName]}</span>
+                      </p>
+                    )}
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <>
-                <div>
-                  <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
-                    วัสดุห่วงเชื่อม / โซ่ปรับระดับ
-                  </p>
+                <div
+                  className={`rounded-2xl p-4 transition-all duration-300 ${
+                    optionErrors["material"]
+                      ? "bg-rose-50/60 border border-rose-300 ring-2 ring-rose-200/60 shadow-xs"
+                      : "bg-zinc-50/50 border border-transparent"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <p className="font-bold text-xs uppercase tracking-wider text-gray-800 flex items-center gap-1.5">
+                      <span>วัสดุห่วงเชื่อม / โซ่ปรับระดับ</span>
+                      <span className="text-rose-500 font-bold">*</span>
+                    </p>
+                    {material ? (
+                      <span className="text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full border border-[#556B2F]/20">
+                        ✓ เลือกแล้ว: {material}
+                      </span>
+                    ) : optionErrors["material"] ? (
+                      <span className="text-xs font-bold text-rose-600 bg-rose-100 px-2.5 py-0.5 rounded-full animate-pulse border border-rose-200">
+                        * กรุณาเลือกตัวเลือกนี้
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-medium text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/70">
+                        * จำเป็นต้องเลือก
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2.5">
                     {["Silver", "Gold", "Rose Gold"].map((mat) => (
                       <button
                         key={mat}
                         type="button"
-                        onClick={() => setMaterial(mat)}
-                        className={`px-5 py-3 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                        onClick={() => {
+                          setMaterial(mat);
+                          if (setOptionErrors) {
+                            setOptionErrors((prev) => {
+                              const next = { ...prev };
+                              delete next["material"];
+                              return next;
+                            });
+                          }
+                        }}
+                        className={`px-5 py-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                           material === mat
-                            ? "border-[#7a5b46] bg-[#7a5b46] text-white"
-                            : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                            ? "border-[#7a5b46] bg-[#7a5b46] text-white shadow-sm scale-102"
+                            : optionErrors["material"]
+                            ? "border-rose-300 bg-white text-gray-700 hover:border-rose-400 hover:bg-rose-50/20"
+                            : "border-gray-200 bg-white text-gray-700 hover:border-[#7a5b46] hover:bg-gray-50"
                         }`}
                       >
                         {mat}
                       </button>
                     ))}
                   </div>
+                  {optionErrors["material"] && (
+                    <p className="text-xs text-rose-600 font-medium mt-2.5 flex items-center gap-1.5 animate-fadeIn">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+                      <span>{optionErrors["material"]}</span>
+                    </p>
+                  )}
                 </div>
 
-                <div>
-                  <p className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-3">
-                    ขนาดความยาวข้อมือ (ซม.)
-                  </p>
+                <div
+                  className={`rounded-2xl p-4 transition-all duration-300 ${
+                    optionErrors["size"]
+                      ? "bg-rose-50/60 border border-rose-300 ring-2 ring-rose-200/60 shadow-xs"
+                      : "bg-zinc-50/50 border border-transparent"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <p className="font-bold text-xs uppercase tracking-wider text-gray-800 flex items-center gap-1.5">
+                      <span>{product.category === "ANKLET" ? "ขนาดความยาวข้อเท้า (ซม.)" : "ขนาดความยาวข้อมือ (ซม.)"}</span>
+                      <span className="text-rose-500 font-bold">*</span>
+                    </p>
+                    {size ? (
+                      <span className="text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full border border-[#556B2F]/20">
+                        ✓ เลือกแล้ว: {size}
+                      </span>
+                    ) : optionErrors["size"] ? (
+                      <span className="text-xs font-bold text-rose-600 bg-rose-100 px-2.5 py-0.5 rounded-full animate-pulse border border-rose-200">
+                        * กรุณาเลือกตัวเลือกนี้
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-medium text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/70">
+                        * จำเป็นต้องเลือก
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
-                    {["12 cm", "12.5 cm", "13 cm", "14 cm", "15 cm", "16 cm"].map((sz) => (
+                    {(product.category === "ANKLET"
+                      ? ["20 cm", "21 cm", "22 cm", "23 cm", "24 cm", "25 cm"]
+                      : ["12 cm", "12.5 cm", "13 cm", "14 cm", "15 cm", "16 cm"]
+                    ).map((sz) => (
                       <button
                         key={sz}
                         type="button"
-                        onClick={() => setSize(sz)}
-                        className={`w-12 h-12 rounded-lg border text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                        onClick={() => {
+                          setSize(sz);
+                          if (setOptionErrors) {
+                            setOptionErrors((prev) => {
+                              const next = { ...prev };
+                              delete next["size"];
+                              return next;
+                            });
+                          }
+                        }}
+                        className={`w-12 h-12 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
                           size === sz
-                            ? "border-[#7a5b46] bg-[#7a5b46] text-white"
-                            : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                            ? "border-[#7a5b46] bg-[#7a5b46] text-white shadow-sm scale-105"
+                            : optionErrors["size"]
+                            ? "border-rose-300 bg-white text-gray-700 hover:border-rose-400 hover:bg-rose-50/20"
+                            : "border-gray-200 bg-white text-gray-700 hover:border-[#7a5b46] hover:bg-gray-50"
                         }`}
                       >
                         {sz.replace(" cm", "")}
                       </button>
                     ))}
                   </div>
+                  {optionErrors["size"] && (
+                    <p className="text-xs text-rose-600 font-medium mt-2.5 flex items-center gap-1.5 animate-fadeIn">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+                      <span>{optionErrors["size"]}</span>
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -245,7 +394,7 @@ export default function ProductInfo({
                               ของหมด
                             </span>
                           )}
-                          {acc.imageUrl ? (
+                          {acc.imageUrl && acc.imageUrl.trim() !== "" ? (
                             <img
                               src={acc.imageUrl}
                               alt={acc.name}
@@ -352,7 +501,7 @@ export default function ProductInfo({
                   : "bg-[#7a5b46] text-white hover:bg-[#7a5b46]/90 cursor-pointer"
               }`}
             >
-              {product.type === "MADE_TO_ORDER" ? "สั่งทำสินค้าทันที" : "สั่งซื้อทันที"}
+              {isCustomProduct ? "สั่งทำสินค้าทันที" : "สั่งซื้อทันที"}
             </button>
           </div>
         );

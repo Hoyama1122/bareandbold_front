@@ -1,5 +1,7 @@
 import React from "react";
 
+const FALLBACK_IMAGE = "/images/placeholder.jpg";
+
 export default function ImageZoomModal({
   images,
   currentImage,
@@ -9,6 +11,23 @@ export default function ImageZoomModal({
   handleNextImage,
   productName
 }) {
+  const validImages = Array.isArray(images)
+    ? images
+        .map((img) => (typeof img === "object" && img !== null ? img.url || img.src : img))
+        .filter((img) => typeof img === "string" && img.trim() !== "")
+    : [];
+
+  const rawDisplay =
+    typeof currentImage === "object" && currentImage !== null
+      ? currentImage.url || currentImage.src
+      : currentImage;
+
+  const displayImage =
+    typeof rawDisplay === "string" && rawDisplay.trim() !== ""
+      ? rawDisplay
+      : validImages.length > 0
+      ? validImages[0]
+      : FALLBACK_IMAGE;
   return (
     <div className="fixed inset-0 bg-black/95 z-[999] flex flex-col items-center justify-center p-4 select-none">
       {/* Close button */}
@@ -51,14 +70,14 @@ export default function ImageZoomModal({
       {/* Large Image Viewport */}
       <div className="relative max-w-full max-h-[65vh] aspect-square rounded-xl overflow-hidden shadow-2xl border border-white/10">
         <img
-          src={currentImage}
+          src={displayImage}
           alt={productName || "Product Zoomed"}
           className="max-w-full max-h-[65vh] object-contain rounded-xl"
         />
       </div>
 
       {/* Right Navigation Arrow */}
-      {images.length > 1 && (
+      {validImages.length > 1 && (
         <button
           onClick={handleNextImage}
           className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/5 hover:bg-white/15 text-white/70 hover:text-white flex items-center justify-center cursor-pointer transition active:scale-95"
@@ -77,14 +96,14 @@ export default function ImageZoomModal({
       )}
 
       {/* Zoom Modal Thumbnails list */}
-      {images.length > 1 && (
+      {validImages.length > 1 && (
         <div className="flex gap-3 mt-8 max-w-full overflow-x-auto py-2 px-4 justify-center">
-          {images.map((img) => (
+          {validImages.map((img, idx) => (
             <button
-              key={img}
+              key={`zoom-thumb-${idx}-${img}`}
               onClick={() => setCurrentImage(img)}
               className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                currentImage === img
+                displayImage === img
                   ? "border-white scale-105"
                   : "border-white/20 hover:border-white/50"
               }`}

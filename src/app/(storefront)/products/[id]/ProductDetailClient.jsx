@@ -24,18 +24,23 @@ export default function ProductDetailClient({ nameSlug }) {
   const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
   const scrollNext = () => emblaApi && emblaApi.scrollNext();
 
+  const FALLBACK_IMAGE = "/images/placeholder.jpg";
+
   const images = product
-    ? product.images && product.images.length > 0
-      ? product.images.map(img => typeof img === "object" ? img.url : img)
-      : [product.imageUrl]
+    ? (product.images && product.images.length > 0
+        ? product.images.map(img => typeof img === "object" ? img?.url : img)
+        : [product.imageUrl]
+      ).filter(img => typeof img === "string" && img.trim() !== "")
     : [];
 
   const [currentImage, setCurrentImage] = useState(null);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [qty, setQty] = useState(1);
 
-  const [material, setMaterial] = useState("Silver");
-  const [size, setSize] = useState("16 cm");
+  const [selectedOptions, setSelectedOptions] = useState({});
+  const [optionErrors, setOptionErrors] = useState({});
+  const [material, setMaterial] = useState("");
+  const [size, setSize] = useState("");
   const [selectedAccessories, setSelectedAccessories] = useState([]);
 
   useEffect(() => {
@@ -48,8 +53,10 @@ export default function ProductDetailClient({ nameSlug }) {
         }
         // Reset selections to defaults when switching products
         setQty(1);
-        setMaterial("Silver");
-        setSize("16 cm");
+        setSelectedOptions({});
+        setOptionErrors({});
+        setMaterial("");
+        setSize("");
         setSelectedAccessories([]);
 
         let cleanSlug = nameSlug || "";
@@ -73,10 +80,12 @@ export default function ProductDetailClient({ nameSlug }) {
               console.error("Failed to load full product by ID:", e);
             }
             setProduct(fullProduct);
-            const imgs = fullProduct.images && fullProduct.images.length > 0
-              ? fullProduct.images.map(img => typeof img === "object" ? img.url : img)
-              : [fullProduct.imageUrl];
-            setCurrentImage(imgs[0]);
+            const rawImgs = (fullProduct.images && fullProduct.images.length > 0
+              ? fullProduct.images.map(img => typeof img === "object" ? img?.url : img)
+              : [fullProduct.imageUrl]
+            ).filter(img => typeof img === "string" && img.trim() !== "");
+            const finalImage = rawImgs.length > 0 ? rawImgs[0] : FALLBACK_IMAGE;
+            setCurrentImage(finalImage);
 
             // Fetch recommendations
             const recData = await productService.getProductRecommendations(fullProduct.id);
@@ -142,12 +151,66 @@ export default function ProductDetailClient({ nameSlug }) {
     }
   }, [toast.show]);
 
+  const validateCustomOptions = () => {
+    if (!product) return true;
+
+    const isCustom =
+      product.type === "MADE_TO_ORDER" ||
+      product.type === "CUSTOM" ||
+      product.isCustom ||
+      (product.customOptions && product.customOptions.length > 0) ||
+      product.name?.toLowerCase().includes("custom");
+
+    if (!isCustom) return true;
+
+    const errors = {};
+
+    if (product.customOptions && product.customOptions.length > 0) {
+      product.customOptions.forEach((opt) => {
+        if (opt.isRequired === false) return;
+        const val = selectedOptions[opt.name];
+        if (!val || String(val).trim() === "") {
+          errors[opt.name] = `กรุณาเลือก "${opt.name}" ก่อนดำเนินการ`;
+        }
+      });
+    } else {
+      if (!material || material.trim() === "") {
+        errors["material"] = 'กรุณาเลือก "วัสดุห่วงเชื่อม / โซ่ปรับระดับ" ก่อนดำเนินการ';
+      }
+      if (!size || size.trim() === "") {
+        const sizeLabel = product.category === "ANKLET" ? "ขนาดความยาวข้อเท้า" : "ขนาดความยาวข้อมือ";
+        errors["size"] = `กรุณาเลือก "${sizeLabel}" ก่อนดำเนินการ`;
+      }
+    }
+
+    setOptionErrors(errors);
+
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length > 0) {
+      const firstError = errors[errorKeys[0]];
+      showToast(firstError, "error");
+
+      if (typeof document !== "undefined") {
+        const container = document.getElementById("custom-options-container");
+        if (container) {
+          container.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+      return false;
+    }
+
+    return true;
+  };
+
   const addToCart = async () => {
+    if (!validateCustomOptions()) return;
+
     try {
       const customOptionsPrice = product.customOptions?.reduce((sum, opt) => {
+        const chosenValName = selectedOptions[opt.name] || size || material;
         const selectedVal = opt.values?.find(val => {
           const valName = typeof val === "string" ? val : (val.value || val.name);
-          return valName === size || valName === material;
+          return valName === chosenValName;
         });
         const adj = selectedVal?.priceAdjustment ? Number(selectedVal.priceAdjustment) : 0;
         return sum + adj;
@@ -159,10 +222,22 @@ export default function ProductDetailClient({ nameSlug }) {
 
       const unitPrice = Number(product.price) + customOptionsPrice + accessoriesPrice;
 
-      await cartService.addToCart(product.id, qty, material, size, selectedAccessories, {
+      let currentSize = size;
+      let currentMaterial = material;
+      Object.entries(selectedOptions).forEach(([optName, valName]) => {
+        const lower = optName.toLowerCase();
+        if (lower.includes("ขนาด") || lower.includes("size") || lower.includes("รอบ") || lower.includes("ยาว")) {
+          currentSize = valName;
+        } else {
+          currentMaterial = valName;
+        }
+      });
+
+      await cartService.addToCart(product.id, qty, currentMaterial || "-", currentSize || "-", selectedAccessories, {
         name: product.name,
         image: currentImage,
         price: unitPrice,
+        selectedOptions: selectedOptions,
       });
       showToast("เพิ่มลงตะกร้าสินค้าเรียบร้อยแล้ว", "success");
     } catch (error) {
@@ -172,11 +247,14 @@ export default function ProductDetailClient({ nameSlug }) {
   };
 
   const buyNow = async () => {
+    if (!validateCustomOptions()) return;
+
     try {
       const customOptionsPrice = product.customOptions?.reduce((sum, opt) => {
+        const chosenValName = selectedOptions[opt.name] || size || material;
         const selectedVal = opt.values?.find(val => {
           const valName = typeof val === "string" ? val : (val.value || val.name);
-          return valName === size || valName === material;
+          return valName === chosenValName;
         });
         const adj = selectedVal?.priceAdjustment ? Number(selectedVal.priceAdjustment) : 0;
         return sum + adj;
@@ -188,10 +266,22 @@ export default function ProductDetailClient({ nameSlug }) {
 
       const unitPrice = Number(product.price) + customOptionsPrice + accessoriesPrice;
 
-      await cartService.addToCart(product.id, qty, material, size, selectedAccessories, {
+      let currentSize = size;
+      let currentMaterial = material;
+      Object.entries(selectedOptions).forEach(([optName, valName]) => {
+        const lower = optName.toLowerCase();
+        if (lower.includes("ขนาด") || lower.includes("size") || lower.includes("รอบ") || lower.includes("ยาว")) {
+          currentSize = valName;
+        } else {
+          currentMaterial = valName;
+        }
+      });
+
+      await cartService.addToCart(product.id, qty, currentMaterial || "-", currentSize || "-", selectedAccessories, {
         name: product.name,
         image: currentImage,
         price: unitPrice,
+        selectedOptions: selectedOptions,
       });
       router.push("/checkout");
     } catch (error) {
@@ -251,6 +341,10 @@ export default function ProductDetailClient({ nameSlug }) {
           setMaterial={setMaterial}
           size={size}
           setSize={setSize}
+          selectedOptions={selectedOptions}
+          setSelectedOptions={setSelectedOptions}
+          optionErrors={optionErrors}
+          setOptionErrors={setOptionErrors}
           selectedAccessories={selectedAccessories}
           setSelectedAccessories={setSelectedAccessories}
           qty={qty}

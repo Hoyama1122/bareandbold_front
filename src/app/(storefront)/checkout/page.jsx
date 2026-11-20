@@ -14,6 +14,8 @@ import OrderSuccess from "@/components/checkout/OrderSuccess";
 import ShippingForm from "@/components/checkout/ShippingForm";
 import PaymentForm from "@/components/checkout/PaymentForm";
 import OrderSummary from "@/components/checkout/OrderSummary";
+import CouponSelectModal from "@/components/checkout/CouponSelectModal";
+import { getCollectedCoupons, calculateCouponDiscount } from "@/data/coupons";
 
 function baht(n) {
   return n.toLocaleString("th-TH");
@@ -37,15 +39,24 @@ export default function CheckoutPage() {
   const [savedTotal, setSavedTotal] = useState(0);
   const [profile, setProfile] = useState(null);
 
+  // Coupon states
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [collectedCoupons, setCollectedCoupons] = useState([]);
+
   useEffect(() => {
     authService.getProfile()
       .then((res) => {
         if (res.success && res.user) {
           setProfile(res.user);
+          setCollectedCoupons(getCollectedCoupons(res.user));
+        } else {
+          setCollectedCoupons(getCollectedCoupons(null));
         }
       })
       .catch((err) => {
         console.error("Failed to load user profile in checkout:", err);
+        setCollectedCoupons(getCollectedCoupons(null));
       });
   }, []);
 
@@ -292,8 +303,20 @@ export default function CheckoutPage() {
   }, [orderId, showQR]);
 
   const subtotal = useMemo(() => orderItems.reduce((s, it) => s + it.price * it.quantity, 0), [orderItems]);
-  const shipping = subtotal >= 300 ? 0 : 50;
-  const total = subtotal + shipping;
+  const baseShipping = subtotal >= 300 ? 0 : 50;
+
+  // Coupon discount calculation
+  const couponDiscountResult = useMemo(() => {
+    if (!appliedCoupon) {
+      return { valid: false, discountAmount: 0, shippingDiscount: 0 };
+    }
+    return calculateCouponDiscount(appliedCoupon, subtotal, baseShipping > 0 ? baseShipping : 50);
+  }, [appliedCoupon, subtotal, baseShipping]);
+
+  const discountAmount = couponDiscountResult.valid ? couponDiscountResult.discountAmount : 0;
+  const shippingDiscount = couponDiscountResult.valid && baseShipping > 0 ? couponDiscountResult.shippingDiscount : 0;
+  const effectiveShipping = Math.max(0, baseShipping - shippingDiscount);
+  const total = Math.max(0, subtotal + effectiveShipping - discountAmount);
   const itemCount = orderItems.reduce((s, it) => s + it.quantity, 0);
 
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -333,11 +356,14 @@ export default function CheckoutPage() {
         throw new Error("กรุณาระบุข้อมูลผู้รับและที่อยู่จัดส่งให้ครบถ้วน");
       }
 
-      // 1. Create order on backend
+      // 1. Create order on backend with coupon discounts
       const orderRes = await orderService.createOrder({
         shippingAddress,
         recipientName,
-        recipientPhone
+        recipientPhone,
+        discountAmount,
+        shippingDiscount,
+        couponCode: appliedCoupon?.code || null,
       });
 
       if (!orderRes.success) {
@@ -483,13 +509,30 @@ export default function CheckoutPage() {
               orderItems={orderItems}
               itemCount={itemCount}
               subtotal={subtotal}
-              shipping={shipping}
+              baseShipping={50}
+              shipping={effectiveShipping}
               total={total}
+              discountAmount={discountAmount}
+              shippingDiscount={shippingDiscount}
+              appliedCoupon={appliedCoupon}
+              onOpenCouponModal={() => setIsCouponModalOpen(true)}
+              onRemoveCoupon={() => setAppliedCoupon(null)}
               baht={baht}
               loading={loading}
             />
           </div>
         </form>
+
+        <CouponSelectModal
+          isOpen={isCouponModalOpen}
+          onClose={() => setIsCouponModalOpen(false)}
+          subtotal={subtotal}
+          baseShipping={50}
+          appliedCoupon={appliedCoupon}
+          onApplyCoupon={(cp) => setAppliedCoupon(cp)}
+          onRemoveCoupon={() => setAppliedCoupon(null)}
+          collectedCoupons={collectedCoupons}
+        />
       </main>
     </div>
   );
