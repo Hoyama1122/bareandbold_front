@@ -108,7 +108,7 @@ export default function OrderHistoryPage() {
     return () => clearInterval(interval);
   }, [showQRModal, selectedOrder]);
 
-    const filteredOrders = useMemo(() => {
+  const filteredOrders = useMemo(() => {
     if (activeTab === "ALL") return orders;
 
     if (activeTab === "PAID") {
@@ -181,7 +181,7 @@ export default function OrderHistoryPage() {
     }
   };
 
-    const getStatusText = (status) => {
+  const getStatusText = (status) => {
     switch (status) {
       case "PENDING": return "ที่ต้องชำระ";
       case "PAID": return "ต้องจัดส่ง";
@@ -207,63 +207,98 @@ export default function OrderHistoryPage() {
     }
   };
 
-const [showReturnModal, setShowReturnModal] = useState(false);
-const [returnOrderId, setReturnOrderId] = useState("");
-const [returnReason, setReturnReason] = useState("");
-const [returnItemId, setReturnItemId] = useState("");
-const [returnCondition, setReturnCondition] = useState("");
-const [returnDetails, setReturnDetails] = useState("");
-const [returnFiles, setReturnFiles] = useState([]);
-const [returnPreviews, setReturnPreviews] = useState([]);
-const [returnNotice, setReturnNotice] = useState("");
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnOrderId, setReturnOrderId] = useState("");
+  const [returnReason, setReturnReason] = useState("");
+  const [returnItemId, setReturnItemId] = useState("");
+  const [returnCondition, setReturnCondition] = useState("");
+  const [returnDetails, setReturnDetails] = useState("");
+  const [returnFiles, setReturnFiles] = useState([]);
+  const [returnPreviews, setReturnPreviews] = useState([]);
+  const [returnNotice, setReturnNotice] = useState("");
+  const [submittingConfirmId, setSubmittingConfirmId] = useState(null);
+  const [submittingRefund, setSubmittingRefund] = useState(false);
 
-const eligibleReturnOrders = orders.filter((order) =>
-  ["DELIVERED", "COMPLETED"].includes(order.status)
-);
-
-useEffect(() => {
-  const urls = returnFiles.map((file) => URL.createObjectURL(file));
-  setReturnPreviews(urls);
-
-  return () => urls.forEach((url) => URL.revokeObjectURL(url));
-}, [returnFiles]);
-
-const openReturnModal = (order = null) => {
-  const defaultOrder = order || eligibleReturnOrders[0] || null;
-  setReturnOrderId(defaultOrder?.id || "");
-  setReturnItemId("");
-  setReturnReason("");
-  setReturnCondition("");
-  setReturnDetails("");
-  setReturnFiles([]);
-  setReturnNotice("");
-  setShowReturnModal(true);
-};
-
-const handleConfirmReceived = (order) => {
-  if (!window.confirm(`ยืนยันว่าได้รับสินค้าในออเดอร์ ${order.id} แล้วใช่ไหม?`)) {
-    return;
-  }
-
-  // ตัวอย่าง UI เท่านั้น: เปลี่ยนสถานะในหน้าจอ ยังไม่ส่งไปบันทึกใน API
-  setOrders((current) =>
-    current.map((item) =>
-      item.id === order.id ? { ...item, status: "COMPLETED" } : item
-    )
+  const eligibleReturnOrders = orders.filter((order) =>
+    ["DELIVERED", "COMPLETED"].includes(order.status)
   );
-};
 
-const handleReturnFormSubmit = (event) => {
-  event.preventDefault();
+  useEffect(() => {
+    const urls = returnFiles.map((file) => URL.createObjectURL(file));
+    setReturnPreviews(urls);
 
-  if (!returnOrderId || !returnReason || !returnCondition) {
-    setReturnNotice("กรุณาเลือกออเดอร์ เหตุผล และสภาพสินค้าให้ครบ");
-    return;
-  }
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [returnFiles]);
 
-  // ขั้นนี้ยังไม่บันทึกหรืออัปโหลดรูป เพราะยังไม่ได้เชื่อม API
-  setReturnNotice("กรอกข้อมูลเรียบร้อยแล้ว รอเจ้าหน้าทที่ตรวจสอบค้าบบ");
-};
+  const openReturnModal = (order = null) => {
+    const defaultOrder = order || eligibleReturnOrders[0] || null;
+    setReturnOrderId(defaultOrder?.id || "");
+    setReturnItemId("");
+    setReturnReason("");
+    setReturnCondition("");
+    setReturnDetails("");
+    setReturnFiles([]);
+    setReturnNotice("");
+    setShowReturnModal(true);
+  };
+
+  const handleConfirmReceived = async (order) => {
+    if (!window.confirm(`ยืนยันว่าได้รับสินค้าในออเดอร์ ${order.id} แล้วใช่ไหม?`)) {
+      return;
+    }
+
+    try {
+      setSubmittingConfirmId(order.id);
+      const res = await orderService.confirmOrderReceived(order.id);
+      if (res?.success) {
+        setOrders((current) =>
+          current.map((item) =>
+            item.id === order.id
+              ? { ...item, ...(res.order || {}), status: "COMPLETED" }
+              : item
+          )
+        );
+      }
+    } catch (err) {
+      alert(err.message || "ยืนยันรับสินค้าไม่สำเร็จ");
+    } finally {
+      setSubmittingConfirmId(null);
+    }
+  };
+
+  const handleReturnFormSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!returnOrderId || !returnReason || !returnCondition) {
+      setReturnNotice("กรุณาเลือกออเดอร์ เหตุผล และสภาพสินค้าให้ครบ");
+      return;
+    }
+
+    try {
+      setSubmittingRefund(true);
+      setReturnNotice("");
+
+      const res = await orderService.createRefundRequest(returnOrderId, {
+        orderItemId: returnItemId || null,
+        reason: returnReason,
+        condition: returnCondition,
+        details: returnDetails,
+        images: [],
+      });
+
+      if (res?.success) {
+        setReturnNotice("ส่งคำขอคืนสินค้าเรียบร้อยแล้ว เจ้าหน้าที่จะดำเนินการตรวจสอบ");
+        setTimeout(() => {
+          setShowReturnModal(false);
+          fetchOrders();
+        }, 1000);
+      }
+    } catch (err) {
+      setReturnNotice(err.message || "ส่งคำขอคืนสินค้าไม่สำเร็จ");
+    } finally {
+      setSubmittingRefund(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -306,7 +341,7 @@ const handleReturnFormSubmit = (event) => {
       {/* Earth Theme Status Tabs */}
       <div className="sticky top-0 z-20 " style={{ borderColor: BORDER }}>
         <div className="max-w-5xl mx-auto flex justify-between overflow-x-auto">
-                    {TABS.map((tab) => (
+          {TABS.map((tab) => (
             <React.Fragment key={tab.id}>
               <button
                 onClick={() => setActiveTab(tab.id)}
@@ -403,7 +438,6 @@ const handleReturnFormSubmit = (event) => {
                           src={image}
                           alt={it.product?.name || "Product"}
                           className="w-20 h-20 rounded-lg  object-cover flex-shrink-0"
-                          
                         />
                         <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-base truncate" style={{ color: DARK }}>{it.product?.name}</h4>
@@ -502,15 +536,16 @@ const handleReturnFormSubmit = (event) => {
                         </button>
                       </>
                     )}
-                                        {["DELIVERED", "COMPLETED"].includes(order.status) && (
+                    {["DELIVERED", "COMPLETED"].includes(order.status) && (
                       <>
                         {order.status === "DELIVERED" && (
                           <button
+                            disabled={submittingConfirmId === order.id}
                             onClick={() => handleConfirmReceived(order)}
-                            className="px-5 py-2 rounded-lg text-xs font-semibold text-white cursor-pointer hover:opacity-95"
+                            className="px-5 py-2 rounded-lg text-xs font-semibold text-white cursor-pointer hover:opacity-95 disabled:opacity-60"
                             style={{ background: OLIVE }}
                           >
-                            ยืนยันรับสินค้า
+                            {submittingConfirmId === order.id ? "กำลังยืนยัน..." : "ยืนยันรับสินค้า"}
                           </button>
                         )}
 
@@ -757,10 +792,11 @@ const handleReturnFormSubmit = (event) => {
                   </button>
                   <button
                     type="submit"
-                    className="rounded-lg px-5 py-2 text-sm font-semibold text-white"
+                    disabled={submittingRefund}
+                    className="rounded-lg px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
                     style={{ background: WALNUT }}
                   >
-                    ตรวจสอบข้อมูล
+                    {submittingRefund ? "กำลังส่ง..." : "ส่งคำขอคืนสินค้า"}
                   </button>
                 </div>
               </form>
@@ -768,7 +804,6 @@ const handleReturnFormSubmit = (event) => {
           </div>
         </div>
       )}
-
 
       {/* PromtPay QR Code Popup Modal */}
       {showQRModal && (
