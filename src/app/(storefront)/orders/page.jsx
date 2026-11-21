@@ -243,7 +243,7 @@ export default function OrderHistoryPage() {
   };
 
   const handleConfirmReceived = async (order) => {
-    if (!window.confirm(`ยืนยันว่าได้รับสินค้าในออเดอร์ ${order.id} แล้วใช่ไหม?`)) {
+    if (!window.confirm(`ยืนยันว่าได้รับสินค้าในออเดอร์ ${order.id} เรียบร้อยแล้วใช่ไหม? ระบบจะโอนเงินให้ร้านค้าทันที`)) {
       return;
     }
 
@@ -258,6 +258,27 @@ export default function OrderHistoryPage() {
               : item
           )
         );
+        alert("ยืนยันรับสินค้าเรียบร้อยแล้ว ขอบคุณที่ใช้บริการ BARE & BOLD");
+      }
+    } catch (err) {
+      alert(err.message || "ยืนยันรับสินค้าไม่สำเร็จ");
+    } finally {
+      setSubmittingConfirmId(null);
+    }
+  };
+
+  const handleConfirmSubOrder = async (subOrder, orderId) => {
+    if (!window.confirm(`ยืนยันว่าได้รับพัสดุ (${subOrder.subOrderNumber}) จากร้าน "${subOrder.shop?.name || 'ร้านค้า'}" เรียบร้อยแล้วใช่ไหม? ระบบจะโอนเงินให้ร้านค้าทันที`)) {
+      return;
+    }
+
+    try {
+      setSubmittingConfirmId(subOrder.id);
+      const res = await orderService.confirmSubOrderReceived(subOrder.id);
+      if (res?.success) {
+        // อัปเดต state orders
+        fetchOrders();
+        alert("ยืนยันรับสินค้าจากร้านนี้เรียบร้อยแล้ว ระบบได้โอนเงินให้ร้านค้าแล้ว");
       }
     } catch (err) {
       alert(err.message || "ยืนยันรับสินค้าไม่สำเร็จ");
@@ -460,6 +481,58 @@ export default function OrderHistoryPage() {
                   })}
                 </div>
 
+                {/* SubOrders Status & Confirm per Shop (Multi-Vendor Escrow Release) */}
+                {order.subOrders && order.subOrders.length > 0 && (
+                  <div className="px-6 py-3 bg-[#FAF8F5] border-t border-b border-[#EADECC]/60 space-y-2">
+                    <p className="text-xs font-bold text-zinc-700">สถานะพัสดุรายร้านค้า:</p>
+                    <div className="space-y-2">
+                      {order.subOrders.map((so) => (
+                        <div
+                          key={so.id}
+                          className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-white border border-[#EADECC]/80 text-xs"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Store size={14} className="text-[#6A5242]" />
+                            <span className="font-bold text-zinc-800">{so.shop?.name || "ร้านค้า"}</span>
+                            <span className="font-mono text-zinc-400">({so.subOrderNumber})</span>
+                            <span className="text-zinc-300">|</span>
+                            {so.trackingNumber ? (
+                              <span className="text-blue-700 font-medium flex items-center gap-1">
+                                <Truck size={13} /> {so.carrier}: <strong>{so.trackingNumber}</strong>
+                              </span>
+                            ) : (
+                              <span className="text-zinc-400">เตรียมจัดส่ง</span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="font-bold px-2.5 py-0.5 rounded-full text-[11px]"
+                              style={{
+                                background: so.status === "COMPLETED" ? "#ECFDF5" : so.status === "SHIPPED" ? "#EFF6FF" : "#F3F4F6",
+                                color: so.status === "COMPLETED" ? "#059669" : so.status === "SHIPPED" ? "#2563EB" : "#6B7280"
+                              }}
+                            >
+                              {so.status === "COMPLETED" ? "ได้รับสินค้าแล้ว" : so.status === "SHIPPED" ? "จัดส่งแล้ว" : so.status}
+                            </span>
+
+                            {["SHIPPED", "DELIVERED"].includes(so.status) && (
+                              <button
+                                disabled={submittingConfirmId === so.id}
+                                onClick={() => handleConfirmSubOrder(so, order.id)}
+                                className="px-3 py-1 rounded-lg text-xs font-bold text-white transition hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-xs"
+                                style={{ background: OLIVE }}
+                              >
+                                {submittingConfirmId === so.id ? "กำลังยืนยัน..." : "ฉันได้รับสินค้าจากร้านนี้แล้ว"}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* 3. Footer Summary & Actions */}
                 <div className="px-6 py-5 flex flex-col gap-4 border-t" style={{ background: `${CREAM}30`, borderColor: `${BORDER}40` }}>
                   {/* Shipping Info Expandable */}
@@ -536,16 +609,16 @@ export default function OrderHistoryPage() {
                         </button>
                       </>
                     )}
-                    {["DELIVERED", "COMPLETED"].includes(order.status) && (
+                    {["SHIPPED", "PARTIALLY_SHIPPED", "DELIVERED", "COMPLETED"].includes(order.status) && (
                       <>
-                        {order.status === "DELIVERED" && (
+                        {["SHIPPED", "DELIVERED"].includes(order.status) && (
                           <button
                             disabled={submittingConfirmId === order.id}
                             onClick={() => handleConfirmReceived(order)}
                             className="px-5 py-2 rounded-lg text-xs font-semibold text-white cursor-pointer hover:opacity-95 disabled:opacity-60"
                             style={{ background: OLIVE }}
                           >
-                            {submittingConfirmId === order.id ? "กำลังยืนยัน..." : "ยืนยันรับสินค้า"}
+                            {submittingConfirmId === order.id ? "กำลังยืนยัน..." : "ฉันได้รับสินค้าทั้งหมดแล้ว"}
                           </button>
                         )}
 

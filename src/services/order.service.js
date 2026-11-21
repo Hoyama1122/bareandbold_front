@@ -60,6 +60,12 @@ export const orderService = {
     });
   },
 
+  confirmSubOrderReceived: async (subOrderId) => {
+    return await apiFetch(`/orders/sub-orders/${subOrderId}/confirm-received`, {
+      method: "POST",
+    });
+  },
+
   createRefundRequest: async (orderId, requestData) => {
     return await apiFetch(`/orders/${orderId}/refund-requests`, {
       method: "POST",
