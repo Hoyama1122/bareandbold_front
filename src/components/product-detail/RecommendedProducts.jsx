@@ -50,9 +50,9 @@ export default function RecommendedProducts({
       </div>
       <div className="overflow-hidden w-full cursor-grab active:cursor-grabbing" ref={emblaRef}>
         <div className="flex gap-7">
-          {recommendedProducts.map((prod) => (
+          {recommendedProducts.map((prod, pIdx) => (
             <div
-              key={prod.id}
+              key={prod.id || `rec-${pIdx}`}
               className="flex-[0_0_85%] sm:flex-[0_0_45%] md:flex-[0_0_30%] lg:flex-[0_0_23%]"
             >
               <ProductCard product={prod} />

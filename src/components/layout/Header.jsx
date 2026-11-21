@@ -21,6 +21,7 @@ import { useAuth } from "@/context/AuthContext";
 const NAV_LINKS = [
   { label: "หน้าแรก", href: "/" },
   { label: "ร้านค้า", href: "/products" },
+  { label: "คูปองส่วนลด", href: "/coupons" },
   { label: "ติดต่อเรา", href: "/contact" },
   { label: "เอกสารระบบ", href: "/docs" },
   { label: "การ์ดสุ่มดวง", href: "/fortune-card" }
@@ -271,7 +272,15 @@ setAvatar(null);
                             className="flex items-center gap-2 flex-1 min-w-0"
                           >
                             <img 
-                              src={item.images?.[0]?.url || item.images?.[0] || item.imageUrl || "/placeholder.jpg"} 
+                              src={
+                                (item.images?.[0]?.url && typeof item.images[0].url === "string" && item.images[0].url.trim() !== "")
+                                  ? item.images[0].url
+                                  : (typeof item.images?.[0] === "string" && item.images[0].trim() !== "")
+                                  ? item.images[0]
+                                  : (typeof item.imageUrl === "string" && item.imageUrl.trim() !== "")
+                                  ? item.imageUrl
+                                  : "/images/placeholder.jpg"
+                              } 
                               alt={item.name} 
                               className="w-10 h-10 object-cover rounded-lg bg-zinc-50 border border-zinc-100 flex-shrink-0"
                             />

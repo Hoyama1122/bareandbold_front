@@ -194,10 +194,15 @@ export default function CartDrawer({ isOpen, onClose }) {
                 <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-100 border border-[#F5F0E6] flex-shrink-0 flex items-center justify-center">
                   <img
                     src={
-                      item.product?.images?.[0]?.url ||
-                      item.product?.images?.[0] ||
-                      item.image ||
-                      "/placeholder.jpg"
+                      (item.product?.images?.[0]?.url && typeof item.product.images[0].url === "string" && item.product.images[0].url.trim() !== "")
+                        ? item.product.images[0].url
+                        : (typeof item.product?.images?.[0] === "string" && item.product.images[0].trim() !== "")
+                        ? item.product.images[0]
+                        : (typeof item.image === "string" && item.image.trim() !== "")
+                        ? item.image
+                        : (typeof item.imageUrl === "string" && item.imageUrl.trim() !== "")
+                        ? item.imageUrl
+                        : "/images/placeholder.jpg"
                     }
                     alt={item.product?.name || item.name || ""}
                     className="w-full h-full object-cover"

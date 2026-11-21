@@ -238,12 +238,27 @@ export default function BecomeSellerPage() {
               )}
               <div className="mt-5 flex flex-wrap gap-3">
                 {shop.status === "APPROVED" && (
-                  <Link
-                    href="/seller"
-                    className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700"
-                  >
-                    ไปที่ Seller Center
-                  </Link>
+                  <>
+                    <Link
+                      href="/seller"
+                      className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700"
+                    >
+                      ไปที่ Seller Center
+                    </Link>
+                    <Link
+                      href={`/shop/${shop.slug}`}
+                      className="rounded-full border border-emerald-300 bg-white px-5 py-2.5 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50"
+                    >
+                      ดูหน้าร้านค้าของคุณ
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setEditing(true)}
+                      className="rounded-full border border-neutral-300 bg-white px-5 py-2.5 text-sm font-bold text-neutral-700 transition hover:bg-neutral-50"
+                    >
+                      แก้ไขข้อมูลร้าน &amp; แบนเนอร์
+                    </button>
+                  </>
                 )}
                 {shop.status === "REJECTED" && (
                   <button

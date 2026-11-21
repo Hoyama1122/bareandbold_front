@@ -391,7 +391,12 @@ const handleReturnFormSubmit = (event) => {
                 {/* 2. Items List */}
                 <div className="divide-y divide-[#EADECC]/40">
                   {order.items?.map((it) => {
-                    const image = it.product?.images?.[0]?.url || "/images/placeholder.jpg";
+                    const image =
+                      (it.product?.images?.[0]?.url && typeof it.product.images[0].url === "string" && it.product.images[0].url.trim() !== "")
+                        ? it.product.images[0].url
+                        : (it.product?.imageUrl && typeof it.product.imageUrl === "string" && it.product.imageUrl.trim() !== "")
+                        ? it.product.imageUrl
+                        : "/images/placeholder.jpg";
                     return (
                       <div key={it.id} className="px-6 py-4 flex gap-4 items-center">
                         <img

@@ -194,9 +194,11 @@ const shippingFee = order.totalPrice - subtotal;
                     <div key={idx} className="flex items-start gap-4">
                       <img
                         src={
-                          it.product.images?.[0]?.url ||
-                          it.product.images?.[0] ||
-                          "/placeholder.jpg"
+                          (it.product.images?.[0]?.url && typeof it.product.images[0].url === "string" && it.product.images[0].url.trim() !== "")
+                            ? it.product.images[0].url
+                            : (typeof it.product.images?.[0] === "string" && it.product.images[0].trim() !== "")
+                            ? it.product.images[0]
+                            : "/images/placeholder.jpg"
                         }
                         alt={it.product.name}
                         className="w-16 h-20 rounded-lg object-cover flex-shrink-0"
