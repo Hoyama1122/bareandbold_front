@@ -59,6 +59,24 @@ function NavIcon({ type, className = "h-[18px] w-[18px] shrink-0" }) {
           <path d="M12 12v9" />
         </svg>
       );
+    case "orders":
+      return (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={className}
+          aria-hidden="true"
+        >
+          <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1" />
+          <path d="M18 8h4a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4" />
+          <circle cx="5.5" cy="18.5" r="2.5" />
+          <circle cx="18.5" cy="18.5" r="2.5" />
+        </svg>
+      );
     case "wallet":
       return (
         <svg
@@ -209,6 +227,7 @@ export default function SellerLayout({ children }) {
     {
       section: "จัดการร้านค้า",
       items: [
+        { href: "/seller/orders", label: "คำสั่งซื้อ / จัดส่ง", iconType: "orders" },
         { href: "/seller/products", label: "รายการสินค้า", iconType: "products" },
         { href: "/seller/finance", label: "การเงินร้านค้า", iconType: "wallet" },
         { href: "/seller/shop", label: "ข้อมูลร้านและบัญชี", iconType: "shop" },
@@ -227,7 +246,9 @@ export default function SellerLayout({ children }) {
     },
   ];
 
-  const pageTitle = pathname.startsWith("/seller/products")
+  const pageTitle = pathname.startsWith("/seller/orders")
+    ? "คำสั่งซื้อและการจัดส่ง (Seller Orders & Fulfillment)"
+    : pathname.startsWith("/seller/products")
     ? "รายการสินค้า (Products)"
     : pathname.startsWith("/seller/shop")
       ? "ข้อมูลร้านค้าและบัญชีรับเงิน (Shop Profile)"
