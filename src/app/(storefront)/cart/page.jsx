@@ -96,6 +96,7 @@ export default function CartSummaryPage() {
     shipping,
     total,
     itemCount,
+    hasAutoFreeShipping,
     remainingForFreeShipping: remainingForFreeShip,
     shipProgress,
   } = pricing;
@@ -123,37 +124,69 @@ export default function CartSummaryPage() {
           {itemCount > 0 ? `${itemCount} รายการในตะกร้า` : "ตะกร้าของคุณว่างเปล่า"}
         </p>
 
-        {/* Free shipping progress */}
+        {/* Shipping notice or free shipping progress */}
         {items.length > 0 && (
-          <div
-            className="rounded-xl px-5 py-4 mb-8 flex items-center gap-4"
-            style={{ background: "#FFFFFF", border: `1px solid ${BORDER}` }}
-          >
-            <Truck size={20} style={{ color: OLIVE_DEEP, flexShrink: 0 }} />
-            <div className="flex-1">
-              <p className="text-sm mb-2">
-                {remainingForFreeShip > 0 ? (
-                  <>
-                    ซื้อเพิ่มอีก{" "}
+          hasAutoFreeShipping ? (
+            <div
+              className="rounded-xl px-5 py-4 mb-8 flex items-center gap-4"
+              style={{ background: "#FFFFFF", border: `1px solid ${BORDER}` }}
+            >
+              <Truck size={20} style={{ color: OLIVE_DEEP, flexShrink: 0 }} />
+              <div className="flex-1">
+                <p className="text-sm mb-2">
+                  {remainingForFreeShip > 0 ? (
+                    <>
+                      ซื้อเพิ่มอีก{" "}
+                      <span className="font-semibold" style={{ color: OLIVE_DEEP }}>
+                        ฿{baht(remainingForFreeShip)}
+                      </span>{" "}
+                      รับส่งฟรี
+                    </>
+                  ) : (
                     <span className="font-semibold" style={{ color: OLIVE_DEEP }}>
-                      ฿{baht(remainingForFreeShip)}
-                    </span>{" "}
-                    รับส่งฟรี
-                  </>
-                ) : (
-                  <span className="font-semibold" style={{ color: OLIVE_DEEP }}>
-                    คุณได้รับสิทธิ์จัดส่งฟรีแล้ว
-                  </span>
-                )}
-              </p>
-              <div className="w-full h-1.5 rounded-full" style={{ background: CREAM_DEEP }}>
-                <div
-                  className="h-1.5 rounded-full transition-all duration-500"
-                  style={{ width: `${shipProgress}%`, background: OLIVE }}
-                />
+                      คุณได้รับสิทธิ์จัดส่งฟรีแล้ว
+                    </span>
+                  )}
+                </p>
+                <div className="w-full h-1.5 rounded-full" style={{ background: CREAM_DEEP }}>
+                  <div
+                    className="h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${shipProgress}%`, background: OLIVE }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div
+              className="rounded-xl px-5 py-4 mb-8 flex items-center justify-between gap-4"
+              style={{ background: "#FFFFFF", border: `1px solid ${BORDER}` }}
+            >
+              <div className="flex items-center gap-3.5">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: `${OLIVE}15`, color: OLIVE_DEEP }}
+                >
+                  <Truck size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: INK }}>
+                    ค่าจัดส่งมาตรฐาน ฿{shippingSettings?.shippingFee || 50} ต่อร้านค้า
+                  </p>
+                  <p className="text-xs" style={{ color: MUTED }}>
+                    สามารถใช้โค้ดส่งฟรีได้ในขั้นตอนการชำระเงิน
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push("/coupons")}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg border transition hover:bg-neutral-50 flex-shrink-0"
+                style={{ borderColor: BORDER, color: OLIVE_DEEP }}
+              >
+                เก็บโค้ดส่งฟรี &gt;
+              </button>
+            </div>
+          )
         )}
 
         {items.length === 0 ? (

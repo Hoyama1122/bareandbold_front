@@ -2,7 +2,7 @@ import { apiFetch } from "@/lib/api";
 
 export const DEFAULT_PLATFORM_SETTINGS = {
   shippingFee: 50,
-  freeShippingThreshold: 300,
+  freeShippingThreshold: 0,
 };
 
 export const platformService = {

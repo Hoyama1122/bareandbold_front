@@ -1,6 +1,6 @@
 export const DEFAULT_SHIPPING_SETTINGS = {
   shippingFee: 50,
-  freeShippingThreshold: 300,
+  freeShippingThreshold: 0,
 };
 
 const roundMoney = (value) => Math.round(Number(value) * 100) / 100;
@@ -41,18 +41,19 @@ export const calculateCartPricing = (
     settings?.freeShippingThreshold ??
       DEFAULT_SHIPPING_SETTINGS.freeShippingThreshold,
   );
+  const hasAutoFreeShipping = freeShippingThreshold > 0;
 
   const groups = groupCartItemsByShop(items).map((group) => {
     const qualifiesForFreeShipping =
-      group.subtotal >= freeShippingThreshold || group.subtotal === 0;
+      group.subtotal === 0 ||
+      (hasAutoFreeShipping && group.subtotal >= freeShippingThreshold);
     return {
       ...group,
       shipping: qualifiesForFreeShipping ? 0 : shippingFee,
       qualifiesForFreeShipping,
-      remainingForFreeShipping: Math.max(
-        0,
-        freeShippingThreshold - group.subtotal,
-      ),
+      remainingForFreeShipping: hasAutoFreeShipping
+        ? Math.max(0, freeShippingThreshold - group.subtotal)
+        : 0,
     };
   });
 
@@ -69,9 +70,11 @@ export const calculateCartPricing = (
   const shippingGroups = groups.filter(
     (group) => !group.qualifiesForFreeShipping && group.subtotal > 0,
   );
-  const closestGroup = shippingGroups.sort(
-    (a, b) => a.remainingForFreeShipping - b.remainingForFreeShipping,
-  )[0];
+  const closestGroup = hasAutoFreeShipping
+    ? shippingGroups.sort(
+        (a, b) => a.remainingForFreeShipping - b.remainingForFreeShipping,
+      )[0]
+    : null;
 
   return {
     groups,
@@ -83,12 +86,14 @@ export const calculateCartPricing = (
       0,
     ),
     freeShippingThreshold,
+    hasAutoFreeShipping,
     remainingForFreeShipping: closestGroup?.remainingForFreeShipping || 0,
-    shipProgress: closestGroup
-      ? Math.min(
-          100,
-          Math.round((closestGroup.subtotal / freeShippingThreshold) * 100),
-        )
-      : 100,
+    shipProgress:
+      hasAutoFreeShipping && closestGroup && freeShippingThreshold > 0
+        ? Math.min(
+            100,
+            Math.round((closestGroup.subtotal / freeShippingThreshold) * 100),
+          )
+        : 0,
   };
 };
