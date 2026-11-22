@@ -1,9 +1,9 @@
 # 📋 PROJECT_TASKS — Bare & Bold Marketplace
 
-> อัปเดตล่าสุด: **12 พ.ย. 2026**
+> อัปเดตล่าสุด: **22 พ.ย. 2026**
 > ทีม **4 คน** · เป้าหมาย: ปิด Marketplace flow, Seller Center, Admin Core และระบบคูปอง
 > **Tester = Role 1** (บทบาทที่ 2 ของ Role 1) — ไม่มีคนที่ 5 (ดูข้อ 5)
-> **หมายเหตุล่าสุด:** Admin Core, Split Order, Platform Settings, Payout API และ Seller Wallet API พร้อมใช้งานแล้ว · Seller Center UI และ Voucher/Coupon ยังเป็นงานหลักที่เหลือ
+> **หมายเหตุล่าสุด:** Admin Core, Split Order, Platform Settings, Seller Orders & Fulfillment, Buyer Confirm Received + Escrow Release, Refund API/Backoffice UI และ Seller Center Core (Dashboard/Products/Orders/Finance/Shop) พร้อมใช้งานแล้ว · งานหลักที่เหลือคือ Reviews, Gemstone Recommender (เชื่อมสินค้าจริง), Coupon/Voucher Backend+Seller/Admin, Refund Tracking/Reversal, Seller Payout Form และ QA/Release Hardening
 
 **สัญลักษณ์:** ✅ เสร็จแล้ว · 🟡 ทำบางส่วน/API พร้อมแต่ UI ยังไม่ทำ · ❌ ยังไม่เริ่ม
 
@@ -37,12 +37,12 @@
 | -------------------- | ---------------------------------------------------- | ---------- | -------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------- |
 | Product Catalog      | หน้ารวมสินค้า + ค้นหา + กรอง   | 🟡         | ค้นหาชื่อ, กรองหมวด/ประเภท                          | กรองราคา/ขนาด, sort, ค้นหาชื่อร้าน  | `products/page.jsx`, `ProductFilter.jsx`, `GET /api/products` |
 | Product Detail       | หน้ารายละเอียดสินค้า             | 🟡         | แกลเลอรี, badge สั่งทำ, ตัวเลือกขนาด/accessories | การ์ดร้าน + ลิงก์ `/shop/[slug]`, reviews UI | `products/[id]/`, `GET /api/products/:id`                       |
-| Shop Profile         | หน้าร้าน public ของผู้ขาย           | 🟡         | แบนเนอร์, โลโก้, grid สินค้า                            | คะแนนร้าน, ตัวกรองในร้าน               | `shop/[slug]/page.jsx`, `GET /api/shops/:slug`                  |
+| Shop Profile         | หน้าร้าน public ของผู้ขาย           | 🟡         | แบนเนอร์, โลโก้, grid สินค้า, ปุ่มเจ้าของร้านแก้แบนเนอร์/เพิ่มสินค้า | คะแนนร้าน, ตัวกรองในร้าน               | `shop/[slug]/page.jsx`, `GET /api/shops/:slug`                  |
 | Wishlist             | รายการสินค้าโปรด                     | 🟡         | dropdown + service                                                         | หน้า `/account/wishlist`                               | `wishlist.service.js`, `/api/wishlist`                          |
 | Reviews Display      | แสดงรีวิวในหน้ารายละเอียด   | ❌         | —                                                                         | สรุปดาว + คอมเมนต์ + รูป                   | `GET /api/products/:id/reviews`                                   |
-| Horoscope / Gemstone | แนะนำหิน/สินค้า + การ์ดเลือก | ❌         | —                                                                         | KB + API + หน้า UI                                       | `/gemstone-guide`, `POST /api/recommend/gemstones`              |
+| Horoscope / Gemstone | แนะนำหิน/สินค้า + การ์ดเลือก | 🟡         | หน้า UI `/fortune-card` (Mockup สุ่มการ์ดจากวัน/เดือนเกิด)                 | KB + API หินมงคล + เชื่อมสินค้าจริงใน DB                | `/fortune-card` / `/gemstone-guide`, `POST /api/recommend/gemstones` |
 | Review Shop          | รีวิวร้านค้าได้                     | ❌         | —                                                                          | รีวิว/คะแนนร้าน + moderation                                                 | `GET/POST /api/shops/:id/reviews`                                   |
-| **Coupon / Voucher** | คูปองแพลตฟอร์ม + คูปองร้าน, เก็บโค้ด, ใช้ที่ Cart/Checkout และหน้าจัดการ Seller/Admin | ❌         | —                                                                         | ทั้ง Vertical ตามข้อ 1.6                     | `/vouchers`, `/account/vouchers`, `/seller/vouchers`, `/dashboard/vouchers` |
+| **Coupon / Voucher** | คูปองแพลตฟอร์ม + คูปองร้าน, เก็บโค้ด, ใช้ที่ Cart/Checkout และหน้าจัดการ Seller/Admin | 🟡         | UI Mockup หน้า `/coupons` (เก็บโค้ดใน localStorage) + `CouponSelectModal` ใน Checkout | Backend schema/API จริง, Server quote, `/account/vouchers`, `/seller/vouchers`, `/dashboard/vouchers` | `/coupons`, `/vouchers`, `/account/vouchers`, `/seller/vouchers`, `/dashboard/vouchers` |
 
 ## 1.3 งานที่ต้องส่ง
 
@@ -70,7 +70,7 @@
 
 ## 1.6 Coupon / Voucher Vertical — Role 1 เป็นเจ้าของ
 
-> **สถานะ:** ❌ ยังไม่เริ่ม  
+> **สถานะ:** 🟡 ทำ UI Mockup ฝั่ง Buyer แล้ว (`/coupons` + `CouponSelectModal` ใช้ `localStorage`) — ยังไม่มี Backend/DB/Seller/Admin  
 > **Scope:** Role 1 รับผิดชอบ End-to-End ทั้ง Buyer, Seller และ Admin ตามที่ได้รับมอบหมาย  
 > **ต้องประสาน:** Role 2 (Cart/Checkout), Role 3 (Seller/Admin shell), Role 4 (Schema/Migration/GP/Settlement review)
 
@@ -161,21 +161,22 @@ Flow ฝั่งผู้ซื้อตั้งแต่หยิบสิน
 | ------------------------------------------- | ---------------------------------------------------- | ---------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Auth Flow                                   | เข้าสู่ระบบ/โปรไฟล์/ที่อยู่ | ✅         | `/login`, AuthContext, `/profile`, สมุดที่อยู่, cookie ฝั่ง Backend | ย้าย Bearer token ฝั่ง Storefront เป็น httpOnly เต็มรูปแบบ | `login/`, `profile/`, `auth.service.js`                      |
 | Cart                                        | ตะกร้าสินค้า                             | ✅         | เพิ่ม/ลด/ลบ, จัดกลุ่มตามร้าน, ค่าส่งแยกตามร้าน, ซ่อนสินค้าที่ถูกระงับ | Voucher selector + checkbox เลือกสินค้า | `cart/page.jsx`, `/api/cart`                                   |
-| Checkout                                    | สรุปคำสั่งซื้อ + จ่ายเงิน      | 🟡         | ที่อยู่, PromptPay QR, สรุปค่าส่งแยกตามร้าน | Voucher selector + server quote, แสดงส่วนลด Platform/Shop | `checkout/page.jsx`, `/api/orders`, `/api/payments`          |
-| Orders / Tracking                           | ประวัติ + สถานะพัสดุ                | 🟡         | แท็บสถานะ, QR modal                                  | Timeline ตรงกับ SubOrder, แสดงส่วนลดคูปอง                         | `orders/page.jsx`                                                |
-| Confirm Received                            | ลูกค้ายืนยันรับของ                 | ❌         | —                                                            | ปุ่ม + API ปลดเงิน                                          | `orders/[id]`, `POST /api/orders/:subOrderId/confirm-received` |
-| Refund Buyer                                | ขอคืนเงิน/แจ้งปัญหา                | ❌         | —                                                            | ฟอร์ม + แนบหลักฐาน                                      | `/account/orders/[id]/refund`, `POST /api/refunds/request`     |
-| Seller/Admin Refund UI | หน้า Seller/Admin ตรวจคำขอคืนเงิน | ❌         | —                                                            | ตาราง + อนุมัติ/ปฏิเสธ + หลักฐาน                  | `backoffice /dashboard/refunds`, `/seller/refunds`, `GET/PUT /api/admin/refunds` |
+| Checkout                                    | สรุปคำสั่งซื้อ + จ่ายเงิน      | 🟡         | ที่อยู่, PromptPay QR, สรุปค่าส่งแยกตามร้าน, `CouponSelectModal` (Mock) | เชื่อม Voucher API จริง + server quote, แสดงส่วนลด Platform/Shop | `checkout/page.jsx`, `/api/orders`, `/api/payments`          |
+| Orders / Tracking                           | ประวัติ + สถานะพัสดุ                | 🟡         | แท็บสถานะ, QR modal, หน้า `/orders/[orderId]` พร้อม Timeline ออเดอร์ | Timeline แยกราย SubOrder, แสดงส่วนลดคูปอง                         | `orders/page.jsx`, `orders/[orderId]/page.jsx`                   |
+| Confirm Received                            | ลูกค้ายืนยันรับของ                 | ✅         | ปุ่มยืนยันรับของแยกร้าน + ทั้งออเดอร์, เชื่อม API ปลดเงิน Escrow ทันที | —                                                           | `orders/page.jsx`, `POST /api/orders/sub-orders/:id/confirm-received` |
+| Refund Buyer                                | ขอคืนเงิน/แจ้งปัญหา                | 🟡         | Modal ขอคืนสินค้าใน `/orders` เชื่อม `POST /api/orders/:id/refund-requests` | อัปโหลดรูปหลักฐานจริง (ปัจจุบันส่ง `[]`) + หน้าติดตามสถานะคำขอคืนเงิน | `orders/page.jsx`, `POST /api/orders/:id/refund-requests`       |
+| Seller/Admin Refund UI | หน้า Seller/Admin ตรวจคำขอคืนเงิน | 🟡         | หน้า Backoffice `/dashboard/refunds` (กรอง/ดูหลักฐาน/อนุมัติ/ปฏิเสธ + note) | หน้า `/seller/refunds` ฝั่ง Seller Center                  | `backoffice /dashboard/refunds`, `GET/PUT /api/orders/admin/refunds` |
 
 ## 2.3 งานที่ต้องส่ง
 
 - Cart จัดกลุ่มตามร้าน + ค่าส่งแยก ✅
 - Checkout สรุปแยกตามร้าน ✅
+- ปุ่มยืนยันรับสินค้าแยกร้าน/ทั้งออเดอร์ ✅
+- หน้า Backoffice Admin Refund (`/dashboard/refunds`) ✅
+- ฟอร์มขอคืนเงินฝั่งผู้ซื้อ (มี Modal แล้ว เหลืออัปโหลดรูปจริง + หน้าติดตามสถานะ)
 - Voucher selector + Server quote integration (ประสาน Role 1)
 - Timeline สถานะออเดอร์ตาม SubOrder
-- ปุ่มยืนยันรับสินค้า
 - รีวิว + อัปโหลดรูป
-- ฟอร์มขอคืนเงิน + หน้า admin refund
 
 ## 2.4 Definition of Done
 
@@ -204,7 +205,8 @@ Flow ฝั่งผู้ซื้อตั้งแต่หยิบสิน
 | ------------------- | ----------------------------------- | ---------- | ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------- |
 | Seller Onboarding   | สมัครเปิดร้าน + KYC    | ✅         | ฟอร์ม, สถานะ PENDING/REJECTED/APPROVED/SUSPENDED | —                                              | `(storefront)/become-seller/`, `/api/shops/apply` |
 | Admin Shop Approval | อนุมัติ/ปฏิเสธ/ระงับร้าน | ✅         | หน้า `/dashboard/shops`, mask KYC, suspend/reactivate + Audit Log | —                                              | `backoffice /dashboard/shops`, `/api/admin/shops` |
-| Seller Shell        | โครง Seller Center + guard      | ✅         | layout, topbar, guard, แสดงสถานะร้าน/เหตุผลระงับ | หน้า Dashboard/Products/Shop/Wallet จริง       | `(seller)/seller/layout.jsx`                        |
+| Seller Shell        | โครง Seller Center + guard      | ✅         | layout, Sidebar + Navigation, topbar, guard, แสดงสถานะร้าน/เหตุผลระงับ | —                                               | `(seller)/seller/layout.jsx`                        |
+| Seller Center UI    | Dashboard, Products, Orders, Finance, Shop | 🟡 | `/seller` (KPI), `/seller/products` (CRUD Modal), `/seller/orders` (Fulfillment), `/seller/finance` (ยอดขาย/Wallet/ประวัติถอน), `/seller/shop` (ดูข้อมูลร้าน/บัญชี) | ฟอร์มขอถอนเงิน + Ledger ใน `/seller/finance`, ฟอร์มแก้ข้อมูลร้านใน `/seller/shop`, แสดง moderation status ใน `/seller/products` | `(seller)/seller/*` |
 | Admin Payout        | อนุมัติถอนเงิน        | ✅         | หน้า `/dashboard/payouts`, approve/reject/transfer + Ledger | —                                              | `/api/admin/payouts`                                |
 | Admin Moderation    | ซ่อน/ระงับ/คืนสถานะสินค้า | ✅         | Product Center รวมทุกอย่างใน `/dashboard/products` | —                                              | `/api/admin/products`, `/api/admin/products/:id/moderate` |
 | Admin Analytics     | GMV + commission                    | ✅         | Dashboard ใช้ API จริง, แยกยอดตามร้าน/วัน, Platform SKU | —                                              | `/api/admin/analytics`                              |
@@ -212,28 +214,31 @@ Flow ฝั่งผู้ซื้อตั้งแต่หยิบสิน
 | Admin Audit Log     | ประวัติการดำเนินการ      | ✅         | Shop/Product/Payout/Settings/Order actions | —                                              | `/dashboard/audit-logs`, `/api/admin/audit-logs`    |
 | Admin Product Center | ดูรายละเอียด/แก้ไข/ซ่อน/ระงับ/ลบ | ✅         | รวมในเมนูรายการสินค้าเดียว + Admin Detail API + แก้ไขสินค้าที่ถูกซ่อนได้ | —                                              | `/dashboard/products`, `/api/admin/products/:id`    |
 
-## 3.3 งานหลักที่เหลือ: Seller Center
+## 3.3 งานหลักที่ทำแล้ว & ที่เหลือ: Seller Center
 
 **โครงที่มีแล้ว**
 
 ```
 src/app/(seller)/seller/
-├── layout.jsx   # guard + topbar ให้แล้ว
-└── page.jsx     # placeholder
+├── layout.jsx          # guard + Sidebar + Topbar ✅
+├── page.jsx            # Dashboard KPI 4 ใบ + รายการสินค้า ✅
+├── products/page.jsx   # ตารางสินค้า + ค้นหา/กรอง + Create/Edit Modal + toggle + ลบ ✅
+├── orders/page.jsx     # จัดการออเดอร์ + เปลี่ยน PRODUCING + กรอกเลขพัสดุ SHIPPED ✅
+├── finance/page.jsx    # สรุปการเงิน + ยอดขายรายสินค้า + ประวัติถอนเงิน 🟡
+└── shop/page.jsx       # แสดงข้อมูลร้าน + บัญชีรับเงิน (Read-only) 🟡
 ```
 
-**หน้าที่ต้องสร้าง**
+**สถานะแต่ละหน้า**
 
-| หน้า       | Path                                   | API                                  | เสร็จเมื่อ                             |
-| -------------- | -------------------------------------- | ------------------------------------ | ------------------------------------------------ |
-| Dashboard      | `seller/dashboard/page.jsx`          | `GET /api/seller/dashboard`        | KPI 4 ใบ + loading/error                       |
-| Products list  | `seller/products/page.jsx`           | `GET /api/seller/products`         | ตาราง + ค้นหา/กรอง + toggle + ลบ |
-| Product create | `seller/products/new/page.jsx`       | `POST /api/seller/products`        | ฟอร์ม + รูป + validation                 |
-| Product edit   | `seller/products/[id]/edit/page.jsx` | `GET/PUT /api/seller/products/:id` | โหลดค่าเดิม + บันทึกได้      |
-| Shop settings  | `seller/shop/page.jsx`               | `GET/PUT /api/shops/my-shop`       | แก้ชื่อ/โลโก้/บัญชีได้       |
-| Orders         | `seller/orders/page.jsx`             | ยังไม่มี API ฝั่ง Seller | ต้องรอ `GET /api/seller/orders` + fulfillment endpoints |
-| Wallet         | `seller/wallet/page.jsx`             | พร้อมแล้ว: `/api/seller/wallet`, `/api/seller/payouts` | แสดง balance, held amount, Ledger และฟอร์มขอถอน |
-| Vouchers       | `seller/vouchers/page.jsx`           | Role 1 รับผิดชอบ | Seller สร้าง/แก้ไข/หยุดคูปองของร้าน (ประสาน Role 1) |
+| หน้า       | Path                                   | API                                  | สถานะ | เหลือทำ                             |
+| -------------- | -------------------------------------- | ------------------------------------ | :---: | ------------------------------------------------ |
+| Dashboard      | `seller/page.jsx` (`/seller`)        | `GET /api/seller/dashboard`        | ✅ | —                                              |
+| Products CRUD  | `seller/products/page.jsx` (ใช้ Modal) | `GET/POST/PUT/DELETE /api/seller/products` | 🟡 | แสดง `moderationStatus` + เหตุผลจาก Admin, เพิ่ม custom options/accessories |
+| Orders         | `seller/orders/page.jsx`             | `GET/PUT /api/seller/orders`       | ✅ | เพิ่ม filter ตามวันที่ (ถ้าต้องการ)            |
+| Finance/Wallet | `seller/finance/page.jsx`            | `/api/seller/sales-summary`, `/api/seller/wallet`, `/api/seller/payouts` | 🟡 | เพิ่มฟอร์มขอถอนเงิน (`POST /api/seller/payouts`) + ตาราง Ledger |
+| Shop settings  | `seller/shop/page.jsx`               | `GET/PUT /api/shops/my-shop`       | 🟡 | เพิ่มฟอร์มแก้ไขชื่อ/โลโก้/คำอธิบาย/บัญชี (ปัจจุบัน Read-only) |
+| Refunds        | `seller/refunds/page.jsx`            | `/api/seller/refunds` (มีบน branch `api`) | ❌ | สร้างหน้าดู/อนุมัติคำขอคืนเงินของร้าน          |
+| Vouchers       | `seller/vouchers/page.jsx`           | Role 1 รับผิดชอบ | ❌ | Seller สร้าง/แก้ไข/หยุดคูปองของร้าน (ประสาน Role 1) |
 
 **กติกาสำคัญ**
 
@@ -284,12 +289,12 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 | Admin Approval               | อนุมัติ/ระงับร้าน          | ✅         | list/approve/reject/suspend/reactivate + role update + Audit | —                          | `/api/admin/shops`                         |
 | Payment / Omise              | ตัดเงิน + webhook               | 🟡         | charge + webhook + mock, อัปเดต SubOrder เป็น PAID  | Reconciliation, payment retry, hardening webhook | `/api/payments`                            |
 | Split Order                  | แตกออเดอร์ตามร้าน     | ✅         | checkout แยก Shop → SubOrder + snapshot GP/ค่าส่ง | จัดสรรส่วนลด Voucher ต่อ SubOrder | `/api/orders`                              |
-| Escrow / Confirm             | ปลดเงินให้ร้าน           | 🟡         | Settlement หลัง Admin เปลี่ยนเป็น DELIVERED/COMPLETED + Ledger กันซ้ำ | Buyer Confirm Received + auto-complete | `/api/orders/:subOrderId/confirm-received` |
-| Seller Fulfillment           | ผลิต/จัดส่ง/tracking         | ❌         | —                                                  | Seller order list + status + ship APIs | `/api/seller/orders`                       |
+| Escrow / Confirm             | ปลดเงินให้ร้าน           | 🟡         | Settlement + Buyer Confirm Received (`sub-orders/:id/confirm-received`, `orders/:id/confirm-received`) + Ledger กันซ้ำ | Auto-complete หลังส่ง 7 วัน | `/api/orders/sub-orders/:id/confirm-received` |
+| Seller Fulfillment           | ผลิต/จัดส่ง/tracking         | ✅         | Seller order list/detail + status (`PRODUCING`) + ship (`carrier`/`trackingNumber`) + sales-summary (บน `main`) | — | `/api/seller/orders`, `/api/seller/sales-summary` |
 | Reviews API + Review ร้าน | รีวิว + rating                    | ❌         | —                                                  | POST + GET + อัปเดต rating  | `/api/reviews`                             |
-| Wallet / Payout API          | ยอดเงิน + ถอนเงิน        | ✅         | Seller wallet/holds/payout request + Admin approve/reject/transfer + Ledger | Payout UI ฝั่ง Seller (Role 3) | `/api/seller/wallet`, `/api/seller/payouts`, `/api/admin/payouts` |
-| Refund API                   | คำขอคืนเงิน                 | ❌         | —                                                  | buyer + seller + admin resolution | `/api/refunds`                             |
-| Admin APIs                   | Payout/Moderation/Analytics/Settings/Audit | ✅         | API ครบตาม Admin Core                          | Refund management                 | `/api/admin/...`                           |
+| Wallet / Payout API          | ยอดเงิน + ถอนเงิน        | ✅         | Seller wallet/holds/payout request + Admin approve/reject/transfer + Ledger | ฟอร์มขอถอนเงินฝั่ง Seller UI (Role 3) | `/api/seller/wallet`, `/api/seller/payouts`, `/api/admin/payouts` |
+| Refund API                   | คำขอคืนเงิน                 | 🟡         | Buyer request + Admin list/approve/reject + Audit Log (บน `main`; branch `api` มี Seller refund แยกแต่ยังไม่ merge) | Merge branch `api` + Reverse Wallet/GP/Ledger + คืน stock | `/api/orders/:id/refund-requests`, `/api/orders/admin/refunds` |
+| Admin APIs                   | Payout/Moderation/Analytics/Settings/Audit/Refund | ✅ | API ครบตาม Admin Core + Admin Refund (`GET/PUT /api/orders/admin/refunds`) | Reverse Wallet/GP เมื่ออนุมัติ Refund | `/api/admin/...`, `/api/orders/admin/refunds` |
 | Product Moderation API       | ซ่อน/ระงับ/คืนสถานะสินค้า | ✅         | moderation fields + Admin detail + Audit | —                                | `/api/admin/products/:id/moderate`         |
 | Shop Suspension API          | ระงับร้านและปิด visibility | ✅         | suspend/reactivate + reason + Audit | —                                | `/api/admin/shops/:id/suspend`             |
 | Platform Settings API        | GP/ค่าส่ง/ฟรีส่ง           | ✅         | typed settings, public config, version lock | —                                | `/api/admin/settings`, `/api/settings/public` |
@@ -357,7 +362,7 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 | E2E Seller/Admin  | 🟡         | Manual flow เปิดร้าน/อนุมัติ/ลงสินค้า/Moderation/Payout ทดสอบแล้ว | ทำเป็นชุดอัตโนมัติ + เพิ่ม Seller Center UI | `e2e/seller/`                            |
 | Voucher / Coupon QA | ❌       | —                                                                      | claim ซ้ำ/quota/ส่วนลด/GP/permission | `e2e/voucher/`                           |
 | Regression        | ❌         | —                                                                      | checklist + รันก่อนส่ง            | `TEST_PLAN.md`                           |
-| UAT               | ❌         | —                                                                      | UAT cases + report                          | `UAT_REPORT.md`                          |
+| UAT               | 🟡         | มีหน้า Interactive UAT Checklist (`/docs/uat`)                          | ทำรายงานสรุปผล + sign-off รอบสุดท้าย            | `/docs/uat`, `UAT_REPORT.md`             |
 | Test Data         | ✅         | `seed_roles.js` + บัญชีทดสอบ + seed multi-shop/order/payout | เพิ่ม seed review/refund/voucher | `seed_roles.js`                          |
 
 ## 5.4 การแบ่งงาน QA กับคนอื่น
@@ -411,16 +416,16 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 | งาน            | ต้องรอ                          | สถานะล่าสุด |
 | ----------------- | ------------------------------------- | ------------------------------ |
-| Seller Orders     | Seller Orders API + fulfillment endpoints | ❌ ยังไม่มี API |
-| Seller Wallet UI  | Wallet/Payout API                     | ✅ API พร้อม เหลือ UI |
-| Confirm Received  | Buyer endpoint + Escrow release       | 🟡 Split/Settlement มีแล้ว, Buyer confirm ยังไม่มี |
+| Seller Orders     | Seller Orders API + fulfillment endpoints | ✅ เสร็จทั้ง API และ UI (`/seller/orders`) |
+| Seller Wallet UI  | Wallet/Payout API                     | 🟡 มี `/seller/finance` แล้ว เหลือฟอร์มขอถอนเงิน + Ledger |
+| Confirm Received  | Buyer endpoint + Escrow release       | ✅ Buyer confirm + Escrow release เสร็จแล้ว (เหลือ auto-complete 7 วัน) |
 | Admin Payout      | Wallet/Payout API                     | ✅ เสร็จ |
 | Reviews           | Order ที่ COMPLETED + Reviews API      | ❌ |
-| Refund            | Order/SubOrder ที่ชำระแล้ว + Refund API | ❌ |
+| Refund            | Order/SubOrder ที่ชำระแล้ว + Refund API | 🟡 มี Buyer modal + Admin UI/API แล้ว เหลือ Reverse Ledger + Seller UI + Tracking UI |
 | Platform Settings | checkout + settlement อ่านค่า       | ✅ เสร็จและ snapshot แล้ว |
 | Admin Analytics   | Split Order + Payment                 | ✅ เสร็จ |
-| Coupon / Voucher  | Voucher schema + Checkout quote + money allocation | ❌ Role 1 เริ่มได้ แต่ต้อง freeze กฎเงินก่อน |
-| Seller Center UI  | API ต่อหน้า                            | 🟡 Dashboard/Products/Shop/Wallet พร้อมทำ |
+| Coupon / Voucher  | Voucher schema + Checkout quote + money allocation | 🟡 มี Mock UI ฝั่ง Buyer (`/coupons` + Checkout modal) แต่ยังไม่มี Backend/DB |
+| Seller Center UI  | API ต่อหน้า                            | 🟡 หน้าหลักครบแล้ว เหลือฟอร์มถอนเงิน, ฟอร์มแก้ข้อมูลร้าน, moderation badge |
 
 > เริ่มได้เลยไม่ต้องรอ: Seller Dashboard, Seller Products, Shop Settings, Seller Wallet UI, Storefront filter, Wishlist, Horoscope, SEO, Coupon discovery UI (หลัง freeze schema/กฎเงิน)
 
@@ -444,14 +449,14 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 | Phase | เป้าหมาย | เจ้าของหลัก | สถานะ | เริ่มได้เมื่อ |
 | --- | --- | --- | --- | --- |
 | **P0** | Stabilize Foundation | Role 4 + ทุกคน | 🟡 ต้องทำก่อน | เริ่มได้เลย |
-| **P1** | Seller Center Core | Role 3 | ❌ ยังไม่เริ่ม | หลัง P0 เริ่มได้ |
-| **P2** | Fulfillment + Confirm Received | Role 3 + 2 + 4 | 🟡 Split/Settlement บางส่วน | API Seller Orders พร้อม |
-| **P3** | After-sales + Reviews | Role 2 + 1 + 3 + 4 | ❌ ยังไม่เริ่ม | หลัง P2 หลัก |
-| **P4** | Coupon / Voucher | Role 1 + 2 + 3 + 4 review | ❌ ยังไม่เริ่ม | หลัง freeze schema/กฎเงิน |
-| **P5** | Release + QA + Deploy | Role 1 + ทุกคน | 🟡 มี smoke/permission/k6 | หลัง P1–P4 พร้อม |
+| **P1** | Seller Center Core | Role 3 | 🟡 หน้าหลักครบ เหลือฟอร์มถอนเงิน/แก้ร้าน/moderation | ทำต่อจนปิด Gate |
+| **P2** | Fulfillment + Confirm Received | Role 3 + 2 + 4 | 🟡 2A+2B หลักเสร็จแล้ว เหลือ Auto-complete + Notification | ปิดงานย่อยที่เหลือ |
+| **P3** | After-sales + Reviews | Role 2 + 1 + 3 + 4 | 🟡 Refund พื้นฐานมีแล้ว เหลือ Reviews + Reversal + Tracking | ทำต่อได้เลย |
+| **P4** | Coupon / Voucher | Role 1 + 2 + 3 + 4 review | 🟡 มี Mock UI ฝั่ง Buyer แล้ว เหลือ Backend + Seller/Admin | หลัง freeze schema/กฎเงิน |
+| **P5** | Release + QA + Deploy | Role 1 + ทุกคน | 🟡 มี smoke/permission/k6 + `/docs/uat` | หลัง P1–P4 พร้อม |
 
-> **สถานะปัจจุบัน:** Admin Core ✅ · Split Order ✅ · Platform Settings ✅ · Payout API ✅ · Seller Wallet API ✅
-> **งานหลักที่เหลือ:** Seller Center UI, Seller Fulfillment, Buyer Confirm, Refund/Reviews, Voucher และ Release Hardening
+> **สถานะปัจจุบัน:** Admin Core ✅ · Split Order ✅ · Platform Settings ✅ · Payout API ✅ · Seller Wallet API ✅ · Seller Orders & Fulfillment ✅ · Buyer Confirm Received + Escrow Release ✅ · Refund API & Admin UI (พื้นฐาน) ✅
+> **งานหลักที่เหลือ:** Reviews (API+UI), Gemstone Recommender (เชื่อม DB), Coupon/Voucher (Backend+Seller/Admin), Refund Tracking/Reversal, Seller Payout Form/Edit Shop และ Release Hardening
 
 ---
 
@@ -479,29 +484,29 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 ---
 
-## ❌ Phase 1 — Seller Center Core
+## 🟡 Phase 1 — Seller Center Core
 
 **เป้าหมาย:** Seller ใช้งาน Seller Center ได้จริง ไม่ใช่แค่ placeholder
 
 **เจ้าของ:** Role 3
 
 **Checklist**
-- [ ] Seller Sidebar + Navigation
-- [ ] `/seller/dashboard` KPI จาก API จริง
-- [ ] `/seller/products` ตารางสินค้า + ค้นหา/กรอง + toggle + ลบ
-- [ ] แสดงสถานะ `VISIBLE / HIDDEN / SUSPENDED` และเหตุผลจาก Admin
-- [ ] `/seller/products/new` สร้างสินค้า + รูป + custom options + accessories
-- [ ] `/seller/products/[id]/edit` แก้ไขสินค้า
-- [ ] `/seller/shop` แก้ข้อมูลร้าน/โลโก้/บัญชี
-- [ ] `/seller/wallet` แสดง balance, held, available, Ledger
-- [ ] ฟอร์มขอถอนเงิน + ประวัติ Payout
-- [ ] ทดสอบ Seller A แก้สินค้า Seller B ไม่ได้
-- [ ] ทดสอบร้าน PENDING/SUSPENDED เขียนข้อมูลไม่ได้
+- [x] Seller Sidebar + Navigation (`(seller)/seller/layout.jsx`)
+- [x] `/seller` Dashboard KPI 4 ใบจาก API จริง (`GET /api/seller/dashboard`)
+- [x] `/seller/products` ตารางสินค้า + ค้นหา/กรอง + toggle + ลบ
+- [ ] แสดงสถานะ `VISIBLE / HIDDEN / SUSPENDED` และเหตุผลจาก Admin ใน `/seller/products`
+- [x] สร้างสินค้า + อัปโหลดรูป (ทำเป็น Modal ใน `/seller/products` — ยังเหลือ custom options + accessories)
+- [x] แก้ไขสินค้า (ทำเป็น Modal ใน `/seller/products`)
+- [ ] `/seller/shop` ฟอร์มแก้ข้อมูลร้าน/โลโก้/บัญชี (ปัจจุบันแสดงข้อมูล + คัดลอกเลขบัญชีแบบ Read-only, แก้แบนเนอร์ได้จาก `/shop/[slug]`)
+- [x] `/seller/finance` แสดง balance, held, ยอดขายรายสินค้า และประวัติ Payout (ยังเหลือตาราง Ledger ละเอียด)
+- [ ] ฟอร์มขอถอนเงิน (`POST /api/seller/payouts`) ใน `/seller/finance`
+- [ ] ทดสอบ Seller A แก้สินค้า Seller B ไม่ได้ (automated test)
+- [ ] ทดสอบร้าน PENDING/SUSPENDED เขียนข้อมูลไม่ได้ (automated test)
 
 **Phase Gate**
-- [ ] Seller สร้าง/แก้ไข/ลบสินค้าตัวเองได้
-- [ ] Seller แก้ข้อมูลร้านได้
-- [ ] Seller เห็นยอดเงินและขอถอนได้
+- [x] Seller สร้าง/แก้ไข/ลบสินค้าตัวเองได้
+- [ ] Seller แก้ข้อมูลร้านได้ (จากหน้า `/seller/shop`)
+- [ ] Seller เห็นยอดเงินและขอถอนได้ (เห็นยอดแล้ว เหลือฟอร์มกดขอถอน)
 - [ ] Staff/Admin ไม่สามารถใช้ Seller API แทน Seller ได้
 
 ---
@@ -519,21 +524,21 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 - [x] SubOrder ที่ถูกยกเลิกไม่ถูกเครดิต
 
 ### 2A — Seller Fulfillment
-- [ ] API `GET /api/seller/orders`
-- [ ] Seller เห็นเฉพาะ SubOrder ของร้านตัวเอง
-- [ ] Seller เปลี่ยน `PAID → PRODUCING`
-- [ ] Seller บันทึก carrier + tracking
-- [ ] Seller เปลี่ยน `PRODUCING → SHIPPED`
-- [ ] หน้า `/seller/orders`
-- [ ] Filter ตามสถานะ/วันที่
-- [ ] Permission test Seller A เห็นออเดอร์ Seller B ไม่ได้
+- [x] API `GET /api/seller/orders` (บน `main`)
+- [x] Seller เห็นเฉพาะ SubOrder ของร้านตัวเอง
+- [x] Seller เปลี่ยน `PAID → PRODUCING` (`PUT /api/seller/orders/:id/status`)
+- [x] Seller บันทึก carrier + tracking (`PUT /api/seller/orders/:id/ship`)
+- [x] Seller เปลี่ยน `PRODUCING → SHIPPED`
+- [x] หน้า `/seller/orders` (พร้อมดูรายละเอียดรอบข้อมือ/จี้ชาร์ม + Modal กรอกขนส่ง)
+- [ ] Filter ตามวันที่ (มี filter ตามสถานะแล้ว)
+- [ ] Permission test Seller A เห็นออเดอร์ Seller B ไม่ได้ (automated test)
 
 ### 2B — Buyer Confirm Received
-- [ ] Buyer เห็นปุ่ม “ยืนยันรับสินค้า” เมื่อ `SHIPPED`
-- [ ] API confirm received
-- [ ] เปลี่ยน SubOrder เป็น `DELIVERED/COMPLETED`
-- [ ] ปลดเงินเข้ากระเป๋าร้าน
-- [ ] สร้าง Ledger แบบ idempotent
+- [x] Buyer เห็นปุ่ม “ยืนยันรับสินค้า” เมื่อ `SHIPPED` (แยกร้านและทั้งออเดอร์ใน `/orders`)
+- [x] API confirm received (`POST /api/orders/sub-orders/:id/confirm-received` & `POST /api/orders/:id/confirm-received`)
+- [x] เปลี่ยน SubOrder เป็น `DELIVERED/COMPLETED`
+- [x] ปลดเงินเข้ากระเป๋าร้าน
+- [x] สร้าง Ledger แบบ idempotent
 - [ ] Auto-complete หลังส่ง 7 วัน
 
 ### 2C — Notification พื้นฐาน
@@ -542,13 +547,13 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 - [ ] แจ้งเตือน Seller เมื่อเงินเข้ากระเป๋า
 
 **Phase Gate**
-- [ ] Buyer จ่าย → Seller ส่ง → Buyer ยืนยัน → Wallet เพิ่มครั้งเดียว
-- [ ] SubOrder ยกเลิก/คืนเงินไม่ถูกเครดิต
-- [ ] Tracking แสดงทั้ง Buyer/Seller/Admin
+- [x] Buyer จ่าย → Seller ส่ง → Buyer ยืนยัน → Wallet เพิ่มครั้งเดียว
+- [x] SubOrder ยกเลิก/คืนเงินไม่ถูกเครดิต
+- [x] Tracking แสดงทั้ง Buyer/Seller/Admin
 
 ---
 
-## ❌ Phase 3 — After-sales + Reviews
+## 🟡 Phase 3 — After-sales + Reviews
 
 **เป้าหมาย:** เพิ่มความน่าเชื่อถือและรองรับปัญหาหลังการขาย
 
@@ -565,10 +570,10 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 - [ ] รีวิวร้านค้า/คะแนนร้าน
 
 ### 3B — Refund / Return
-- [ ] Buyer ยื่นคำขอคืนเงินพร้อมหลักฐาน
-- [ ] Seller อนุมัติ/ปฏิเสธ
-- [ ] Admin ตัดสินข้อพิพาท
-- [ ] หน้า `/dashboard/refunds`
+- [x] Buyer ยื่นคำขอคืนเงิน (Modal ใน `/orders` → `POST /api/orders/:id/refund-requests` — ยังเหลืออัปโหลดรูปจริง + หน้าติดตามสถานะ)
+- [ ] Seller อนุมัติ/ปฏิเสธ (API มีบน branch `api` ยังไม่ merge เข้า `main` และยังไม่มี UI)
+- [x] Admin ตัดสินข้อพิพาท (`GET/PUT /api/orders/admin/refunds` + Audit Log)
+- [x] หน้า `/dashboard/refunds` (Backoffice)
 - [ ] หน้า `/seller/refunds`
 - [ ] Reverse Wallet/GP/Ledger
 - [ ] คืน/ระงับ stock ตามนโยบาย
@@ -582,11 +587,13 @@ REST API ทั้งหมด ฐานข้อมูล Prisma ระบบ�
 
 ---
 
-## ❌ Phase 4 — Coupon / Voucher
+## 🟡 Phase 4 — Coupon / Voucher
 
 **เป้าหมาย:** คูปองคล้าย Shopee ทั้งของแพลตฟอร์มและของร้าน
 
 **เจ้าของ:** Role 1 เป็นเจ้าของ Vertical, Role 2 ช่วย Cart/Checkout, Role 3 ช่วย Seller/Admin UI, Role 4 review schema/เงิน
+
+> **หมายเหตุ:** มี UI Mockup ฝั่ง Buyer แล้วที่ `/coupons` และ `CouponSelectModal` ในหน้า Checkout (เก็บข้อมูลใน `localStorage` + `src/data/coupons.js`) แต่ยังไม่มี Database Schema, Backend API, Server Quote และหน้าจัดการ Seller/Admin
 
 ### 4A — Voucher Core
 - [ ] `voucher.prisma`
@@ -726,24 +733,26 @@ cd bareandbold_backoffice && bun run dev
 # ⚠️ 11. ข้อจำกัดที่ต้องรู้
 
 ## พร้อมแล้ว
-- Admin Core: อนุมัติ/ระงับร้าน, Product Center, Moderation, Payout, Analytics, Platform Settings, Audit Log
+- Admin Core: อนุมัติ/ระงับร้าน, Product Center, Moderation, Payout, Analytics, Platform Settings, Audit Log, Admin Refund (`/dashboard/refunds`)
 - Split Order ตามร้าน + snapshot GP/commission/ค่าส่งลง SubOrder
 - Cart และ Checkout คิดค่าส่งแยกตามร้าน
+- Seller Center Core: Sidebar + Navigation, Dashboard (`/seller`), Products CRUD Modal (`/seller/products`), Orders & Fulfillment (`/seller/orders`), Finance & Sales Summary (`/seller/finance`), Shop Info (`/seller/shop`)
+- Seller Orders & Fulfillment API (`GET /api/seller/orders`, เปลี่ยน `PAID → PRODUCING → SHIPPED` + tracking/carrier)
+- Buyer Confirm Received แยกร้าน/ทั้งออเดอร์ + Escrow Release เข้ากระเป๋าร้าน พร้อม Ledger กันเครดิตซ้ำ
 - Seller Wallet/Payout API + Admin Payout state machine
-- Settlement หลัง Admin เปลี่ยน SubOrder เป็น DELIVERED/COMPLETED พร้อมกันเครดิตซ้ำ
+- Refund request ฝั่ง Buyer (Modal ใน `/orders`) และ Admin Approve/Reject (`/dashboard/refunds`)
 
 ## ยังขาด / ต้องระวัง
-- Seller Center UI ยังเป็น scaffold: dashboard/products/create/edit/shop/wallet/orders ยังไม่มีหน้าใช้งานจริง
-- Seller Orders / Fulfillment API ยังไม่มี — Seller อัปเดตสถานะผลิต/จัดส่ง/เลขพัสดุเองไม่ได้
-- Buyer Confirm Received และ Auto-complete ยังไม่มี
-- Reviews และ Refund ยังไม่มี API/UI
-- Coupon/Voucher ยังไม่เริ่ม — Role 1 เป็นเจ้าของ Vertical นี้
-- Admin Refund Page ยังไม่มี (Role 2 เจ้าของฟีเจอร์, Role 3 ช่วยฝั่ง Backoffice)
+- **Backend branch mismatch:** `bareandbold_backend` มี branch `api` (มี `src/modules/refund` แยก + seller refund) ที่ยังไม่ได้ merge เข้า `main` — โค้ด Seller Orders & Confirm Received อยู่บน `main`
+- Seller Center ยังขาด: ฟอร์มกดขอถอนเงิน + Ledger ใน `/seller/finance`, ฟอร์มแก้ไขข้อมูลร้านใน `/seller/shop`, แสดง `moderationStatus` ใน `/seller/products`, และหน้า `/seller/refunds`
+- Auto-complete ออเดอร์หลังส่ง 7 วัน และ Notification พื้นฐานยังไม่มี
+- Reviews (สินค้าและร้านค้า) ยังไม่มี API/UI
+- Horoscope/Gemstone (`/fortune-card`) และ Coupon/Voucher (`/coupons` + `CouponSelectModal`) ยังเป็น Mockup ฝั่ง Frontend ยังไม่เชื่อม DB/Backend API จริง
+- Refund ยังขาด: อัปโหลดรูปหลักฐานจริงในฟอร์ม Buyer (ปัจจุบันส่ง `images: []`), หน้าติดตามสถานะคืนเงินฝั่ง Buyer, และระบบ reverse Wallet/GP/Ledger + คืน stock อัตโนมัติ
 - Token ฝั่ง Storefront ยังใช้ Bearer ใน localStorage แม้ Backend ตั้ง cookie แล้ว
 - Product Detail ยังไม่มีการ์ดร้านและ Reviews UI
 - Migration เก่าไม่ตรงกับ DB ที่ใช้ `db push` — ต้องทำ baseline/staging ก่อนพึ่ง `prisma migrate deploy`
 - CI ปัจจุบันมีเฉพาะ deploy workflow ยังไม่มี lint/build/test gate; ทุก push `main` deploy ทันที
-- ไม่มี automated tests (`*.test` / E2E) ใน repo — มีเพียง Postman, k6 และ manual test
+- ไม่มี automated tests (`*.test` / E2E) ใน repo — มีเพียง Postman, k6, `/docs/uat` และ manual test
 - Payout ยังเป็นการโอนเงิน manual + บันทึกหลักฐาน ไม่ได้เชื่อมธุรกรรมธนาคารอัตโนมัติ
-- Refund/ยกเลิกหลังชำระเงินยังไม่ reverse Ledger/GP อัตโนมัติ
 - ค่าส่งจริงยังใช้ Mock Shipping/กรอกเลขพัสดุเอง ไม่ได้เชื่อมผู้ให้บริการขนส่ง

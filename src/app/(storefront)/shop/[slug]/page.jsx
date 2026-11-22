@@ -7,6 +7,7 @@ import { shopService } from "@/services/shop.service";
 import { useAuth } from "@/context/AuthContext";
 import EditBannerModal from "@/components/seller/EditBannerModal";
 import AddProductModal from "@/components/seller/AddProductModal";
+import ShopReviewsSection from "@/components/shop/ShopReviewsSection";
 
 /**
  * Shop Profile Page (public)
@@ -318,6 +319,13 @@ export default function ShopProfilePage() {
           })}
         </div>
       )}
+
+      {/* Shop Reviews */}
+      <ShopReviewsSection
+        shopSlug={shop.slug}
+        shopName={shop.name}
+        isOwner={isOwner}
+      />
 
       {/* Edit Banner Modal */}
       <EditBannerModal

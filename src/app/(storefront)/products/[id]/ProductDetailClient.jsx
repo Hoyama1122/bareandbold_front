@@ -9,6 +9,7 @@ import { wishlistService } from "@/services/wishlist.service";
 import ProductSkeleton from "@/components/product-detail/ProductSkeleton";
 import ProductImageGallery from "@/components/product-detail/ProductImageGallery";
 import ProductInfo from "@/components/product-detail/ProductInfo";
+import ProductReviewsSection from "@/components/product-detail/ProductReviewsSection";
 import RecommendedProducts from "@/components/product-detail/RecommendedProducts";
 import ImageZoomModal from "@/components/product-detail/ImageZoomModal";
 import { addToCart as addCartAPI } from "@/services/cart.service";
@@ -359,6 +360,8 @@ export default function ProductDetailClient({ nameSlug }) {
           toggleWishlist={toggleWishlist}
         />
       </div>
+
+      <ProductReviewsSection productId={product.id} />
 
       <RecommendedProducts
         recommendedProducts={recommendedProducts}

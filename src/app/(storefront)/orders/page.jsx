@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { orderService } from "@/services/order.service";
 import { cartService } from "@/services/cart.service";
 import { paymentService } from "@/services/payment.service";
-import {Clock,MapPin,Truck,AlertCircle,ShoppingBag,Store,ChevronDown,ChevronUp,RotateCcw,ImagePlus,} from "lucide-react";
+import {Clock,MapPin,Truck,AlertCircle,ShoppingBag,Store,ChevronDown,ChevronUp,RotateCcw,ImagePlus,Star} from "lucide-react";
+import ReviewModal from "@/components/orders/ReviewModal";
 
 // Theme color constants matching f:/GitHub/CSI204-BareAndBold/bareandbold_front/src/app/globals.css
 const CREAM = "#FDFBF7";       // earth-cream
@@ -218,6 +219,7 @@ export default function OrderHistoryPage() {
   const [returnNotice, setReturnNotice] = useState("");
   const [submittingConfirmId, setSubmittingConfirmId] = useState(null);
   const [submittingRefund, setSubmittingRefund] = useState(false);
+  const [reviewModalOrder, setReviewModalOrder] = useState(null);
 
   const eligibleReturnOrders = orders.filter((order) =>
     ["DELIVERED", "COMPLETED"].includes(order.status)
@@ -622,6 +624,19 @@ export default function OrderHistoryPage() {
                           </button>
                         )}
 
+                        {["DELIVERED", "COMPLETED"].includes(order.status) && (
+                          <button
+                            onClick={() => setReviewModalOrder(order)}
+                            className="px-5 py-2 rounded-lg text-xs font-semibold text-white cursor-pointer hover:opacity-95"
+                            style={{ background: WALNUT }}
+                          >
+                            <span className="inline-flex items-center gap-1.5">
+                              <Star size={14} />
+                              เขียนรีวิว
+                            </span>
+                          </button>
+                        )}
+
                         <button
                           onClick={() => openReturnModal(order)}
                           className="px-5 py-2 border rounded-lg text-xs font-semibold cursor-pointer"
@@ -655,6 +670,13 @@ export default function OrderHistoryPage() {
           </div>
         )}
       </main>
+
+      <ReviewModal
+        isOpen={Boolean(reviewModalOrder)}
+        order={reviewModalOrder}
+        onClose={() => setReviewModalOrder(null)}
+        onSuccess={fetchOrders}
+      />
 
       {showReturnModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
