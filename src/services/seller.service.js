@@ -53,4 +53,28 @@ export const sellerService = {
       body: JSON.stringify({ amount }),
     });
   },
+
+  // Refunds
+  getRefunds: async (params = {}) => {
+    const query = new URLSearchParams();
+    if (params.status && params.status !== "ALL") query.set("status", params.status);
+    const qs = query.toString() ? `?${query.toString()}` : "";
+    return apiFetch(`/seller/refunds${qs}`, {
+      method: "GET",
+    });
+  },
+
+  approveRefund: async (id, sellerNote) => {
+    return apiFetch(`/seller/refunds/${id}/approve`, {
+      method: "PUT",
+      body: JSON.stringify({ sellerNote }),
+    });
+  },
+
+  rejectRefund: async (id, sellerNote) => {
+    return apiFetch(`/seller/refunds/${id}/reject`, {
+      method: "PUT",
+      body: JSON.stringify({ sellerNote }),
+    });
+  },
 };

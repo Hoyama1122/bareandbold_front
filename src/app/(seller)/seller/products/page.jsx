@@ -420,7 +420,8 @@ export default function SellerProductsPage() {
                   <th className="px-4 py-3">หมวดหมู่</th>
                   <th className="px-4 py-3">ราคา</th>
                   <th className="px-4 py-3">จำนวนคงเหลือ</th>
-                  <th className="px-4 py-3">สถานะ</th>
+                  <th className="px-4 py-3">สถานะหน้าร้าน</th>
+                  <th className="px-4 py-3">การตรวจสอบ</th>
                   <th className="px-5 py-3 text-right">การจัดการ</th>
                 </tr>
               </thead>
@@ -512,6 +513,28 @@ export default function SellerProductsPage() {
                         >
                           {product.isActive ? "เปิดขายอยู่" : "ปิดการขาย"}
                         </button>
+                      </td>
+
+                      <td className="px-4 py-3.5 whitespace-nowrap">
+                        <span
+                          className={`inline-block rounded-md px-2.5 py-1 text-[11px] font-bold ${
+                            product.moderationStatus === "APPROVED" || !product.moderationStatus
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : product.moderationStatus === "PENDING"
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : product.moderationStatus === "HIDDEN"
+                              ? "bg-purple-50 text-purple-700 border border-purple-200"
+                              : "bg-rose-50 text-rose-700 border border-rose-200"
+                          }`}
+                        >
+                          {product.moderationStatus === "APPROVED" || !product.moderationStatus
+                            ? "✓ อนุมัติแล้ว"
+                            : product.moderationStatus === "PENDING"
+                            ? "⏳ รอตรวจสอบ"
+                            : product.moderationStatus === "HIDDEN"
+                            ? "👁️ ถูกซ่อนชั่วคราว"
+                            : "⚠️ ถูกระงับ"}
+                        </span>
                       </td>
 
                       <td className="px-5 py-3.5 text-right whitespace-nowrap">

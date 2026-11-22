@@ -20,7 +20,7 @@ import ShippingForm from "@/components/checkout/ShippingForm";
 import PaymentForm from "@/components/checkout/PaymentForm";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import CouponSelectModal from "@/components/checkout/CouponSelectModal";
-import { getCollectedCoupons, calculateCouponDiscount } from "@/data/coupons";
+import { voucherService } from "@/services/voucher.service";
 
 function baht(n) {
   return n.toLocaleString("th-TH");
@@ -50,21 +50,17 @@ export default function CheckoutPage() {
   // Coupon states
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
-  const [collectedCoupons, setCollectedCoupons] = useState([]);
+  const [voucherQuote, setVoucherQuote] = useState(null);
 
   useEffect(() => {
     authService.getProfile()
       .then((res) => {
         if (res.success && res.user) {
           setProfile(res.user);
-          setCollectedCoupons(getCollectedCoupons(res.user));
-        } else {
-          setCollectedCoupons(getCollectedCoupons(null));
         }
       })
       .catch((err) => {
         console.error("Failed to load user profile in checkout:", err);
-        setCollectedCoupons(getCollectedCoupons(null));
       });
   }, []);
 
@@ -320,20 +316,16 @@ export default function CheckoutPage() {
   );
   const { subtotal, shipping: baseShipping, itemCount } = pricing;
 
-  // Coupon discount calculation
-  const couponDiscountResult = useMemo(() => {
-    if (!appliedCoupon) {
-      return { valid: false, discountAmount: 0, shippingDiscount: 0 };
-    }
-    return calculateCouponDiscount(
-      appliedCoupon,
-      subtotal,
-      baseShipping > 0 ? baseShipping : (shippingSettings?.shippingFee ?? 50),
-    );
-  }, [appliedCoupon, subtotal, baseShipping, shippingSettings]);
+  // Server-authoritative or preview discount calculation
+  const discountAmount = voucherQuote
+    ? (voucherQuote.platformDiscount || 0) + (voucherQuote.shopDiscount || 0)
+    : appliedCoupon?.discountAmount || 0;
+  const shippingDiscount = voucherQuote
+    ? voucherQuote.shippingDiscount || 0
+    : appliedCoupon?.type === "SHIPPING"
+    ? Math.min(baseShipping, appliedCoupon?.discountAmount || baseShipping)
+    : 0;
 
-  const discountAmount = couponDiscountResult.valid ? couponDiscountResult.discountAmount : 0;
-  const shippingDiscount = couponDiscountResult.valid && baseShipping > 0 ? couponDiscountResult.shippingDiscount : 0;
   const effectiveShipping = Math.max(0, baseShipping - shippingDiscount);
   const total = Math.max(0, subtotal + effectiveShipping - discountAmount);
 
@@ -374,7 +366,7 @@ export default function CheckoutPage() {
         throw new Error("กรุณาระบุข้อมูลผู้รับและที่อยู่จัดส่งให้ครบถ้วน");
       }
 
-      // 1. Create order on backend with coupon discounts
+      // 1. Create order on backend with coupon discounts & voucher IDs
       const orderRes = await orderService.createOrder({
         shippingAddress,
         recipientName,
@@ -382,6 +374,9 @@ export default function CheckoutPage() {
         discountAmount,
         shippingDiscount,
         couponCode: appliedCoupon?.code || null,
+        platformCode: appliedCoupon?.type === "PLATFORM" ? appliedCoupon.code : undefined,
+        shippingCode: appliedCoupon?.type === "SHIPPING" ? appliedCoupon.code : undefined,
+        shopCodes: appliedCoupon?.type === "SHOP" ? [appliedCoupon.code] : undefined,
       });
 
       if (!orderRes.success) {
@@ -549,9 +544,14 @@ export default function CheckoutPage() {
           subtotal={subtotal}
           baseShipping={baseShipping}
           appliedCoupon={appliedCoupon}
-          onApplyCoupon={(cp) => setAppliedCoupon(cp)}
-          onRemoveCoupon={() => setAppliedCoupon(null)}
-          collectedCoupons={collectedCoupons}
+          onApplyCoupon={(cp, quote) => {
+            setAppliedCoupon(cp);
+            if (quote) setVoucherQuote(quote);
+          }}
+          onRemoveCoupon={() => {
+            setAppliedCoupon(null);
+            setVoucherQuote(null);
+          }}
         />
       </main>
     </div>

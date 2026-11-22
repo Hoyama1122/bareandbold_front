@@ -59,6 +59,22 @@ function NavIcon({ type, className = "h-[18px] w-[18px] shrink-0" }) {
           <path d="M12 12v9" />
         </svg>
       );
+    case "refund":
+      return (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={className}
+          aria-hidden="true"
+        >
+          <path d="M3 10h10a5 5 0 0 1 5 5v2" />
+          <path d="M7 6L3 10l4 4" />
+        </svg>
+      );
     case "orders":
       return (
         <svg
@@ -244,6 +260,7 @@ export default function SellerLayout({ children }) {
       section: "จัดการร้านค้า",
       items: [
         { href: "/seller/orders", label: "คำสั่งซื้อ / จัดส่ง", iconType: "orders" },
+        { href: "/seller/refunds", label: "คำขอคืนเงิน / เคลม", iconType: "refund" },
         { href: "/seller/products", label: "รายการสินค้า", iconType: "products" },
         { href: "/seller/vouchers", label: "คูปองร้านค้า", iconType: "voucher" },
         { href: "/seller/finance", label: "การเงินร้านค้า", iconType: "wallet" },

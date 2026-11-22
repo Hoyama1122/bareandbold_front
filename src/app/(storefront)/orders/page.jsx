@@ -7,6 +7,7 @@ import { cartService } from "@/services/cart.service";
 import { paymentService } from "@/services/payment.service";
 import {Clock,MapPin,Truck,AlertCircle,ShoppingBag,Store,ChevronDown,ChevronUp,RotateCcw,ImagePlus,Star} from "lucide-react";
 import ReviewModal from "@/components/orders/ReviewModal";
+import { uploadService } from "@/services/upload.service";
 
 // Theme color constants matching f:/GitHub/CSI204-BareAndBold/bareandbold_front/src/app/globals.css
 const CREAM = "#FDFBF7";       // earth-cream
@@ -24,6 +25,7 @@ const TABS = [
   { id: "PAID", label: "ต้องจัดส่ง" },
   { id: "SHIPPED", label: "ต้องได้รับ" },
   { id: "DELIVERED", label: "สำเร็จแล้ว" },
+  { id: "REFUNDS", label: "การคืนเงิน/เปลี่ยนสินค้า" },
   { id: "CANCELLED", label: "ยกเลิกแล้ว" }
 ];
 
@@ -121,6 +123,14 @@ export default function OrderHistoryPage() {
     if (activeTab === "DELIVERED") {
       return orders.filter((order) =>
         ["DELIVERED", "COMPLETED"].includes(order.status)
+      );
+    }
+
+    if (activeTab === "REFUNDS") {
+      return orders.filter(
+        (order) =>
+          order.status === "REFUNDED" ||
+          (Array.isArray(order.refundRequests) && order.refundRequests.length > 0)
       );
     }
 
@@ -319,8 +329,22 @@ export default function OrderHistoryPage() {
 
     try {
       setSubmittingRefund(true);
-      setReturnNotice("");
+      setReturnNotice("กำลังอัปโหลดรูปภาพหลักฐาน...");
 
+      // อัปโหลดไฟล์รูปภาพจริง (ถ้ามี)
+      const uploadedUrls = [];
+      if (Array.isArray(returnFiles) && returnFiles.length > 0) {
+        for (const file of returnFiles) {
+          try {
+            const url = await uploadService.uploadFile(file, "refunds");
+            if (url) uploadedUrls.push(url);
+          } catch (uploadErr) {
+            console.warn("Upload refund file error:", uploadErr);
+          }
+        }
+      }
+
+      setReturnNotice("กำลังส่งคำขอคืนสินค้า...");
       const res = await orderService.createRefundRequest(returnOrderId, {
         requestType: returnType,
         orderItemId: returnItemId || null,
@@ -330,7 +354,7 @@ export default function OrderHistoryPage() {
         bankAccountNumber: returnType === "REFUND" ? returnBankAccountNumber.trim() : "",
         bankAccountName: returnType === "REFUND" ? returnBankAccountName.trim() : "",
         details: returnDetails,
-        images: [],
+        images: uploadedUrls,
       });
 
       if (res?.success) {
@@ -506,6 +530,36 @@ export default function OrderHistoryPage() {
                     );
                   })}
                 </div>
+
+                {/* แสดงสถานะคำขอคืนเงิน / เปลี่ยนสินค้า (ถ้ามี) */}
+                {Array.isArray(order.refundRequests) && order.refundRequests.length > 0 && (
+                  <div className="mx-6 mb-3 p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold flex items-center gap-1.5 text-amber-800">
+                        <RotateCcw size={14} />
+                        คำขอ{order.refundRequests[0].requestType === "EXCHANGE" ? "เปลี่ยนสินค้า" : "คืนเงิน"} (#{order.refundRequests[0].id.slice(0, 8)})
+                      </span>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] ${
+                          order.refundRequests[0].status === "APPROVED"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : order.refundRequests[0].status === "REJECTED"
+                            ? "bg-rose-100 text-rose-800"
+                            : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {order.refundRequests[0].status === "APPROVED"
+                          ? "อนุมัติแล้ว"
+                          : order.refundRequests[0].status === "REJECTED"
+                          ? "ปฏิเสธคำขอ"
+                          : "รอเจ้าหน้าที่ตรวจสอบ"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-amber-800/80">
+                      เหตุผล: {order.refundRequests[0].reason} {order.refundRequests[0].adminNote ? `(หมายเหตุจากแอดมิน: ${order.refundRequests[0].adminNote})` : ""}
+                    </p>
+                  </div>
+                )}
 
                 {/* SubOrders Status & Confirm per Shop (Multi-Vendor Escrow Release) */}
                 {order.subOrders && order.subOrders.length > 0 && (

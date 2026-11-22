@@ -4,36 +4,55 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { shopService } from "@/services/shop.service";
+import { Store, Landmark, Edit3, CheckCircle2, AlertCircle, Copy, Check } from "lucide-react";
 
 export default function SellerShopProfilePage() {
-  const { shop } = useAuth();
+  const { shop, refresh: refreshAuth } = useAuth();
   const [shopDetail, setShopDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [copiedAcc, setCopiedAcc] = useState(false);
 
+  // Edit Mode States
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    logoUrl: "",
+    bannerUrl: "",
+    bankName: "",
+    bankAccountNumber: "",
+    bankAccountName: "",
+  });
+
+  const loadShop = async () => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+      const data = await shopService.getMyShop();
+      const current = data.shop || shop || {};
+      setShopDetail(current);
+      setFormData({
+        name: current.name || "",
+        description: current.description || "",
+        logoUrl: current.logoUrl || "",
+        bannerUrl: current.bannerUrl || "",
+        bankName: current.bankName || "",
+        bankAccountNumber: current.bankAccountNumber || "",
+        bankAccountName: current.bankAccountName || "",
+      });
+    } catch (err) {
+      setErrorMsg(err.message || "ไม่สามารถโหลดข้อมูลร้านค้าได้");
+      setShopDetail(shop || null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let cancelled = false;
-    const loadShop = async () => {
-      try {
-        setLoading(true);
-        const data = await shopService.getMyShop();
-        if (!cancelled) {
-          setShopDetail(data.shop || shop || null);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setErrorMsg(err.message || "ไม่สามารถโหลดข้อมูลร้านค้าได้");
-          setShopDetail(shop || null);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
     loadShop();
-    return () => {
-      cancelled = true;
-    };
   }, [shop]);
 
   const currentShop = shopDetail || shop || {};
@@ -43,6 +62,29 @@ export default function SellerShopProfilePage() {
     navigator.clipboard?.writeText(String(currentShop.bankAccountNumber));
     setCopiedAcc(true);
     setTimeout(() => setCopiedAcc(false), 1800);
+  };
+
+  const handleSaveShop = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    try {
+      const res = await shopService.update(formData);
+      if (res.success) {
+        setSuccessMsg("บันทึกการเปลี่ยนแปลงข้อมูลร้านและบัญชีธนาคารเรียบร้อยแล้ว");
+        setIsEditing(false);
+        loadShop();
+        if (refreshAuth) refreshAuth();
+      } else {
+        throw new Error(res.error || "ไม่สามารถอัปเดตข้อมูลร้านค้าได้");
+      }
+    } catch (err) {
+      setErrorMsg(err.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -62,21 +104,27 @@ export default function SellerShopProfilePage() {
             ข้อมูลร้านค้าและบัญชีรับเงิน
           </h1>
           <p className="text-sm leading-relaxed text-slate-600 sm:text-[15px]">
-            ตรวจสอบสถานะร้านค้า รายละเอียดแบรนด์ เลขประจำตัวผู้เสียภาษี และบัญชีธนาคารรับเงินของร้าน
+            ตรวจสอบและแก้ไขรายละเอียดแบรนด์ คำอธิบายร้าน และบัญชีธนาคารสำหรับรับเงินโอน Payout
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="/seller"
-            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+          <button
+            type="button"
+            onClick={() => setIsEditing(!isEditing)}
+            className={`inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-bold transition shadow-xs cursor-pointer ${
+              isEditing
+                ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                : "bg-[#0F766E] text-white hover:bg-[#115E59]"
+            }`}
           >
-            กลับหน้าภาพรวม
-          </Link>
+            <Edit3 size={16} />
+            {isEditing ? "ยกเลิกการแก้ไข" : "แก้ไขข้อมูลร้านและบัญชี"}
+          </button>
           {currentShop.slug && (
             <Link
               href={`/shop/${currentShop.slug}`}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#0F766E] px-5 py-2.5 text-sm font-bold text-white shadow-xs transition hover:bg-[#115E59]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition"
             >
               <span>ดูหน้าร้านของฉัน</span>
               <span>→</span>
@@ -85,9 +133,17 @@ export default function SellerShopProfilePage() {
         </div>
       </div>
 
+      {successMsg && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3.5 text-sm font-semibold text-emerald-800 flex items-center gap-2">
+          <CheckCircle2 size={16} />
+          <span>{successMsg}</span>
+        </div>
+      )}
+
       {errorMsg && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-5 py-3.5 text-sm font-semibold text-rose-700">
-          {errorMsg}
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-5 py-3.5 text-sm font-semibold text-rose-700 flex items-center gap-2">
+          <AlertCircle size={16} />
+          <span>{errorMsg}</span>
         </div>
       )}
 
@@ -95,7 +151,149 @@ export default function SellerShopProfilePage() {
         <div className="rounded-2xl border border-slate-200 bg-white p-14 text-center text-base font-medium text-slate-500">
           กำลังโหลดข้อมูลร้านค้า...
         </div>
+      ) : isEditing ? (
+        /* Edit Form */
+        <form onSubmit={handleSaveShop} className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-lg font-extrabold text-slate-900">แก้ไขข้อมูลร้านค้าและบัญชีธนาคาร</h2>
+            <p className="text-xs text-slate-500">ปรับเปลี่ยนชื่อร้าน คำอธิบาย รูปแบนเนอร์/โลโก้ และบัญชีรับเงิน</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                ชื่อร้านค้า <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-800 focus:outline-hidden focus:border-[#0F766E]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                URL Slug ร้านค้า (ไม่สามารถเปลี่ยนได้)
+              </label>
+              <input
+                type="text"
+                disabled
+                value={currentShop.slug || ""}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-mono text-slate-400 bg-slate-50 cursor-not-allowed"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                คำอธิบายร้านค้า
+              </label>
+              <textarea
+                rows={3}
+                value={formData.description}
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                placeholder="อธิบายสไตล์ร้าน เอกลักษณ์ของเครื่องประดับ หรือบริการสั่งทำ..."
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-800 focus:outline-hidden focus:border-[#0F766E]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                URL โลโก้ร้านค้า (Logo URL)
+              </label>
+              <input
+                type="url"
+                value={formData.logoUrl}
+                onChange={(e) => setFormData((prev) => ({ ...prev, logoUrl: e.target.value }))}
+                placeholder="https://example.com/logo.jpg"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-hidden focus:border-[#0F766E]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                URL แบนเนอร์ร้านค้า (Banner URL)
+              </label>
+              <input
+                type="url"
+                value={formData.bannerUrl}
+                onChange={(e) => setFormData((prev) => ({ ...prev, bannerUrl: e.target.value }))}
+                placeholder="https://example.com/banner.jpg"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-hidden focus:border-[#0F766E]"
+              />
+            </div>
+          </div>
+
+          <div className="border-t border-slate-100 pt-5">
+            <h3 className="text-sm font-extrabold text-slate-900 mb-3 flex items-center gap-2">
+              <Landmark size={18} className="text-[#0F766E]" />
+              ข้อมูลบัญชีธนาคารสำหรับรับเงินโอน (Payout Account)
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  ชื่อธนาคาร <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.bankName}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, bankName: e.target.value }))}
+                  placeholder="เช่น กสิกรไทย, ไทยพาณิชย์"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-hidden focus:border-[#0F766E]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  เลขที่บัญชีธนาคาร <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.bankAccountNumber}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, bankAccountNumber: e.target.value }))}
+                  placeholder="เช่น 123-4-56789-0"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-[#0F766E]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  ชื่อเจ้าของบัญชี <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.bankAccountName}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, bankAccountName: e.target.value }))}
+                  placeholder="ชื่อ-นามสกุลตรงกับบัญชี"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-hidden focus:border-[#0F766E]"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition"
+            >
+              ยกเลิก
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-6 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#115E59] disabled:opacity-50 text-white text-xs font-bold transition cursor-pointer"
+            >
+              {saving ? "กำลังบันทึก..." : "✓ บันทึกข้อมูลร้านและบัญชี"}
+            </button>
+          </div>
+        </form>
       ) : (
+        /* View Mode */
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           {/* การ์ดข้อมูลทั่วไปของร้าน */}
           <div className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs sm:p-7">
@@ -130,9 +328,7 @@ export default function SellerShopProfilePage() {
                 </div>
 
                 <div className="flex flex-col justify-between gap-1.5 py-3.5 sm:flex-row sm:items-center">
-                  <dt className="font-medium text-slate-500">
-                    เลขประจำตัวผู้เสียภาษี
-                  </dt>
+                  <dt className="font-medium text-slate-500">เลขประจำตัวผู้เสียภาษี</dt>
                   <dd className="font-mono text-base font-bold text-slate-900">
                     {currentShop.taxId || "-"}
                   </dd>
@@ -158,8 +354,8 @@ export default function SellerShopProfilePage() {
                 <h2 className="mt-2 text-xl font-extrabold text-slate-900 sm:text-2xl">
                   บัญชีธนาคารรับเงินของร้านค้า
                 </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  ข้อมูลบัญชีธนาคารที่ลงทะเบียนไว้สำหรับรับโอนยอดขาย
+                <p className="mt-1 text-xs text-slate-500">
+                  แอดมินจะใช้ข้อมูลบัญชีนี้ในการโอนเงินค่าสินค้า (หลังหัก GP) เมื่อร้านค้ากดยื่นถอนเงิน
                 </p>
               </div>
 
@@ -167,42 +363,41 @@ export default function SellerShopProfilePage() {
                 <div className="flex flex-col justify-between gap-1.5 py-3.5 sm:flex-row sm:items-center">
                   <dt className="font-medium text-slate-500">ธนาคาร</dt>
                   <dd className="text-base font-extrabold text-slate-900 sm:text-lg">
-                    {currentShop.bankName || "-"}
+                    {currentShop.bankName || "ยังไม่ได้ระบุ"}
                   </dd>
                 </div>
 
                 <div className="flex flex-col justify-between gap-1.5 py-3.5 sm:flex-row sm:items-center">
-                  <dt className="font-medium text-slate-500">ชื่อบัญชีธนาคาร</dt>
-                  <dd className="text-base font-extrabold text-slate-900 sm:text-lg">
-                    {currentShop.bankAccountName || "-"}
-                  </dd>
-                </div>
-
-                <div className="flex flex-col justify-between gap-2 py-4 sm:flex-row sm:items-center">
-                  <dt className="font-medium text-slate-500">
-                    เลขที่บัญชีธนาคาร
-                  </dt>
-                  <dd className="flex items-center gap-2.5">
-                    <span className="rounded-xl bg-slate-900 px-3.5 py-1.5 font-mono text-base font-extrabold tracking-wider text-white sm:text-lg">
-                      {currentShop.bankAccountNumber || "-"}
+                  <dt className="font-medium text-slate-500">เลขที่บัญชี</dt>
+                  <dd className="flex items-center gap-2">
+                    <span className="font-mono text-base font-bold text-slate-900 sm:text-lg">
+                      {currentShop.bankAccountNumber || "ยังไม่ได้ระบุ"}
                     </span>
                     {currentShop.bankAccountNumber && (
                       <button
-                        type="button"
                         onClick={handleCopyAccount}
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 cursor-pointer"
+                        className="rounded-lg border border-slate-200 bg-white p-1 text-slate-600 hover:bg-slate-50"
+                        title="คัดลอกเลขบัญชี"
                       >
-                        {copiedAcc ? "คัดลอกแล้ว" : "คัดลอก"}
+                        {copiedAcc ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
                       </button>
                     )}
+                  </dd>
+                </div>
+
+                <div className="flex flex-col justify-between gap-1.5 py-3.5 sm:flex-row sm:items-center">
+                  <dt className="font-medium text-slate-500">ชื่อเจ้าของบัญชี</dt>
+                  <dd className="text-base font-extrabold text-slate-900">
+                    {currentShop.bankAccountName || "ยังไม่ได้ระบุ"}
                   </dd>
                 </div>
               </dl>
             </div>
 
-            <div className="mt-5 rounded-xl border border-teal-100 bg-teal-50/60 px-4 py-3.5 text-xs leading-relaxed text-teal-900 sm:text-sm">
-              ยอดขายจากคำสั่งซื้อของร้านจะอ้างอิงตามบัญชีธนาคารที่แสดงด้านบนนี้
-              หากต้องการแก้ไขข้อมูลร้านหรือบัญชี สามารถจัดการได้ที่หน้าสมัคร/ข้อมูลร้าน
+            <div className="mt-6 rounded-xl border border-slate-100 bg-[#F8F9FA] p-4 text-xs text-slate-500 space-y-1">
+              <p className="font-bold text-slate-700">เงื่อนไขการรับเงิน:</p>
+              <p>• เมื่อลูกค้ากดยืนยันรับสินค้า ยอดเงินสุทธิจะเข้าสู่ Available Balance ของร้านทันที</p>
+              <p>• ร้านค้าสามารถกดยื่นถอนเงินได้ตลอดเวลาที่เมนู &quot;การเงินร้านค้า&quot;</p>
             </div>
           </div>
         </div>

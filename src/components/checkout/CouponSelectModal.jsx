@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { Tag, Check, X, ArrowRight, AlertCircle, Sparkles, Percent, Truck } from "lucide-react";
-import { INITIAL_COUPONS, calculateCouponDiscount } from "@/data/coupons";
-import { INK, CREAM, OLIVE, WHITE, BORDER, MUTED } from "./constants";
+import React, { useState, useEffect, useCallback } from "react";
+import { Tag, Check, X, ArrowRight, AlertCircle, Sparkles, Percent, Truck, Loader2 } from "lucide-react";
+import { voucherService } from "@/services/voucher.service";
 
 export default function CouponSelectModal({
   isOpen,
@@ -13,62 +12,157 @@ export default function CouponSelectModal({
   appliedCoupon = null,
   onApplyCoupon,
   onRemoveCoupon,
-  collectedCoupons = [],
 }) {
   const [typedCode, setTypedCode] = useState("");
   const [codeError, setCodeError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [quoting, setQuoting] = useState(false);
+  const [vouchers, setVouchers] = useState([]);
   const [selectedCoupon, setSelectedCoupon] = useState(appliedCoupon);
+
+  useEffect(() => {
+    setSelectedCoupon(appliedCoupon);
+  }, [appliedCoupon]);
+
+  const loadVouchers = useCallback(async () => {
+    if (!isOpen) return;
+    setLoading(true);
+    try {
+      // ดึงคูปองของผู้ใช้ หรือคูปอง Public ทั้งหมด
+      const [myRes, pubRes] = await Promise.allSettled([
+        voucherService.getMyVouchers("ACTIVE"),
+        voucherService.getPublicVouchers(),
+      ]);
+
+      const list = [];
+      const seen = new Set();
+
+      if (myRes.status === "fulfilled" && myRes.value?.success && Array.isArray(myRes.value.vouchers)) {
+        for (const uv of myRes.value.vouchers) {
+          const v = uv.voucher || uv;
+          if (v && !seen.has(v.code)) {
+            seen.add(v.code);
+            list.push({ ...v, isCollected: true });
+          }
+        }
+      }
+
+      if (pubRes.status === "fulfilled" && pubRes.value?.success && Array.isArray(pubRes.value.vouchers)) {
+        for (const v of pubRes.value.vouchers) {
+          if (v && !seen.has(v.code)) {
+            seen.add(v.code);
+            list.push(v);
+          }
+        }
+      }
+
+      setVouchers(list);
+    } catch (err) {
+      console.error("Load vouchers modal error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    loadVouchers();
+  }, [loadVouchers]);
 
   if (!isOpen) return null;
 
-  // Merge INITIAL_COUPONS with collectedCoupons to ensure latest data
-  const allAvailableCoupons = [...INITIAL_COUPONS];
+  // ตรวจสอบความถูกต้องเบื้องต้นตาม minSpend
+  const evaluatedVouchers = vouchers.map((v) => {
+    const minSpend = Number(v.minSpend || 0);
+    const isEligible = subtotal >= minSpend;
+    let discountPreview = 0;
+    if (v.discountType === "PERCENT") {
+      const calc = (subtotal * Number(v.discountValue)) / 100;
+      discountPreview = v.maxDiscount ? Math.min(calc, Number(v.maxDiscount)) : calc;
+    } else {
+      discountPreview = Number(v.discountValue);
+    }
 
-  // Evaluate each coupon against current subtotal
-  const evaluatedCoupons = allAvailableCoupons.map((cp) => {
-    const isCollected = collectedCoupons.some(
-      (c) => (c.couponId === cp.id || c.coupon?.id === cp.id || c.coupon?.code === cp.code)
-    );
-    const evaluation = calculateCouponDiscount(cp, subtotal, baseShipping);
     return {
-      ...cp,
-      isCollected,
-      isEligible: evaluation.valid,
-      evaluation,
+      ...v,
+      isEligible,
+      discountPreview,
     };
   });
 
-  const eligibleCoupons = evaluatedCoupons.filter((c) => c.isEligible && c.status !== "out_of_stock" && c.status !== "expired");
-  const ineligibleCoupons = evaluatedCoupons.filter((c) => !c.isEligible || c.status === "out_of_stock" || c.status === "expired");
+  const eligibleCoupons = evaluatedVouchers.filter((v) => v.isEligible && v.status === "ACTIVE");
+  const ineligibleCoupons = evaluatedVouchers.filter((v) => !v.isEligible || v.status !== "ACTIVE");
 
-  const handleApplyTypedCode = (e) => {
+  const handleApplyTypedCode = async (e) => {
     e.preventDefault();
     setCodeError("");
     const cleanCode = typedCode.trim().toUpperCase();
     if (!cleanCode) return;
 
-    const matched = allAvailableCoupons.find((c) => c.code.toUpperCase() === cleanCode);
-    if (!matched) {
-      setCodeError("ไม่พบโค้ดส่วนลดนี้ หรือโค้ดอาจหมดอายุแล้ว");
-      return;
-    }
+    try {
+      setQuoting(true);
+      const res = await voucherService.quoteVouchers({
+        platformCode: cleanCode,
+      });
 
-    const evalRes = calculateCouponDiscount(matched, subtotal, baseShipping);
-    if (!evalRes.valid) {
-      setCodeError(evalRes.reason || "ยอดสั่งซื้อไม่ตรงตามเงื่อนไขของคูปองนี้");
-      return;
-    }
+      if (!res.success) {
+        throw new Error(res.error || "ไม่สามารถใช้งานโค้ดนี้ได้");
+      }
 
-    setSelectedCoupon(matched);
-    onApplyCoupon(matched);
-    setTypedCode("");
-    onClose();
+      if (res.quote?.rejectedVouchers?.length > 0) {
+        throw new Error(res.quote.rejectedVouchers[0].reason || "โค้ดไม่ตรงตามเงื่อนไข");
+      }
+
+      const applied = res.quote?.appliedVouchers?.[0];
+      if (!applied) {
+        throw new Error("ยอดคำสั่งซื้อไม่ตรงตามเงื่อนไขของคูปองนี้");
+      }
+
+      const matchedVoucher = vouchers.find((v) => v.code === cleanCode) || {
+        id: applied.id,
+        code: applied.code,
+        title: applied.title,
+        type: applied.type,
+        discountAmount: applied.discountAmount,
+      };
+
+      setSelectedCoupon(matchedVoucher);
+      onApplyCoupon(matchedVoucher, res.quote);
+      setTypedCode("");
+      onClose();
+    } catch (err) {
+      setCodeError(err.message || "ไม่พบโค้ดส่วนลดนี้ หรือโค้ดอาจหมดอายุแล้ว");
+    } finally {
+      setQuoting(false);
+    }
   };
 
-  const handleSelectCoupon = (coupon) => {
-    setSelectedCoupon(coupon);
-    onApplyCoupon(coupon);
-    onClose();
+  const handleSelectCoupon = async (v) => {
+    try {
+      setQuoting(true);
+      const res = await voucherService.quoteVouchers({
+        platformCode: v.type === "PLATFORM" ? v.code : undefined,
+        shippingCode: v.type === "SHIPPING" ? v.code : undefined,
+        shopCodes: v.type === "SHOP" ? [v.code] : undefined,
+      });
+
+      if (res.success && res.quote?.appliedVouchers?.length > 0) {
+        const applied = res.quote.appliedVouchers[0];
+        const selected = {
+          ...v,
+          discountAmount: applied.discountAmount,
+        };
+        setSelectedCoupon(selected);
+        onApplyCoupon(selected, res.quote);
+        onClose();
+      } else {
+        const reason = res.quote?.rejectedVouchers?.[0]?.reason || "ไม่สามารถใช้คูปองนี้ได้";
+        alert(reason);
+      }
+    } catch (err) {
+      alert(err.message || "เกิดข้อผิดพลาดในการคำนวณส่วนลดคูปอง");
+    } finally {
+      setQuoting(false);
+    }
   };
 
   const handleClearCoupon = () => {
@@ -116,17 +210,17 @@ export default function CouponSelectModal({
             <form onSubmit={handleApplyTypedCode} className="flex gap-2">
               <input
                 type="text"
-                placeholder="กรอกโค้ดส่วนลด เช่น WELCOME100"
+                placeholder="กรอกโค้ดส่วนลด เช่น WELCOME50, BB150"
                 value={typedCode}
                 onChange={(e) => setTypedCode(e.target.value)}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-neutral-300 text-xs text-neutral-800 uppercase focus:outline-hidden focus:border-earth-dark font-mono font-bold"
               />
               <button
                 type="submit"
-                disabled={!typedCode.trim()}
-                className="px-5 py-2.5 rounded-xl bg-earth-dark hover:bg-earth-olive disabled:opacity-40 text-white text-xs font-bold transition cursor-pointer"
+                disabled={!typedCode.trim() || quoting}
+                className="px-5 py-2.5 rounded-xl bg-earth-dark hover:bg-earth-olive disabled:opacity-40 text-white text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
               >
-                ใช้งาน
+                {quoting ? <Loader2 size={13} className="animate-spin" /> : "ใช้งาน"}
               </button>
             </form>
             {codeError && (
@@ -170,7 +264,12 @@ export default function CouponSelectModal({
               </h4>
             </div>
 
-            {eligibleCoupons.length === 0 ? (
+            {loading ? (
+              <div className="p-8 text-center text-xs text-neutral-400 flex items-center justify-center gap-2">
+                <Loader2 size={16} className="animate-spin text-earth-olive" />
+                <span>กำลังโหลดรายการคูปองจากระบบ...</span>
+              </div>
+            ) : eligibleCoupons.length === 0 ? (
               <div className="p-6 rounded-2xl border border-dashed border-neutral-300 text-center text-xs text-neutral-400">
                 ไม่มีคูปองที่ตรงตามยอดสั่งซื้อในขณะนี้
               </div>
@@ -190,7 +289,7 @@ export default function CouponSelectModal({
                     >
                       <div className="flex items-start gap-3 min-w-0 flex-1 pr-3">
                         <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center flex-shrink-0 text-earth-dark">
-                          {cp.category === "shipping" ? (
+                          {cp.type === "SHIPPING" ? (
                             <Truck size={18} className="text-emerald-700" />
                           ) : (
                             <Percent size={18} className="text-amber-700" />
@@ -198,41 +297,36 @@ export default function CouponSelectModal({
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono text-xs font-extrabold px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-800">
+                            <span className="font-mono text-xs font-extrabold text-earth-dark px-2 py-0.5 rounded-md bg-neutral-100 border border-neutral-200">
                               {cp.code}
                             </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              {cp.discountDisplay}
+                            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                              ลด ฿{Number(cp.discountPreview || 0).toLocaleString()}
                             </span>
-                            {cp.isCollected && (
-                              <span className="text-[10px] font-bold text-[#556B2F]">
-                                ✓ ในกระเป๋าคุณ
-                              </span>
-                            )}
                           </div>
-                          <p className="text-xs font-bold text-neutral-900 mt-1 truncate">
+                          <h5 className="text-xs font-bold text-neutral-800 mt-1 truncate">
                             {cp.title}
-                          </p>
-                          <p className="text-[11px] text-neutral-400 mt-0.5 line-clamp-1">
-                            {cp.terms || cp.subtitle}
-                          </p>
-                          <p className="text-[10px] font-semibold text-emerald-700 mt-1">
-                            ✓ {cp.evaluation.displayText} · ขั้นต่ำ ฿{cp.minSpend.toLocaleString()}
+                          </h5>
+                          <p className="text-[11px] text-neutral-400 mt-0.5">
+                            {Number(cp.minSpend || 0) > 0
+                              ? `ขั้นต่ำ ฿${Number(cp.minSpend).toLocaleString()}`
+                              : "ไม่มีขั้นต่ำ"}
+                            {cp.endsAt ? ` · หมดเขต ${new Date(cp.endsAt).toLocaleDateString("th-TH")}` : ""}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         {isSelected ? (
-                          <div className="w-6 h-6 rounded-full bg-[#556B2F] text-white flex items-center justify-center text-xs font-bold">
+                          <span className="w-7 h-7 rounded-full bg-[#556B2F] text-white flex items-center justify-center">
                             <Check size={14} />
-                          </div>
+                          </span>
                         ) : (
                           <button
                             type="button"
-                            className="px-3 py-1.5 rounded-full border border-neutral-300 text-neutral-700 hover:bg-neutral-100 text-xs font-bold transition"
+                            className="px-3 py-1.5 rounded-xl border border-neutral-200 text-xs font-bold text-neutral-700 hover:bg-neutral-50 transition"
                           >
-                            เลือกใช้
+                            ใช้คูปอง
                           </button>
                         )}
                       </div>
@@ -243,32 +337,31 @@ export default function CouponSelectModal({
             )}
           </div>
 
-          {/* 3. Ineligible Coupons List */}
+          {/* 3. Ineligible Coupons */}
           {ineligibleCoupons.length > 0 && (
-            <div className="space-y-3 pt-4 border-t border-neutral-100">
-              <h4 className="text-xs font-extrabold uppercase tracking-wider text-neutral-400">
-                คูปองที่ไม่ตรงตามเงื่อนไขยอดซื้อ ({ineligibleCoupons.length})
+            <div className="space-y-3 pt-2 border-t border-neutral-100">
+              <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                คูปองที่ไม่ตรงตามเงื่อนไข ({ineligibleCoupons.length})
               </h4>
-              <div className="space-y-2.5 opacity-60">
+              <div className="space-y-2 opacity-60">
                 {ineligibleCoupons.map((cp) => (
                   <div
                     key={cp.id}
-                    className="flex items-center justify-between p-3.5 rounded-2xl border border-neutral-200 bg-neutral-50/70"
+                    className="flex items-center justify-between p-3.5 rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/50"
                   >
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 pr-3">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-bold text-neutral-500">
                           {cp.code}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-600">
-                          {cp.discountDisplay}
+                        <span className="text-[11px] text-neutral-400 truncate">
+                          {cp.title}
                         </span>
                       </div>
-                      <p className="text-xs font-bold text-neutral-700 mt-1">
-                        {cp.title}
-                      </p>
-                      <p className="text-[11px] text-rose-600 font-semibold mt-0.5">
-                        {cp.evaluation.reason}
+                      <p className="text-[10px] text-rose-500 mt-0.5">
+                        {subtotal < Number(cp.minSpend || 0)
+                          ? `ยอดซื้อยังไม่ถึงขั้นต่ำ ฿${Number(cp.minSpend).toLocaleString()} (ขาดอีก ฿${(Number(cp.minSpend) - subtotal).toLocaleString()})`
+                          : "คูปองไม่ร่วมรายการในขณะนี้"}
                       </p>
                     </div>
                   </div>
@@ -276,39 +369,6 @@ export default function CouponSelectModal({
               </div>
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 bg-neutral-50 border-t border-neutral-100 flex-shrink-0">
-          <div>
-            {appliedCoupon ? (
-              <span className="text-xs font-bold text-[#556B2F]">
-                ✓ กำลังใช้คูปอง: {appliedCoupon.code}
-              </span>
-            ) : (
-              <span className="text-xs text-neutral-400">
-                ยังไม่ได้เลือกคูปองส่วนลด
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {appliedCoupon && (
-              <button
-                type="button"
-                onClick={handleClearCoupon}
-                className="px-4 py-2 rounded-full border border-neutral-300 text-neutral-600 hover:bg-neutral-100 text-xs font-bold transition cursor-pointer"
-              >
-                ยกเลิกคูปอง
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2 rounded-full bg-earth-dark text-white hover:bg-earth-olive text-xs font-bold transition cursor-pointer"
-            >
-              ปิด
-            </button>
-          </div>
         </div>
       </div>
     </div>

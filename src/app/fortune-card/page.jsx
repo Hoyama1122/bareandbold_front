@@ -1,80 +1,161 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Link from "next/link";
+import { productService } from "@/services/product.service";
+import { Sparkles, Compass, ShieldAlert, Heart, ShoppingBag, ArrowRight } from "lucide-react";
+
+// ฐานข้อมูลหินมงคลและสีกาลกิณีตามวันเกิด (Astrology & Gemstone KB)
+const DAY_ASTROLOGY = {
+  sunday: {
+    name: "วันอาทิตย์",
+    element: "ธาตุไฟ",
+    luckyColors: ["แดง", "ส้ม", "ทอง"],
+    tabooColor: "สีน้ำเงิน / สีคราม (ห้ามใช้)",
+    gemstones: ["ทับทิม (Ruby)", "โกเมน (Garnet)", "ซิทริน (Citrine)"],
+    focus: {
+      wealth: "ซิทริน (Citrine) & ไหมทอง — ดึงดูดทรัพย์ เสริมความมั่งคั่ง",
+      work: "ทับทิม (Ruby) — เสริมอำนาจ บารมี ความเป็นผู้นำ",
+      love: "โรสควอตซ์ (Rose Quartz) — เมตตามหานิยม คนรักใคร่",
+      peace: "อเมทิสต์ (Amethyst) — สงบจิตใจ ลดอารมณ์ร้อน",
+    },
+  },
+  monday: {
+    name: "วันจันทร์",
+    element: "ธาตุดิน",
+    luckyColors: ["ขาว", "เหลือง", "ครีม"],
+    tabooColor: "สีแดงสด (ห้ามใช้)",
+    gemstones: ["ไข่มุก (Pearl)", "มูนสโตน (Moonstone)", "ซิทริน (Citrine)"],
+    focus: {
+      wealth: "ซิทริน (Citrine) — เรียกเงินทอง ค้าขายคล่องตัว",
+      work: "ลาพิส ลาซูลี (Lapis Lazuli) — สติปัญญา การเจรจาธุรกิจ",
+      love: "มูนสโตน (Moonstone) — เสน่ห์ดึงดูด ความรักอบอุ่น",
+      peace: "หยกขาว (White Jade) — ความปลอดภัย สุขภาพแข็งแรง",
+    },
+  },
+  tuesday: {
+    name: "วันอังคาร",
+    element: "ธาตุลม",
+    luckyColors: ["ชมพู", "ม่วง"],
+    tabooColor: "สีขาว / สีเหลืองนวล (ห้ามใช้)",
+    gemstones: ["โรสควอตซ์ (Rose Quartz)", "อเมทิสต์ (Amethyst)", "โรโดโครไซต์ (Rhodochrosite)"],
+    focus: {
+      wealth: "ไทเกอร์อาย (Tiger Eye) — ป้องกันอุปสรรค เงินทองไม่รั่วไหล",
+      work: "นิลดำ (Black Onyx) — จิตใจเด็ดเดี่ยว ชนะคู่แข่ง",
+      love: "โรสควอตซ์ (Rose Quartz) — สมานรอยร้าวในความรัก เติมความหวาน",
+      peace: "อเมทิสต์ (Amethyst) — คลายความเครียด นอนหลับสบาย",
+    },
+  },
+  wednesday: {
+    name: "วันพุธ",
+    element: "ธาตุน้ำ",
+    luckyColors: ["เขียว", "มรกต", "เทอร์ควอยซ์"],
+    tabooColor: "สีชมพู (ห้ามใช้)",
+    gemstones: ["มรกต (Emerald)", "หยก (Jade)", "อเวนจูรีน (Aventurine)"],
+    focus: {
+      wealth: "หยกเขียว (Green Jade) — ความอุดมสมบูรณ์ โชคลาภต่อเนื่อง",
+      work: "มาลาไคต์ (Malachite) — การเจรจาประสบความสำเร็จ",
+      love: "โรโดไนท์ (Rhodonite) — เข้าใจและให้อภัยกัน",
+      peace: "อความารีน (Aquamarine) — จิตใจสงบดุจสายน้ำ",
+    },
+  },
+  thursday: {
+    name: "วันพฤหัสบดี",
+    element: "ธาตุดิน",
+    luckyColors: ["ส้ม", "ทอง", "น้ำตาล"],
+    tabooColor: "สีดำ / สีม่วงเข้ม (ห้ามใช้)",
+    gemstones: ["ซิทริน (Citrine)", "อำพัน (Amber)", "ไหมทอง (Rutilated Quartz)"],
+    focus: {
+      wealth: "ไหมทอง (Gold Rutilated Quartz) — พลังดึงดูดความมั่งคั่งระดับสูง",
+      work: "ซิทริน (Citrine) — ความคิดสร้างสรรค์ โอกาสใหม่ในหน้าที่การงาน",
+      love: "มูนสโตน (Moonstone) — รักแท้และครอบครัวสุขสันต์",
+      peace: "คาร์เนเลียน (Carnelian) — เติมพลังชีวิต ความกระปรี้กระเปร่า",
+    },
+  },
+  friday: {
+    name: "วันศุกร์",
+    element: "ธาตุน้ำ",
+    luckyColors: ["ฟ้า", "น้ำเงิน", "ขาว"],
+    tabooColor: "สีเทา / สีดำด้าน (ห้ามใช้)",
+    gemstones: ["ลาพิส ลาซูลี (Lapis Lazuli)", "อความารีน (Aquamarine)", "เทอร์ควอยซ์ (Turquoise)"],
+    focus: {
+      wealth: "ไพไรต์ (Pyrite) — แร่ดูดทรัพย์ เงินทองไหลมาเทมา",
+      work: "ลาพิส ลาซูลี (Lapis Lazuli) — ชื่อเสียงเกียรติยศ วิสัยทัศน์กว้างไกล",
+      love: "โรสควอตซ์ (Rose Quartz) — เสน่ห์อันอ่อนหวาน ผู้ใหญ่เอ็นดู",
+      peace: "บลูเลซอาเกต (Blue Lace Agate) — ความผ่อนคลาย สื่อสารราบรื่น",
+    },
+  },
+  saturday: {
+    name: "วันเสาร์",
+    element: "ธาตุไฟ",
+    luckyColors: ["ดำ", "ม่วง", "น้ำเงินเข้ม"],
+    tabooColor: "สีเขียวสด (ห้ามใช้)",
+    gemstones: ["นิลดำ (Black Onyx)", "อเมทิสต์ (Amethyst)", "สโมกกี้ควอตซ์ (Smoky Quartz)"],
+    focus: {
+      wealth: "ไหมเงิน / ไหมนาค — ค้าขายมั่นคง ปลดหนี้สิน",
+      work: "นิลดำ (Black Onyx) — ปกป้องพลังลบ เสริมบารมีหนักแน่น",
+      love: "โกเมน (Garnet) — ความซื่อสัตย์ มั่นคงในรักเดียว",
+      peace: "อเมทิสต์ (Amethyst) — ป้องกันฝันร้าย เพิ่มสมาธิ",
+    },
+  },
+};
 
 export default function FortuneCardPage() {
-  const productDatabase = [
-    {
-      id: 1,
-      name: "กำไลหินมงคล Bare & Bold Minimalist",
-      category: "ธาตุดิน — เสริมความมั่นคง & บารมี",
-      price: "790",
-      image: "https://images.unsplash.com/photo-1611591475140-be3617c980d4?auto=format&fit=crop&w=600&q=80",
-      desc: "กำไลหินธรรมชาติคัดพิเศษ ดีไซน์เรียบหรู เสริมสมาธิและความเรียบง่าย ชักนำโอกาสและมิตรภาพที่ดี"
-    },
-    {
-      id: 2,
-      name: "เทียนหอมอโรมา Organic Soy Wax กลิ่น Earth & Olive",
-      category: "ธาตุน้ำ — ผ่อนคลาย & ฟื้นฟูพลังชีวิต",
-      price: "450",
-      image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=600&q=80",
-      desc: "สกัดจากไขถั่วเหลืองธรรมชาติ 100% ให้กลิ่นหอมอบอุ่น สดชื่น ช่วยลดความตึงเครียดหลังทำงาน"
-    },
-    {
-      id: 3,
-      name: "สมุดบันทึกปกหนังทำมือเกรดพรีเมียม",
-      category: "ธาตุลม — ปัญญา & ไอเดียสร้างสรรค์",
-      price: "520",
-      image: "https://images.unsplash.com/photo-1506784365847-bbad939e9335?auto=format&fit=crop&w=600&q=80",
-      desc: "สมุดบันทึกกรีดกระดาษถนอมสายตาอย่างดี เหมาะแก่การจดบันทึกเป้าหมาย แรงบันดาลใจ และแผนงานสำคัญ"
-    },
-    {
-      id: 4,
-      name: "แก้วสแตนเลสเก็บความเย็น ลาย Bare Natural",
-      category: "ธาตุไฟ — เติมพลังความกระตือรือร้น",
-      price: "690",
-      image: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=600&q=80",
-      desc: "เก็บความเย็นได้ยาวนานตลอด 24 ชั่วโมง ดีไซน์เอิร์ธโทนสุดคลาสสิก พกพาสะดวกพร้อมลุยทุกกิจกรรม"
-    }
-  ];
-
-  const monthReadings = {
-    1: "ชาวเดือนมกราคมมีความตั้งใจสูงและรอบคอบ สินค้านี้จะช่วยส่งเสริมสมาธิและเปิดทางความสำเร็จ",
-    2: "ชาวเดือนกุมภาพันธ์มีเสน่ห์เฉพาะตัวและจินตนาการกว้างไกล สินค้านี้จะช่วยดึงความโดดเด่นในตัวคุณ",
-    3: "ชาวเดือนมีนาคมจิตใจอ่อนโยนละเอียดอ่อน สินค้านี้จะช่วยเติมเต็มพลังงานความสุขและผ่อนคลายจิตใจ",
-    4: "ชาวเดือนเมษายนเปี่ยมด้วยความมุ่งมั่นและพลังงาน สินค้านี้ตอบโจทย์ไลฟ์สไตล์ที่แอคทีฟของคุณ",
-    5: "ชาวเดือนพฤษภาคมมีความมั่นคง หนักแน่น สินค้านี้สร้างความคุ้มค่าและความลงตัวให้ชีวิตคุณ",
-    6: "ชาวเดือนมิถุนายนปรับตัวเก่งและมีมนุษยสัมพันธ์ดี สินค้านี้จะช่วยเพิ่มออร่าความโชคดีในทุกโอกาส",
-    7: "ชาวเดือนกรกฎาคมรักความอบอุ่นและใส่ใจรายละเอียด สินค้านี้จะเติมเต็มความสบายใจในพื้นที่ส่วนตัว",
-    8: "ชาวเดือนสิงหาคมมีความเป็นผู้นำสูง สินค้านี้จะช่วยเสริมบุคลิกและความมั่นใจให้เปล่งประกาย",
-    9: "ชาวเดือนกันยายนรักความระเบียบพิถีพิถัน สินค้านี้ผ่านการคัดสรรสเปกและคุณภาพมาเพื่อคุณโดยเฉพาะ",
-    10: "ชาวเดือนตุลาคมรักความยุติธรรมและศิลปะ สินค้านี้เติมเต็มความสมดุลและความสวยงามให้ชีวิต",
-    11: "ชาวเดือนพฤศจิกายนมีพลังค้นหาลึกซึ้ง สินค้านี้ซ่อนโชคลาภและความประทับใจที่คุณคาดไม่ถึง",
-    12: "ชาวเดือนธันวาคมรักอิสระและมีความสุขง่าย สินค้านี้ส่งต่อรอยยิ้มและความผ่องใสให้ทุกวันของคุณ"
-  };
-
   const [step, setStep] = useState(1);
-  const [day, setDay] = useState("");
-  const [month, setMonth] = useState("");
+  const [dayOfWeek, setDayOfWeek] = useState("sunday");
+  const [aspect, setAspect] = useState("wealth");
+  const [realProducts, setRealProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [flippedCards, setFlippedCards] = useState([false, false, false, false]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleDobSubmit = (e) => {
+  useEffect(() => {
+    // โหลดสินค้ากำไล/เครื่องประดับจริงจาก Database
+    productService
+      .getProducts()
+      .then((res) => {
+        if (res.success && Array.isArray(res.products)) {
+          setRealProducts(res.products);
+        }
+      })
+      .catch((err) => console.error("Failed to load products for fortune card:", err))
+      .finally(() => setLoadingProducts(false));
+  }, []);
+
+  const handlePredictSubmit = (e) => {
     e.preventDefault();
-    if (!day || !month) return;
     setStep(2);
   };
 
-  const selectCard = (cardIndex) => {
-    const magicSeed = (parseInt(day) * 3 + parseInt(month) * 7 + cardIndex * 5) % productDatabase.length;
-    setSelectedProduct(productDatabase[magicSeed]);
+  const currentAstro = DAY_ASTROLOGY[dayOfWeek] || DAY_ASTROLOGY.sunday;
 
+  const selectCard = (cardIndex) => {
     const newFlipped = [...flippedCards];
     newFlipped[cardIndex] = true;
     setFlippedCards(newFlipped);
+
+    // เลือกสินค้าจริงใน DB ตาม aspect หรือเลือกจากรายการที่มี
+    let matchedProduct = null;
+    if (realProducts.length > 0) {
+      if (aspect === "wealth") {
+        matchedProduct =
+          realProducts.find((p) => p.name.includes("Citrine") || p.name.includes("ซิทริน") || p.name.includes("Wealth")) ||
+          realProducts[0];
+      } else if (aspect === "love") {
+        matchedProduct =
+          realProducts.find((p) => p.name.includes("Rose") || p.name.includes("โรส") || p.name.includes("Romance")) ||
+          realProducts[1 % realProducts.length];
+      } else if (aspect === "work") {
+        matchedProduct =
+          realProducts.find((p) => p.name.includes("Onyx") || p.name.includes("นิล") || p.name.includes("Classic")) ||
+          realProducts[2 % realProducts.length];
+      } else {
+        matchedProduct = realProducts[(cardIndex + 1) % realProducts.length];
+      }
+    }
+
+    setSelectedProduct(matchedProduct);
 
     setTimeout(() => {
       setStep(3);
@@ -83,206 +164,230 @@ export default function FortuneCardPage() {
 
   const addToCart = () => {
     if (!selectedProduct) return;
-    const currentCart = JSON.parse(localStorage.getItem('bare_cart') || '[]');
+    const currentCart = JSON.parse(localStorage.getItem("bare_cart") || "[]");
+    const thumb = selectedProduct.images?.[0]?.url || "/images/placeholder.jpg";
     const newItem = {
       id: selectedProduct.id,
       name: selectedProduct.name,
       price: Number(selectedProduct.price),
       quantity: 1,
-      imageUrl: selectedProduct.image
+      imageUrl: thumb,
+      shopId: selectedProduct.shopId,
     };
-    
-    const existingIndex = currentCart.findIndex(i => i.id === newItem.id);
+
+    const existingIndex = currentCart.findIndex((i) => i.id === newItem.id);
     if (existingIndex > -1) {
       currentCart[existingIndex].quantity += 1;
     } else {
       currentCart.push(newItem);
     }
-    
-    localStorage.setItem('bare_cart', JSON.stringify(currentCart));
-    window.dispatchEvent(new Event('cartUpdated'));
-    setIsModalOpen(true);
-  };
 
-  const resetApp = () => {
-    setFlippedCards([false, false, false, false]);
-    setSelectedProduct(null);
-    setDay("");
-    setMonth("");
-    setStep(1);
+    localStorage.setItem("bare_cart", JSON.stringify(currentCart));
+    window.dispatchEvent(new Event("cartUpdated"));
+    alert(`เพิ่ม "${selectedProduct.name}" ลงในตะกร้าสินค้าเรียบร้อยแล้ว!`);
   };
-
-  const monthNames = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#3C322A] flex flex-col justify-between relative overflow-x-hidden font-anuphan">
-      {/* Navbar / Header หลักของเว็บ BARE & BOLD */}
+    <div className="min-h-screen bg-[#FDFBF7] text-[#3C322A] font-anuphan flex flex-col justify-between selection:bg-[#EADECC]">
       <Header />
 
-      {/* Background Soft Glows */}
-      <div className="absolute top-32 left-12 w-80 h-80 bg-[#E7DDC8]/40 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-12 right-12 w-96 h-96 bg-[#556B2F]/10 rounded-full blur-3xl pointer-events-none"></div>
-
-      {/* Main Content Area */}
-      <main className="w-full max-w-4xl mx-auto my-auto py-10 z-10 flex flex-col items-center px-4">
-        {/* STEP 1: Form */}
+      <main className="flex-1 flex flex-col items-center justify-center p-4 max-w-4xl mx-auto w-full my-8">
+        {/* Step 1: Input วันเกิด + ด้านที่ต้องการเสริม */}
         {step === 1 && (
-          <section className="w-full max-w-md bg-white border border-[#E7DDC8] rounded-3xl p-8 shadow-xl shadow-[#3C322A]/5">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#F5F0E6] border border-[#E7DDC8] text-[#556B2F] mb-4">
-                <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/>
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-[#3C322A] mb-2 font-prompt">เลือกวันเกิดของคุณ</h2>
-              <p className="text-xs text-zinc-500">ระบุวันและเดือนเกิด เพื่อสุ่มหาการ์ดสินค้าที่เหมาะกับโชคชะตาของคุณ</p>
-            </div>
+          <div className="w-full max-w-md bg-white border border-[#EADECC] p-8 rounded-2xl shadow-sm text-center animate-fadeIn">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#556B2F]/10 text-[#556B2F] mb-3">
+              <Sparkles size={14} />
+              AI &amp; Gemstone Recommender
+            </span>
+            <h1 className="text-2xl font-bold mb-2 tracking-wide text-[#3C322A]">
+              ทำนายและจับคู่หินมงคลประจำตัว
+            </h1>
+            <p className="text-sm text-[#8C8577] mb-6">
+              วิเคราะห์พลังธาตุตามวันเกิด พร้อมค้นหากำไลหินมงคลที่ช่วยเปิดดวงชะตาและสีเชือกที่ถูกโฉลก
+            </p>
 
-            <form onSubmit={handleDobSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#3C322A] mb-2">วันเกิด</label>
-                  <select 
-                    value={day} 
-                    onChange={(e) => setDay(e.target.value)} 
-                    required 
-                    className="w-full bg-[#FAF8F5] border border-[#E7DDC8] rounded-xl px-4 py-3 text-sm text-[#3C322A] font-medium focus:outline-none focus:ring-2 focus:ring-[#556B2F]"
-                  >
-                    <option value="" disabled>เลือกวัน</option>
-                    {[...Array(31)].map((_, i) => (
-                      <option key={i + 1} value={i + 1}>{i + 1}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#3C322A] mb-2">เดือนเกิด</label>
-                  <select 
-                    value={month} 
-                    onChange={(e) => setMonth(e.target.value)} 
-                    required 
-                    className="w-full bg-[#FAF8F5] border border-[#E7DDC8] rounded-xl px-4 py-3 text-sm text-[#3C322A] font-medium focus:outline-none focus:ring-2 focus:ring-[#556B2F]"
-                  >
-                    <option value="" disabled>เลือกเดือน</option>
-                    {monthNames.slice(1).map((m, i) => (
-                      <option key={i + 1} value={i + 1}>{m}</option>
-                    ))}
-                  </select>
-                </div>
+            <form onSubmit={handlePredictSubmit} className="space-y-4 text-left">
+              <div>
+                <label className="block text-xs font-bold text-[#6A5242] mb-1.5">
+                  คุณเกิดวันอะไร?
+                </label>
+                <select
+                  value={dayOfWeek}
+                  onChange={(e) => setDayOfWeek(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-[#EADECC] bg-[#FDFBF7] text-sm text-[#3C322A] focus:outline-hidden focus:border-[#556B2F] font-medium"
+                >
+                  <option value="sunday">วันอาทิตย์ (ธาตุไฟ)</option>
+                  <option value="monday">วันจันทร์ (ธาตุดิน)</option>
+                  <option value="tuesday">วันอังคาร (ธาตุลม)</option>
+                  <option value="wednesday">วันพุธ (ธาตุน้ำ)</option>
+                  <option value="thursday">วันพฤหัสบดี (ธาตุดิน)</option>
+                  <option value="friday">วันศุกร์ (ธาตุน้ำ)</option>
+                  <option value="saturday">วันเสาร์ (ธาตุไฟ)</option>
+                </select>
               </div>
 
-              <button 
-                type="submit" 
-                className="w-full py-4 px-6 bg-[#3C322A] hover:bg-[#556B2F] text-white font-bold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+              <div>
+                <label className="block text-xs font-bold text-[#6A5242] mb-1.5">
+                  เรื่องที่ต้องการเสริมดวงมากที่สุดในตอนนี้
+                </label>
+                <select
+                  value={aspect}
+                  onChange={(e) => setAspect(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-[#EADECC] bg-[#FDFBF7] text-sm text-[#3C322A] focus:outline-hidden focus:border-[#556B2F] font-medium"
+                >
+                  <option value="wealth">💰 เสริมการเงิน โชคลาภ และค้าขายร่ำรวย</option>
+                  <option value="work">💼 เสริมการงาน อำนาจ บารมี และความก้าวหน้า</option>
+                  <option value="love">💖 เสริมความรัก เสน่ห์เมตตามหานิยม</option>
+                  <option value="peace">🌿 เสริมสุขภาพ จิตใจสงบ และปัดเป่าพลังลบ</option>
+                </select>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
+                <Compass size={16} className="text-amber-700 shrink-0 mt-0.5" />
+                <span>ระบบจะจับคู่กับกำไลแฮนด์เมดจริงที่มีจำหน่ายบน Marketplace ทันที</span>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 rounded-xl bg-[#6A5242] text-white font-bold text-sm hover:bg-[#556B2F] transition duration-200 shadow-sm cursor-pointer"
               >
-                <span>เปิดประตูแห่งโชคชะตา</span>
-                <span>→</span>
+                เปิดไพ่สุ่มกำไลหินมงคล →
               </button>
             </form>
-          </section>
+          </div>
         )}
 
-        {/* STEP 2: Pick A Card */}
+        {/* Step 2: เลือกการ์ดสุ่มดวง 4 ใบ */}
         {step === 2 && (
-          <section className="w-full flex flex-col items-center">
-            <div className="text-center mb-8">
-              <span className="inline-block bg-[#F5F0E6] border border-[#E7DDC8] text-[#8B5A2B] text-xs font-bold px-4 py-1.5 rounded-full mb-3">
-                ✦ ดวงคนเกิดวันที่ {day} {monthNames[month]}
-              </span>
-              <h2 className="text-2xl md:text-3xl font-bold text-[#3C322A] mb-2 font-prompt">เลือกการ์ดนำโชค 1 ใบ</h2>
-              <p className="text-xs text-zinc-500">ตั้งจิตอธิษฐาน แล้วเลือกการ์ดที่แรงดึงดูดนำทางคุณ</p>
-            </div>
+          <div className="w-full text-center animate-fadeIn">
+            <h2 className="text-xl font-bold mb-1 text-[#3C322A]">
+              เลือกการ์ดพลังงาน 1 ใบ เพื่อเชื่อมโยงดวงชะตา
+            </h2>
+            <p className="text-xs text-[#8C8577] mb-8">
+              คนเกิด{currentAstro.name} ({currentAstro.element}) · กำหนดจิตนิ่งๆ แล้วคลิกการ์ดที่คุณรู้สึกดึงดูดที่สุด
+            </p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-3xl px-2">
-              {[0, 1, 2, 3].map((idx) => (
-                <div key={idx} onClick={() => selectCard(idx)} className="cursor-pointer h-64 md:h-80" style={{ perspective: '1000px' }}>
-                  <div className={`relative w-full h-full duration-700 transition-transform ${flippedCards[idx] ? '[transform:rotateY(180deg)]' : ''}`} style={{ transformStyle: 'preserve-3d' }}>
-                    <div className="absolute inset-0 bg-[#3C322A] border-2 border-[#E7DDC8] rounded-2xl p-4 flex flex-col justify-between items-center shadow-xl hover:border-[#556B2F] transition-colors" style={{ backfaceVisibility: 'hidden' }}>
-                      <span className="text-[#E7DDC8]/60 text-xs">✦</span>
-                      <div className="w-12 h-12 rounded-full border border-[#E7DDC8]/40 flex items-center justify-center text-[#E7DDC8]">
-                        <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                          <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/>
-                        </svg>
-                      </div>
-                      <span className="text-xs text-[#E7DDC8] uppercase tracking-widest font-mono font-bold">CARD {idx + 1}</span>
-                      <span className="text-[#E7DDC8]/60 text-xs">✦</span>
-                    </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+              {[0, 1, 2, 3].map((cardIdx) => (
+                <div
+                  key={cardIdx}
+                  onClick={() => selectCard(cardIdx)}
+                  className={`h-64 rounded-2xl border-2 border-[#EADECC] flex flex-col items-center justify-center p-4 cursor-pointer transition-all duration-300 hover:scale-105 hover:border-[#6A5242] shadow-sm ${
+                    flippedCards[cardIdx] ? "bg-[#556B2F] text-white" : "bg-white text-[#6A5242]"
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-full border border-current flex items-center justify-center mb-3">
+                    <Sparkles size={20} />
                   </div>
+                  <span className="font-bold text-sm tracking-widest uppercase">
+                    CARD #{cardIdx + 1}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 mt-1">BARE &amp; BOLD</span>
                 </div>
               ))}
             </div>
-          </section>
+          </div>
         )}
 
-        {/* STEP 3: Result View */}
-        {step === 3 && selectedProduct && (
-          <section className="w-full flex flex-col items-center">
-            <div className="bg-white border border-[#E7DDC8] rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl shadow-[#3C322A]/10">
-              <div className="text-center mb-6">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F5F0E6] text-[#8B5A2B] border border-[#E7DDC8] mb-2">
-                  ✦ สินค้าที่ดวงชะตานำทางให้คุณ
+        {/* Step 3: ผลลัพธ์คำทำนาย + กำไลหินมงคลจริงใน DB */}
+        {step === 3 && (
+          <div className="w-full max-w-2xl bg-white border border-[#EADECC] rounded-3xl p-6 sm:p-8 shadow-sm animate-fadeIn">
+            {/* Header Badge */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#EADECC]/60 pb-4 mb-6">
+              <div>
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-[#556B2F]/10 text-[#556B2F]">
+                  ดวงชะตาคนเกิด{currentAstro.name} ({currentAstro.element})
                 </span>
-                <h2 className="text-xl md:text-2xl font-bold text-[#3C322A] font-prompt">{selectedProduct.category}</h2>
+                <h2 className="text-xl font-extrabold text-[#3C322A] mt-1.5">
+                  ผลการวิเคราะห์หินมงคลเสริมชะตา
+                </h2>
+              </div>
+              <button
+                onClick={() => {
+                  setStep(1);
+                  setFlippedCards([false, false, false, false]);
+                }}
+                className="text-xs text-[#8C8577] hover:underline"
+              >
+                ← ดูดวงวันอื่น
+              </button>
+            </div>
+
+            {/* Astrology Advice */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs text-emerald-900 space-y-1">
+                <p className="font-bold text-sm flex items-center gap-1.5 text-emerald-800">
+                  <Sparkles size={15} /> หินมงคลที่แนะนำ:
+                </p>
+                <p>{currentAstro.focus[aspect]}</p>
+                <p className="pt-1 text-[11px] text-emerald-700">
+                  <strong>โทนสีมงคล:</strong> {currentAstro.luckyColors.join(", ")}
+                </p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6 items-center">
-                <div className="relative rounded-2xl overflow-hidden border border-[#E7DDC8] bg-[#FAF8F5] aspect-square">
-                  <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                  <div className="absolute top-3 right-3 bg-[#3C322A] px-3 py-1 rounded-full text-xs font-bold text-[#FAF8F5]">
-                    ฿{selectedProduct.price}
-                  </div>
-                </div>
-
-                <div className="flex flex-col justify-between h-full space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-[#3C322A] mb-2 font-prompt">{selectedProduct.name}</h3>
-                    <p className="text-xs text-zinc-600 leading-relaxed mb-4">{selectedProduct.desc}</p>
-                    <div className="bg-[#FAF8F5] border border-[#E7DDC8] rounded-xl p-3.5">
-                      <div className="text-xs font-bold text-[#8B5A2B] mb-1 flex items-center gap-1.5">
-                        ✦ ทำไมชิ้นนี้ถึงเหมาะกับดวงคุณ?
-                      </div>
-                      <p className="text-xs text-[#3C322A] leading-relaxed italic">"{monthReadings[month]}"</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                    <button 
-                      onClick={addToCart} 
-                      className="flex-1 py-3 px-4 bg-[#3C322A] hover:bg-[#556B2F] text-white font-bold rounded-xl shadow-md text-sm transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <span>หยิบใส่ตะกร้าทันที</span>
-                    </button>
-                    <button 
-                      onClick={resetApp} 
-                      className="py-3 px-4 bg-[#F5F0E6] hover:bg-[#E7DDC8] border border-[#E7DDC8] text-[#3C322A] font-bold rounded-xl text-sm transition-all cursor-pointer"
-                    >
-                      <span>สุ่มใหม่</span>
-                    </button>
-                  </div>
-                </div>
+              <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200/80 text-xs text-rose-900 space-y-1">
+                <p className="font-bold text-sm flex items-center gap-1.5 text-rose-800">
+                  <ShieldAlert size={15} /> สีกาลกิณีที่ควรหลีกเลี่ยง:
+                </p>
+                <p className="font-semibold text-rose-700">{currentAstro.tabooColor}</p>
+                <p className="pt-1 text-[11px] text-rose-600">
+                  *ห้ามเลือกใช้สีเชือกถักโทนนี้สำหรับคนเกิด{currentAstro.name}
+                </p>
               </div>
             </div>
-          </section>
+
+            {/* Matched Real Product Card */}
+            {selectedProduct ? (
+              <div className="rounded-2xl border border-[#EADECC] p-5 bg-[#FAF8F5] flex flex-col sm:flex-row gap-5 items-center">
+                <img
+                  src={selectedProduct.images?.[0]?.url || "/images/placeholder.jpg"}
+                  alt={selectedProduct.name}
+                  className="w-32 h-32 rounded-xl object-cover border border-[#EADECC] shrink-0"
+                />
+                <div className="flex-1 min-w-0 text-center sm:text-left">
+                  <span className="inline-block px-2.5 py-0.5 rounded-md bg-[#6A5242]/10 text-[#6A5242] text-[11px] font-bold">
+                    สินค้าจริงที่ตรงกับดวงชะตาของคุณ
+                  </span>
+                  <h3 className="text-base font-extrabold text-[#3C322A] mt-1 truncate">
+                    {selectedProduct.name}
+                  </h3>
+                  <p className="text-xs text-[#8C8577] mt-1 line-clamp-2">
+                    {selectedProduct.description || "กำไลหินมงคลคัดพิเศษ ร้อยด้วยมือ ปราศจากสีเชือกกาลกิณี เสริมพลังงานบวกในทุกๆ วัน"}
+                  </p>
+                  <p className="text-lg font-extrabold text-[#556B2F] mt-2">
+                    ฿{Number(selectedProduct.price).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 text-center text-xs text-neutral-400">
+                {loadingProducts ? "กำลังค้นหากำไลที่ตรงกับดวงชะตา..." : "ไม่พบสินค้าที่ตรงกันในขณะนี้"}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex flex-wrap items-center justify-end gap-3 mt-6 pt-4 border-t border-[#EADECC]/60">
+              {selectedProduct && (
+                <>
+                  <Link
+                    href={`/products/${selectedProduct.id}`}
+                    className="px-5 py-2.5 rounded-xl border border-[#EADECC] text-xs font-bold text-[#6A5242] hover:bg-[#F5F0E6] transition"
+                  >
+                    ดูรายละเอียดสินค้า
+                  </Link>
+                  <button
+                    onClick={addToCart}
+                    className="px-6 py-2.5 rounded-xl bg-[#556B2F] hover:bg-[#435524] text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ShoppingBag size={14} />
+                    ใส่ตะกร้าและสั่งซื้อทันที
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         )}
       </main>
-
-      {/* Success Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E7DDC8] rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
-            <div className="w-12 h-12 rounded-full bg-[#F5F0E6] border border-[#E7DDC8] text-[#556B2F] flex items-center justify-center mx-auto mb-4 text-xl">
-              ✓
-            </div>
-            <h3 className="text-lg font-bold text-[#3C322A] mb-2 font-prompt">เพิ่มลงตะกร้าเรียบร้อย!</h3>
-            <p className="text-xs text-zinc-600 mb-6">เพิ่ม "{selectedProduct?.name}" เข้าสู่ตะกร้าเรียบร้อยแล้ว</p>
-            <button 
-              onClick={() => setIsModalOpen(false)} 
-              className="w-full py-2.5 bg-[#3C322A] hover:bg-[#556B2F] text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
-            >
-              เลือกสินค้าอื่นต่อ
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
