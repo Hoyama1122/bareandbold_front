@@ -55,6 +55,9 @@ export default function OrderSummary({
                 </span>
               </div>
               <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold text-[#556B2F] mb-0.5 truncate">
+                  {it.shopName || it.product?.shop?.name || "Bare & Bold"}
+                </p>
                 <p className="text-sm truncate font-semibold">{it.name}</p>
                 {(it.size || it.material) && (
                   <p className="text-[11px] font-medium" style={{ color: MUTED }}>

@@ -211,6 +211,9 @@ export default function CartDrawer({ isOpen, onClose }) {
                 {/* Details */}
                 <div className="flex-1 flex flex-col justify-between pr-6">
                   <div>
+                    <p className="text-[11px] font-bold text-[#556B2F] mb-0.5 truncate flex items-center gap-1">
+                      <span>{item.shopName || item.product?.shop?.name || "Bare & Bold"}</span>
+                    </p>
                     <h4 className="text-sm font-bold text-[#3C322A] line-clamp-1">{item.product?.name || item.name || ""}</h4>
                     {item.accessories && item.accessories.length > 0 && (
                       <p className="text-[11px] text-[#556B2F] mt-0.5 font-medium">
