@@ -209,10 +209,14 @@ export default function OrderHistoryPage() {
   };
 
   const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnType, setReturnType] = useState("REFUND");
   const [returnOrderId, setReturnOrderId] = useState("");
   const [returnReason, setReturnReason] = useState("");
   const [returnItemId, setReturnItemId] = useState("");
   const [returnCondition, setReturnCondition] = useState("");
+  const [returnBankName, setReturnBankName] = useState("");
+  const [returnBankAccountNumber, setReturnBankAccountNumber] = useState("");
+  const [returnBankAccountName, setReturnBankAccountName] = useState("");
   const [returnDetails, setReturnDetails] = useState("");
   const [returnFiles, setReturnFiles] = useState([]);
   const [returnPreviews, setReturnPreviews] = useState([]);
@@ -234,10 +238,14 @@ export default function OrderHistoryPage() {
 
   const openReturnModal = (order = null) => {
     const defaultOrder = order || eligibleReturnOrders[0] || null;
+    setReturnType("REFUND");
     setReturnOrderId(defaultOrder?.id || "");
     setReturnItemId("");
     setReturnReason("");
     setReturnCondition("");
+    setReturnBankName("");
+    setReturnBankAccountNumber("");
+    setReturnBankAccountName("");
     setReturnDetails("");
     setReturnFiles([]);
     setReturnNotice("");
@@ -292,8 +300,20 @@ export default function OrderHistoryPage() {
   const handleReturnFormSubmit = async (event) => {
     event.preventDefault();
 
-    if (!returnOrderId || !returnReason || !returnCondition) {
-      setReturnNotice("กรุณาเลือกออเดอร์ เหตุผล และสภาพสินค้าให้ครบ");
+    if (!returnOrderId || !returnReason || (returnType === "EXCHANGE" && !returnCondition)) {
+      setReturnNotice(
+        returnType === "REFUND"
+          ? "กรุณาเลือกออเดอร์และเหตุผลให้ครบ"
+          : "กรุณาเลือกออเดอร์ เหตุผล และสภาพสินค้าให้ครบ",
+      );
+      return;
+    }
+
+    if (
+      returnType === "REFUND" &&
+      (!returnBankName || !returnBankAccountNumber.trim() || !returnBankAccountName.trim())
+    ) {
+      setReturnNotice("กรุณากรอกข้อมูลธนาคาร เลขที่บัญชี และชื่อบัญชีสำหรับรับเงินคืนให้ครบ");
       return;
     }
 
@@ -302,9 +322,13 @@ export default function OrderHistoryPage() {
       setReturnNotice("");
 
       const res = await orderService.createRefundRequest(returnOrderId, {
+        requestType: returnType,
         orderItemId: returnItemId || null,
         reason: returnReason,
-        condition: returnCondition,
+        condition: returnCondition || "",
+        bankName: returnType === "REFUND" ? returnBankName : "",
+        bankAccountNumber: returnType === "REFUND" ? returnBankAccountNumber.trim() : "",
+        bankAccountName: returnType === "REFUND" ? returnBankAccountName.trim() : "",
         details: returnDetails,
         images: [],
       });
@@ -687,10 +711,10 @@ export default function OrderHistoryPage() {
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold" style={{ color: DARK }}>
-                  คำขอคืนสินค้า
+                  คำขอคืนเงิน / เปลี่ยนสินค้า
                 </h2>
                 <p className="mt-1 text-sm" style={{ color: MUTED }}>
-                  กรุณาระบุรายละเอียดและแนบรูปหลักฐานประกอบคำขอ
+                  เลือกประเภทคำขอ ระบุรายละเอียด และแนบรูปหลักฐานประกอบ
                 </p>
               </div>
               <button
@@ -712,6 +736,124 @@ export default function OrderHistoryPage() {
               </div>
             ) : (
               <form onSubmit={handleReturnFormSubmit} className="space-y-4">
+                {/* เลือกประเภทคำขอ: ขอคืนเงิน vs คืนสินค้าเพื่อเปลี่ยนเอาอันใหม่ */}
+                <div>
+                  <label className="mb-2 block text-sm font-semibold" style={{ color: DARK }}>
+                    ประเภทคำขอ *
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {[
+                      {
+                        value: "REFUND",
+                        title: "ขอคืนเงิน",
+                        desc: "รับเงินคืนเข้าบัญชีธนาคารของคุณ",
+                      },
+                      {
+                        value: "EXCHANGE",
+                        title: "คืนสินค้าเพื่อเปลี่ยนเอาอันใหม่",
+                        desc: "ส่งสินค้าเดิมคืนเพื่อรับสินค้าชิ้นใหม่แทน",
+                      },
+                    ].map((opt) => {
+                      const active = returnType === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setReturnType(opt.value)}
+                          className="rounded-xl border p-3 text-left transition cursor-pointer"
+                          style={{
+                            borderColor: active ? WALNUT : BORDER,
+                            background: active ? BEIGE : WHITE,
+                          }}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-bold" style={{ color: DARK }}>
+                              {opt.title}
+                            </span>
+                            <span
+                              className="h-4 w-4 rounded-full border flex items-center justify-center shrink-0"
+                              style={{ borderColor: active ? WALNUT : BORDER }}
+                            >
+                              {active && (
+                                <span
+                                  className="h-2 w-2 rounded-full"
+                                  style={{ background: WALNUT }}
+                                />
+                              )}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs leading-relaxed" style={{ color: MUTED }}>
+                            {opt.desc}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* ข้อมูลบัญชีธนาคารสำหรับรับเงินคืน (แสดงเมื่อเลือก ขอคืนเงิน) */}
+                {returnType === "REFUND" && (
+                  <div
+                    className="rounded-xl border p-4 space-y-3"
+                    style={{ borderColor: BORDER, background: CREAM }}
+                  >
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: OLIVE }}>
+                      ข้อมูลบัญชีธนาคารสำหรับรับเงินคืน *
+                    </p>
+                    <div>
+                      <label className="mb-1 block text-xs font-semibold" style={{ color: DARK }}>
+                        ธนาคาร *
+                      </label>
+                      <select
+                        value={returnBankName}
+                        onChange={(e) => setReturnBankName(e.target.value)}
+                        className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
+                        style={{ borderColor: BORDER, color: DARK }}
+                        required
+                      >
+                        <option value="">เลือกธนาคาร</option>
+                        <option value="กสิกรไทย (KBANK)">กสิกรไทย (KBANK)</option>
+                        <option value="ไทยพาณิชย์ (SCB)">ไทยพาณิชย์ (SCB)</option>
+                        <option value="กรุงไทย (KTB)">กรุงไทย (KTB)</option>
+                        <option value="กรุงเทพ (BBL)">กรุงเทพ (BBL)</option>
+                        <option value="กรุงศรีอยุธยา (BAY)">กรุงศรีอยุธยา (BAY)</option>
+                        <option value="ทหารไทยธนชาต (TTB)">ทหารไทยธนชาต (TTB)</option>
+                        <option value="ออมสิน (GSB)">ออมสิน (GSB)</option>
+                        <option value="พร้อมเพย์ (PromptPay)">พร้อมเพย์ (PromptPay)</option>
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="mb-1 block text-xs font-semibold" style={{ color: DARK }}>
+                          เลขที่บัญชี / พร้อมเพย์ *
+                        </label>
+                        <input
+                          type="text"
+                          value={returnBankAccountNumber}
+                          onChange={(e) => setReturnBankAccountNumber(e.target.value)}
+                          placeholder="เช่น 123-4-56789-0"
+                          className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
+                          style={{ borderColor: BORDER, color: DARK }}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-semibold" style={{ color: DARK }}>
+                          ชื่อบัญชี *
+                        </label>
+                        <input
+                          type="text"
+                          value={returnBankAccountName}
+                          onChange={(e) => setReturnBankAccountName(e.target.value)}
+                          placeholder="ชื่อ-นามสกุล เจ้าของบัญชี"
+                          className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
+                          style={{ borderColor: BORDER, color: DARK }}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label className="mb-1 block text-sm font-semibold" style={{ color: DARK }}>
                     ออเดอร์ที่ต้องการคืนสินค้า *
@@ -781,14 +923,14 @@ export default function OrderHistoryPage() {
 
                 <div>
                   <label className="mb-1 block text-sm font-semibold" style={{ color: DARK }}>
-                    สภาพสินค้า *
+                    สภาพสินค้า {returnType === "EXCHANGE" ? "*" : "(ถ้ามี)"}
                   </label>
                   <select
                     value={returnCondition}
                     onChange={(event) => setReturnCondition(event.target.value)}
                     className="w-full rounded-lg border px-3 py-2 text-sm"
                     style={{ borderColor: BORDER, color: DARK }}
-                    required
+                    required={returnType === "EXCHANGE"}
                   >
                     <option value="">เลือกสภาพสินค้า</option>
                     <option value="ยังไม่ได้ใช้งาน">ยังไม่ได้ใช้งาน</option>

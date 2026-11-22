@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 export default function ProductInfo({
   product,
@@ -47,8 +48,18 @@ export default function ProductInfo({
     <div className="flex flex-col justify-between font-sans">
       <div>
         {/* Category / Breadcrumb mini tag */}
-        <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-          <span>Bare & Bold</span>
+        <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          {product.shop?.slug ? (
+            <Link
+              href={`/shop/${product.shop.slug}`}
+              className="inline-flex items-center gap-1.5 text-[#556B2F] hover:text-[#3C322A] hover:underline transition font-extrabold"
+            >
+              <span>🏪</span>
+              <span>{product.shop.name}</span>
+            </Link>
+          ) : (
+            <span>Bare & Bold</span>
+          )}
           <span className="w-1 h-1 rounded-full bg-gray-300" />
           <span>{product.category === "ANKLET" ? "กำไลข้อเท้า" : "กำไลข้อมือ"}</span>
         </div>

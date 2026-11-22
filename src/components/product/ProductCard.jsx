@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { wishlistService } from "@/services/wishlist.service";
 import StarRating from "./StarRating";
 
 export default function ProductCard({ product }) {
+  const router = useRouter();
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
@@ -100,10 +102,25 @@ export default function ProductCard({ product }) {
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
             {product.shop?.name ? (
-              <span className="text-earth-olive flex items-center gap-1 font-extrabold truncate">
-                <span>🏪</span>
-                <span>{product.shop.name}</span>
-              </span>
+              product.shop?.slug ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    router.push(`/shop/${product.shop.slug}`);
+                  }}
+                  className="text-earth-olive flex items-center gap-1 font-extrabold truncate hover:underline hover:text-[#3C322A] transition cursor-pointer"
+                >
+                  <span>🏪</span>
+                  <span className="truncate">{product.shop.name}</span>
+                </button>
+              ) : (
+                <span className="text-earth-olive flex items-center gap-1 font-extrabold truncate">
+                  <span>🏪</span>
+                  <span>{product.shop.name}</span>
+                </span>
+              )
             ) : (
               <span>{product.brand || "BARE & BOLD"}</span>
             )}

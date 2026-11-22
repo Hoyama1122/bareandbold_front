@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import EditBannerModal from "@/components/seller/EditBannerModal";
 import AddProductModal from "@/components/seller/AddProductModal";
 import ShopReviewsSection from "@/components/shop/ShopReviewsSection";
+import ShopVouchersSection from "@/components/shop/ShopVouchersSection";
 
 /**
  * Shop Profile Page (public)
@@ -251,6 +252,13 @@ export default function ShopProfilePage() {
           </button>
         )}
       </div>
+
+      {/* Shop Vouchers Section */}
+      <ShopVouchersSection
+        shopSlug={shop.slug}
+        shopName={shop.name}
+        isOwner={isOwner}
+      />
 
       {/* Products Grid */}
       {(!shop.products || shop.products.length === 0) ? (
