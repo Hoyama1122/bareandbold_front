@@ -518,7 +518,7 @@ export default function SellerProductsPage() {
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span
                           className={`inline-block rounded-md px-2.5 py-1 text-[11px] font-bold ${
-                            product.moderationStatus === "APPROVED" || !product.moderationStatus
+                            product.moderationStatus === "VISIBLE" || product.moderationStatus === "APPROVED" || !product.moderationStatus
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                               : product.moderationStatus === "PENDING"
                               ? "bg-amber-50 text-amber-700 border border-amber-200"
@@ -527,8 +527,8 @@ export default function SellerProductsPage() {
                               : "bg-rose-50 text-rose-700 border border-rose-200"
                           }`}
                         >
-                          {product.moderationStatus === "APPROVED" || !product.moderationStatus
-                            ? "✓ อนุมัติแล้ว"
+                          {product.moderationStatus === "VISIBLE" || product.moderationStatus === "APPROVED" || !product.moderationStatus
+                            ? "✓ แสดงหน้าร้าน"
                             : product.moderationStatus === "PENDING"
                             ? "⏳ รอตรวจสอบ"
                             : product.moderationStatus === "HIDDEN"
