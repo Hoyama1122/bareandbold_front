@@ -79,13 +79,45 @@ export default function CouponSelectModal({
 
   if (!isOpen) return null;
 
-  // ตรวจสอบความถูกต้องเบื้องต้นตาม minSpend
+  // ตรวจสอบความถูกต้องตามประเภทร้านค้า และ minSpend
   const evaluatedVouchers = vouchers.map((v) => {
     const minSpend = Number(v.minSpend || 0);
-    const isEligible = subtotal >= minSpend;
+    let isEligible = true;
+    let ineligibleReason = "";
+    let targetSubtotal = subtotal;
+
+    if (v.type === "SHOP") {
+      // คูปองร้านค้า: ต้องมีสินค้าจากร้านนี้ในคำสั่งซื้อ
+      const shopItems = (orderItems || []).filter((it) => {
+        const itemShopId = it.shopId || it.product?.shopId || it.product?.shop?.id;
+        return itemShopId && v.shopId && String(itemShopId) === String(v.shopId);
+      });
+
+      if (shopItems.length === 0) {
+        isEligible = false;
+        ineligibleReason = `ใช้ได้เฉพาะสินค้าจากร้าน "${v.shop?.name || "ที่กำหนด"}" (ไม่มีสินค้าจากร้านนี้ในคำสั่งซื้อ)`;
+      } else {
+        const shopSubtotal = shopItems.reduce(
+          (sum, it) => sum + Number(it.price || 0) * (it.quantity || 1),
+          0,
+        );
+        targetSubtotal = shopSubtotal;
+        if (shopSubtotal < minSpend) {
+          isEligible = false;
+          ineligibleReason = `ยอดสินค้าของร้าน "${v.shop?.name || ""}" ยังไม่ถึงขั้นต่ำ ฿${minSpend.toLocaleString()} (ขาดอีก ฿${(minSpend - shopSubtotal).toLocaleString()})`;
+        }
+      }
+    } else {
+      // คูปองส่วนลดแพลตฟอร์ม หรือ คูปองส่งฟรี
+      if (subtotal < minSpend) {
+        isEligible = false;
+        ineligibleReason = `ยอดซื้อยังไม่ถึงขั้นต่ำ ฿${minSpend.toLocaleString()} (ขาดอีก ฿${(minSpend - subtotal).toLocaleString()})`;
+      }
+    }
+
     let discountPreview = 0;
     if (v.discountType === "PERCENT") {
-      const calc = (subtotal * Number(v.discountValue)) / 100;
+      const calc = (targetSubtotal * Number(v.discountValue)) / 100;
       discountPreview = v.maxDiscount ? Math.min(calc, Number(v.maxDiscount)) : calc;
     } else {
       discountPreview = Number(v.discountValue);
@@ -94,6 +126,7 @@ export default function CouponSelectModal({
     return {
       ...v,
       isEligible,
+      ineligibleReason,
       discountPreview,
     };
   });
@@ -319,6 +352,21 @@ export default function CouponSelectModal({
                             <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                               ลด ฿{Number(cp.discountPreview || 0).toLocaleString()}
                             </span>
+                            {cp.type === "SHOP" && (
+                              <span className="text-[10px] font-medium text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                                ร้าน: {cp.shop?.name || "ร้านค้า"}
+                              </span>
+                            )}
+                            {cp.type === "PLATFORM" && (
+                              <span className="text-[10px] font-medium text-purple-800 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                                ส่วนลดแพลตฟอร์ม
+                              </span>
+                            )}
+                            {cp.type === "SHIPPING" && (
+                              <span className="text-[10px] font-medium text-blue-800 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                                ส่งฟรี
+                              </span>
+                            )}
                           </div>
                           <h5 className="text-xs font-bold text-neutral-800 mt-1 truncate">
                             {cp.title}
@@ -366,18 +414,24 @@ export default function CouponSelectModal({
                     className="flex items-center justify-between p-3.5 rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/50"
                   >
                     <div className="min-w-0 flex-1 pr-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-mono text-xs font-bold text-neutral-500">
                           {cp.code}
                         </span>
                         <span className="text-[11px] text-neutral-400 truncate">
                           {cp.title}
                         </span>
+                        {cp.type === "SHOP" && (
+                          <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                            ร้าน: {cp.shop?.name || "ร้านค้า"}
+                          </span>
+                        )}
                       </div>
                       <p className="text-[10px] text-rose-500 mt-0.5">
-                        {subtotal < Number(cp.minSpend || 0)
-                          ? `ยอดซื้อยังไม่ถึงขั้นต่ำ ฿${Number(cp.minSpend).toLocaleString()} (ขาดอีก ฿${(Number(cp.minSpend) - subtotal).toLocaleString()})`
-                          : "คูปองไม่ร่วมรายการในขณะนี้"}
+                        {cp.ineligibleReason ||
+                          (subtotal < Number(cp.minSpend || 0)
+                            ? `ยอดซื้อยังไม่ถึงขั้นต่ำ ฿${Number(cp.minSpend).toLocaleString()} (ขาดอีก ฿${(Number(cp.minSpend) - subtotal).toLocaleString()})`
+                            : "คูปองไม่ร่วมรายการในขณะนี้")}
                       </p>
                     </div>
                   </div>
