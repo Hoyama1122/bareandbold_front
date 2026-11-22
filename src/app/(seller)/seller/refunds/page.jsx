@@ -6,6 +6,7 @@ import { sellerService } from "@/services/seller.service";
 
 export default function SellerRefundsPage() {
   const [refunds, setRefunds] = useState([]);
+  const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -21,10 +22,23 @@ export default function SellerRefundsPage() {
       setLoading(true);
       setError("");
       const res = await sellerService.getRefunds({ status: statusFilter });
-      setRefunds(res.data || res.refunds || res || []);
+      const list = Array.isArray(res)
+        ? res
+        : Array.isArray(res?.refundRequests)
+          ? res.refundRequests
+          : Array.isArray(res?.refunds)
+            ? res.refunds
+            : Array.isArray(res?.data)
+              ? res.data
+              : [];
+      setRefunds(list);
+      if (res?.counts && typeof res.counts === "object") {
+        setCounts(res.counts);
+      }
     } catch (err) {
       console.error("Failed to fetch refunds:", err);
       setError(err.message || "ไม่สามารถโหลดรายการคำขอคืนเงินได้");
+      setRefunds([]);
     } finally {
       setLoading(false);
     }
@@ -102,22 +116,34 @@ export default function SellerRefundsPage() {
       <div className="flex gap-2 border-b border-slate-200 pb-3">
         {[
           { key: "ALL", label: "ทั้งหมด" },
-          { key: "PENDING", label: "รอตรวจสอบ" },
-          { key: "APPROVED", label: "อนุมัติแล้ว" },
-          { key: "REJECTED", label: "ปฏิเสธ" },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setStatusFilter(tab.key)}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-              statusFilter === tab.key
-                ? "bg-slate-900 text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+          { key: "PENDING", label: "รอตรวจสอบ", countKey: "PENDING" },
+          { key: "APPROVED", label: "อนุมัติแล้ว", countKey: "APPROVED" },
+          { key: "REJECTED", label: "ปฏิเสธ", countKey: "REJECTED" },
+        ].map((tab) => {
+          const count = tab.countKey ? counts[tab.countKey] : null;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setStatusFilter(tab.key)}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                statusFilter === tab.key
+                  ? "bg-slate-900 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {tab.label}
+              {typeof count === "number" && count > 0 && (
+                <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs ${
+                  statusFilter === tab.key
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-200 text-slate-700"
+                }`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {error && (
@@ -131,7 +157,7 @@ export default function SellerRefundsPage() {
         <div className="flex items-center justify-center py-16">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-[#0F766E]" />
         </div>
-      ) : refunds.length === 0 ? (
+      ) : !Array.isArray(refunds) || refunds.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl">
             📦
@@ -145,7 +171,7 @@ export default function SellerRefundsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {refunds.map((rf) => (
+          {(Array.isArray(refunds) ? refunds : []).map((rf) => (
             <div
               key={rf.id}
               className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md"
