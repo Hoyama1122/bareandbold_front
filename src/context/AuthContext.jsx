@@ -9,6 +9,7 @@ import {
 } from "react";
 import { apiFetch } from "@/lib/api";
 import { authService } from "@/services/auth.service";
+import { cartService } from "@/services/cart.service";
 
 /**
  * AuthContext — แหล่งความจริงเดียวของ session ฝั่ง storefront
@@ -87,6 +88,14 @@ export function AuthProvider({ children }) {
 
     // ดึงข้อมูลเต็ม (shop, สิทธิ์ล่าสุด) จาก DB
     await refresh();
+
+    // รวมตะกร้า local storage เข้ากับ user cart ในฐานข้อมูล
+    try {
+      await cartService.mergeCart();
+    } catch (e) {
+      console.error("Cart merge error:", e);
+    }
+
     return data;
   };
 

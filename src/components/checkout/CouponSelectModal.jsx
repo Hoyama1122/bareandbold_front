@@ -9,6 +9,7 @@ export default function CouponSelectModal({
   onClose,
   subtotal = 0,
   baseShipping = 50,
+  orderItems = [],
   appliedCoupon = null,
   onApplyCoupon,
   onRemoveCoupon,
@@ -92,6 +93,14 @@ export default function CouponSelectModal({
   const eligibleCoupons = evaluatedVouchers.filter((v) => v.isEligible && v.status === "ACTIVE");
   const ineligibleCoupons = evaluatedVouchers.filter((v) => !v.isEligible || v.status !== "ACTIVE");
 
+  const quoteItems = React.useMemo(() => {
+    return (orderItems || []).map((it) => ({
+      productId: it.productId || it.id,
+      quantity: it.quantity || 1,
+      accessories: Array.isArray(it.accessories) ? it.accessories : [],
+    }));
+  }, [orderItems]);
+
   const handleApplyTypedCode = async (e) => {
     e.preventDefault();
     setCodeError("");
@@ -100,8 +109,13 @@ export default function CouponSelectModal({
 
     try {
       setQuoting(true);
+      const matched = vouchers.find((v) => v.code === cleanCode);
       const res = await voucherService.quoteVouchers({
-        platformCode: cleanCode,
+        items: quoteItems,
+        code: cleanCode,
+        platformCode: !matched || matched.type === "PLATFORM" ? cleanCode : undefined,
+        shippingCode: matched?.type === "SHIPPING" ? cleanCode : undefined,
+        shopCodes: matched?.type === "SHOP" ? [cleanCode] : undefined,
       });
 
       if (!res.success) {
@@ -140,6 +154,8 @@ export default function CouponSelectModal({
     try {
       setQuoting(true);
       const res = await voucherService.quoteVouchers({
+        items: quoteItems,
+        code: v.code,
         platformCode: v.type === "PLATFORM" ? v.code : undefined,
         shippingCode: v.type === "SHIPPING" ? v.code : undefined,
         shopCodes: v.type === "SHOP" ? [v.code] : undefined,
