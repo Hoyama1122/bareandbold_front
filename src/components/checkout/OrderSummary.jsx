@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Lock, Tag, X, ChevronRight, Check } from "lucide-react";
+import { Lock, Tag, X, ChevronRight, Check, Ticket } from "lucide-react";
 import { INK, CREAM, BORDER, MUTED, OLIVE, WHITE } from "./constants";
 
 const FALLBACK_IMAGE = "/images/placeholder.jpg";
@@ -83,7 +83,7 @@ export default function OrderSummary({
         {appliedCoupon ? (
           <div className="flex items-center justify-between p-3.5 rounded-xl border border-[#556B2F]/30 bg-[#556B2F]/10 text-[#556B2F]">
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <span className="text-base">🎟️</span>
+              <Ticket size={18} className="shrink-0 text-[#556B2F]" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs font-extrabold bg-[#556B2F] text-white px-2 py-0.5 rounded-md">
@@ -109,10 +109,10 @@ export default function OrderSummary({
               <button
                 type="button"
                 onClick={onRemoveCoupon}
-                className="w-6 h-6 rounded-full bg-white text-rose-600 border border-rose-200 flex items-center justify-center text-xs font-bold hover:bg-rose-50 transition cursor-pointer"
+                className="w-6 h-6 rounded-full bg-white text-rose-600 border border-rose-200 flex items-center justify-center hover:bg-rose-50 transition cursor-pointer"
                 title="ยกเลิกการใช้คูปอง"
               >
-                ✕
+                <X size={12} />
               </button>
             </div>
           </div>
@@ -123,7 +123,7 @@ export default function OrderSummary({
             className="w-full flex items-center justify-between p-3.5 rounded-xl border border-dashed border-[#7a5b46]/50 bg-[#7a5b46]/5 hover:bg-[#7a5b46]/10 text-left transition cursor-pointer group"
           >
             <div className="flex items-center gap-2.5">
-              <span className="text-lg">🎟️</span>
+              <Ticket size={20} className="shrink-0 text-[#7a5b46]" />
               <div>
                 <p className="text-xs font-bold text-[#7a5b46] group-hover:underline">
                   เลือกคูปองส่วนลด / โค้ดส่งฟรี
@@ -197,8 +197,8 @@ export default function OrderSummary({
         <div>
           <span className="kanit font-semibold block text-base">ยอดชำระทั้งหมด</span>
           {appliedCoupon && (
-            <span className="text-[11px] text-[#556B2F] font-bold block mt-0.5">
-              ✓ ประหยัดได้ ฿{baht(discountAmount + shippingDiscount)}
+            <span className="inline-flex items-center gap-1 text-[11px] text-[#556B2F] font-bold block mt-0.5">
+              <Check size={12} /> ประหยัดได้ ฿{baht(discountAmount + shippingDiscount)}
             </span>
           )}
         </div>

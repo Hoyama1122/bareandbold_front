@@ -13,6 +13,7 @@ import ProductReviewsSection from "@/components/product-detail/ProductReviewsSec
 import RecommendedProducts from "@/components/product-detail/RecommendedProducts";
 import ImageZoomModal from "@/components/product-detail/ImageZoomModal";
 import { addToCart as addCartAPI } from "@/services/cart.service";
+import { Check, X } from "lucide-react";
 
 export default function ProductDetailClient({ nameSlug }) {
   const router = useRouter();
@@ -393,9 +394,9 @@ export default function ProductDetailClient({ nameSlug }) {
           }}
         >
           {toast.type === "success" ? (
-            <span style={{ color: "#6B7A4E" }} className="text-base font-bold">✓</span>
+            <Check size={16} style={{ color: "#6B7A4E" }} className="shrink-0" />
           ) : (
-            <span className="text-red-500 text-base font-bold">✕</span>
+            <X size={16} className="text-red-500 shrink-0" />
           )}
           <span>{toast.message}</span>
         </div>

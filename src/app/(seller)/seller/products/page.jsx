@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { uploadService } from "@/services/upload.service";
+import { Search, CheckCircle2, EyeOff, AlertTriangle, Clock, X } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -382,8 +383,8 @@ export default function SellerProductsPage() {
                 placeholder="ค้นหาชื่อสินค้า..."
                 className="w-44 px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none sm:w-52"
               />
-              <span className="border-l border-slate-200 bg-slate-50 px-2.5 py-2 text-xs text-slate-500">
-                🔍
+              <span className="border-l border-slate-200 bg-slate-50 px-2.5 py-2 text-slate-400 flex items-center justify-center">
+                <Search size={14} />
               </span>
             </div>
 
@@ -517,7 +518,7 @@ export default function SellerProductsPage() {
 
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span
-                          className={`inline-block rounded-md px-2.5 py-1 text-[11px] font-bold ${
+                          className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-bold ${
                             product.moderationStatus === "VISIBLE" || product.moderationStatus === "APPROVED" || !product.moderationStatus
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                               : product.moderationStatus === "PENDING"
@@ -527,13 +528,27 @@ export default function SellerProductsPage() {
                               : "bg-rose-50 text-rose-700 border border-rose-200"
                           }`}
                         >
-                          {product.moderationStatus === "VISIBLE" || product.moderationStatus === "APPROVED" || !product.moderationStatus
-                            ? "✓ แสดงหน้าร้าน"
-                            : product.moderationStatus === "PENDING"
-                            ? "⏳ รอตรวจสอบ"
-                            : product.moderationStatus === "HIDDEN"
-                            ? "👁️ ถูกซ่อนชั่วคราว"
-                            : "⚠️ ถูกระงับ"}
+                          {product.moderationStatus === "VISIBLE" || product.moderationStatus === "APPROVED" || !product.moderationStatus ? (
+                            <>
+                              <CheckCircle2 size={12} />
+                              <span>แสดงหน้าร้าน</span>
+                            </>
+                          ) : product.moderationStatus === "PENDING" ? (
+                            <>
+                              <Clock size={12} />
+                              <span>รอตรวจสอบ</span>
+                            </>
+                          ) : product.moderationStatus === "HIDDEN" ? (
+                            <>
+                              <EyeOff size={12} />
+                              <span>ถูกซ่อนชั่วคราว</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertTriangle size={12} />
+                              <span>ถูกระงับ</span>
+                            </>
+                          )}
                         </span>
                       </td>
 
@@ -589,9 +604,10 @@ export default function SellerProductsPage() {
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="rounded-lg px-3 py-1 text-sm text-slate-500 hover:bg-slate-100 cursor-pointer"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+                title="ปิด"
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 

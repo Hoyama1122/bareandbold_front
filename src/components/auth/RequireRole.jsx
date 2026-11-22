@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { Lock } from "lucide-react";
 
 /**
  * ป้องกันหน้าเฉพาะ role ฝั่ง client
@@ -34,7 +35,9 @@ export default function RequireRole({ role, children }) {
   if (role && currentRole !== role) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-6 text-center">
-        <div className="text-5xl">🔒</div>
+        <div className="w-16 h-16 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-400">
+          <Lock size={32} />
+        </div>
         <h1 className="text-2xl font-bold text-earth-dark">
           คุณไม่มีสิทธิ์เข้าถึงหน้านี้
         </h1>

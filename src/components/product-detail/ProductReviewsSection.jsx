@@ -340,13 +340,15 @@ export default function ProductReviewsSection({ productId }) {
                     setRatingFilter(ratingFilter === "5" ? "" : "5");
                     setPage(1);
                   }}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer ${
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
                     ratingFilter === "5"
                       ? "bg-[#1F1B18] text-white"
                       : "border border-[#E5DCCB] bg-white text-[#4A3F35] hover:bg-[#F3ECE0]"
                   }`}
                 >
-                  5 ★ ({summary.breakdown?.[5] || 0})
+                  <span>5</span>
+                  <Star size={11} className={ratingFilter === "5" ? "fill-white text-white" : "fill-amber-400 text-amber-400"} />
+                  <span>({summary.breakdown?.[5] || 0})</span>
                 </button>
 
                 <button
@@ -368,9 +370,11 @@ export default function ProductReviewsSection({ productId }) {
                       setRatingFilter("");
                       setPage(1);
                     }}
-                    className="rounded-full bg-[#1F1B18] px-3 py-1 text-xs font-semibold text-white cursor-pointer"
+                    className="rounded-full bg-[#1F1B18] px-3 py-1 text-xs font-semibold text-white cursor-pointer inline-flex items-center gap-1"
                   >
-                    {ratingFilter} ★ ✕
+                    <span>{ratingFilter}</span>
+                    <Star size={11} className="fill-white text-white" />
+                    <X size={12} className="ml-0.5" />
                   </button>
                 )}
               </div>

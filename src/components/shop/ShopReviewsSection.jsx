@@ -330,13 +330,15 @@ export default function ShopReviewsSection({ shopSlug, shopName, isOwner }) {
                     setRatingFilter(ratingFilter === "5" ? "" : "5");
                     setPage(1);
                   }}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer ${
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
                     ratingFilter === "5"
                       ? "bg-[#1F1B18] text-white"
                       : "border border-[#E5DCCB] bg-white text-[#4A3F35]"
                   }`}
                 >
-                  5 ★ ({summary.breakdown?.[5] || 0})
+                  <span>5</span>
+                  <Star size={11} className={ratingFilter === "5" ? "fill-white text-white" : "fill-amber-400 text-amber-400"} />
+                  <span>({summary.breakdown?.[5] || 0})</span>
                 </button>
               </div>
 

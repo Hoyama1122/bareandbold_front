@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { uploadService } from "@/services/upload.service";
 import { shopService } from "@/services/shop.service";
+import { X, AlertTriangle, Image as ImageIcon, Upload, Palette, Link as LinkIcon, Camera, Check } from "lucide-react";
 
 const PRESET_BANNERS = [
   {
@@ -145,9 +146,10 @@ export default function EditBannerModal({
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-neutral-800 flex items-center justify-center transition cursor-pointer text-lg font-bold"
+            className="w-9 h-9 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-neutral-800 flex items-center justify-center transition cursor-pointer"
+            title="ปิด"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -155,7 +157,7 @@ export default function EditBannerModal({
         <div className="p-6 max-h-[75vh] overflow-y-auto space-y-6">
           {error && (
             <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
-              <span>⚠️</span>
+              <AlertTriangle size={16} className="shrink-0 text-rose-600" />
               <span>{error}</span>
             </div>
           )}
@@ -175,7 +177,7 @@ export default function EditBannerModal({
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-neutral-400 gap-2">
-                  <span className="text-3xl">🖼️</span>
+                  <ImageIcon size={32} />
                   <span className="text-xs font-semibold">ยังไม่มีรูปแบนเนอร์ (ใช้สีพื้นหลังเริ่มต้น)</span>
                 </div>
               )}
@@ -190,35 +192,38 @@ export default function EditBannerModal({
             <button
               type="button"
               onClick={() => setMode("upload")}
-              className={`flex-1 py-3 text-xs font-bold border-b-2 transition cursor-pointer ${
+              className={`flex-1 py-3 text-xs font-bold border-b-2 transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 mode === "upload"
                   ? "border-[#7a5b46] text-[#7a5b46]"
                   : "border-transparent text-neutral-400 hover:text-neutral-600"
               }`}
             >
-              📁 อัปโหลดไฟล์รูปภาพ
+              <Upload size={14} />
+              <span>อัปโหลดไฟล์รูปภาพ</span>
             </button>
             <button
               type="button"
               onClick={() => setMode("preset")}
-              className={`flex-1 py-3 text-xs font-bold border-b-2 transition cursor-pointer ${
+              className={`flex-1 py-3 text-xs font-bold border-b-2 transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 mode === "preset"
                   ? "border-[#7a5b46] text-[#7a5b46]"
                   : "border-transparent text-neutral-400 hover:text-neutral-600"
               }`}
             >
-              🎨 เลือกภาพสำเร็จรูป (Presets)
+              <Palette size={14} />
+              <span>เลือกภาพสำเร็จรูป (Presets)</span>
             </button>
             <button
               type="button"
               onClick={() => setMode("url")}
-              className={`flex-1 py-3 text-xs font-bold border-b-2 transition cursor-pointer ${
+              className={`flex-1 py-3 text-xs font-bold border-b-2 transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 mode === "url"
                   ? "border-[#7a5b46] text-[#7a5b46]"
                   : "border-transparent text-neutral-400 hover:text-neutral-600"
               }`}
             >
-              🔗 ใส่ URL รูปภาพ
+              <LinkIcon size={14} />
+              <span>ใส่ URL รูปภาพ</span>
             </button>
           </div>
 
@@ -232,7 +237,7 @@ export default function EditBannerModal({
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <div className="text-3xl mb-1">📸</div>
+                <Camera size={28} className="text-neutral-400 mb-1" />
                 <p className="text-xs font-bold text-neutral-700">
                   คลิกเพื่อเลือกรูปภาพ หรือลากไฟล์มาวางที่นี่
                 </p>
@@ -240,8 +245,9 @@ export default function EditBannerModal({
                   รองรับ PNG, JPG, WebP ขนาดไม่เกิน 5MB
                 </p>
                 {selectedFile && (
-                  <span className="mt-2 text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-3 py-1 rounded-full">
-                    ✓ เลือกไฟล์แล้ว: {selectedFile.name}
+                  <span className="mt-2 text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-3 py-1 rounded-full inline-flex items-center gap-1">
+                    <Check size={12} />
+                    <span>เลือกไฟล์แล้ว: {selectedFile.name}</span>
                   </span>
                 )}
               </label>
@@ -287,7 +293,7 @@ export default function EditBannerModal({
                         </span>
                       </div>
                       {isSelected && (
-                        <span className="text-xs font-bold text-[#7a5b46] mr-1">✓</span>
+                        <Check size={16} className="text-[#7a5b46] mr-1 shrink-0" />
                       )}
                     </button>
                   );
@@ -337,7 +343,10 @@ export default function EditBannerModal({
                 <span>กำลังบันทึก...</span>
               </>
             ) : (
-              <span>✓ บันทึกแบนเนอร์ร้านค้า</span>
+              <span className="inline-flex items-center gap-1.5">
+                <Check size={14} />
+                <span>บันทึกแบนเนอร์ร้านค้า</span>
+              </span>
             )}
           </button>
         </div>

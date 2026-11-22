@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { wishlistService } from "@/services/wishlist.service";
 import StarRating from "./StarRating";
+import { Store } from "lucide-react";
 
 export default function ProductCard({ product }) {
   const router = useRouter();
@@ -97,7 +98,7 @@ export default function ProductCard({ product }) {
         />
       </div>
 
-      {/* 📝 ส่วนข้อมูลรายละเอียดสินค้า */}
+      {/* ข้อมูลรายละเอียดสินค้า */}
       <div className="p-5 flex flex-col flex-grow justify-between font-anuphan">
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
@@ -112,12 +113,12 @@ export default function ProductCard({ product }) {
                   }}
                   className="text-earth-olive flex items-center gap-1 font-extrabold truncate hover:underline hover:text-[#3C322A] transition cursor-pointer"
                 >
-                  <span>🏪</span>
+                  <Store size={12} className="shrink-0" />
                   <span className="truncate">{product.shop.name}</span>
                 </button>
               ) : (
                 <span className="text-earth-olive flex items-center gap-1 font-extrabold truncate">
-                  <span>🏪</span>
+                  <Store size={12} className="shrink-0" />
                   <span>{product.shop.name}</span>
                 </span>
               )

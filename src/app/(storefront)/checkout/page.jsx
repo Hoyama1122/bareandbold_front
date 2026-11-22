@@ -11,7 +11,7 @@ import {
   platformService,
 } from "@/services/platform.service";
 import { calculateCartPricing } from "@/lib/pricing";
-import { ChevronLeft, QrCode } from "lucide-react";
+import { ChevronLeft, QrCode, AlertTriangle } from "lucide-react";
 
 import { CREAM, INK, MUTED, WHITE, BORDER, OLIVE } from "@/components/checkout/constants";
 import CheckoutSteps from "@/components/checkout/CheckoutSteps";
@@ -513,7 +513,7 @@ export default function CheckoutPage() {
 
         {hasOwnShopItems && (
           <div className="mb-6 rounded-2xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-800 shadow-sm flex items-start gap-3">
-            <span className="text-xl">⚠️</span>
+            <AlertTriangle size={20} className="shrink-0 text-rose-600 mt-0.5" />
             <div>
               <p className="font-bold">ไม่อนุญาตให้สั่งซื้อสินค้าจากร้านค้าของตนเอง</p>
               <p className="mt-0.5 text-xs text-rose-700">

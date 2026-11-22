@@ -9,6 +9,7 @@ import EditBannerModal from "@/components/seller/EditBannerModal";
 import AddProductModal from "@/components/seller/AddProductModal";
 import ShopReviewsSection from "@/components/shop/ShopReviewsSection";
 import ShopVouchersSection from "@/components/shop/ShopVouchersSection";
+import { Store, Crown, CheckCircle2, Settings, Package } from "lucide-react";
 
 /**
  * Shop Profile Page (public)
@@ -65,7 +66,7 @@ export default function ShopProfilePage() {
 
   const handleBannerUpdated = (newBannerUrl) => {
     setShop((prev) => (prev ? { ...prev, bannerUrl: newBannerUrl } : prev));
-    showToast("✓ อัปเดตแบนเนอร์ร้านค้าเรียบร้อยแล้ว", "success");
+    showToast("อัปเดตแบนเนอร์ร้านค้าเรียบร้อยแล้ว", "success");
     if (refreshAuth) refreshAuth();
   };
 
@@ -75,7 +76,7 @@ export default function ShopProfilePage() {
       const updatedProducts = [newProduct, ...(prev.products || [])];
       return { ...prev, products: updatedProducts };
     });
-    showToast(`✓ เพิ่มสินค้า "${newProduct.name}" สำเร็จ! สินค้าจะแสดงบนหน้าร้านของคุณและหน้าร้านค้ารวมทันที`, "success");
+    showToast(`เพิ่มสินค้า "${newProduct.name}" สำเร็จ! สินค้าจะแสดงบนหน้าร้านของคุณและหน้าร้านค้ารวมทันที`, "success");
   };
 
   if (loading) {
@@ -92,7 +93,9 @@ export default function ShopProfilePage() {
   if (error || !shop) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center font-anuphan">
-        <div className="text-5xl">🏪</div>
+        <div className="w-16 h-16 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-400">
+          <Store size={36} />
+        </div>
         <h1 className="text-2xl font-extrabold text-earth-dark">
           {error || "ไม่พบร้านค้า"}
         </h1>
@@ -119,7 +122,7 @@ export default function ShopProfilePage() {
       {isOwner && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#556B2F]/10 border border-[#556B2F]/20 px-4 py-2.5 text-xs text-[#556B2F]">
           <div className="flex items-center gap-2">
-            <span className="text-base">👑</span>
+            <Crown size={16} className="text-[#556B2F] shrink-0" />
             <span className="font-bold">คุณกำลังดูหน้าร้านของคุณเองในฐานะเจ้าของร้าน ({shop.name})</span>
           </div>
           <div className="flex items-center gap-2">
@@ -188,8 +191,8 @@ export default function ShopProfilePage() {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-3xl bg-neutral-50">
-                🏪
+              <div className="flex h-full w-full items-center justify-center text-neutral-400 bg-neutral-100">
+                <Store size={36} />
               </div>
             )}
           </div>
@@ -198,8 +201,9 @@ export default function ShopProfilePage() {
               <h1 className="text-2xl font-extrabold text-earth-dark">
                 {shop.name}
               </h1>
-              <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                ✓ ร้านค้าทางการ (Verified)
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                <CheckCircle2 size={12} />
+                <span>ร้านค้าทางการ (Verified)</span>
               </span>
             </div>
             <p className="text-xs text-neutral-400 mt-0.5">/shop/{shop.slug}</p>
@@ -224,7 +228,8 @@ export default function ShopProfilePage() {
                 href="/seller"
                 className="flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-4 py-2 text-xs font-bold text-neutral-700 shadow-xs hover:bg-neutral-50 transition"
               >
-                <span>⚙️ Seller Center</span>
+                <Settings size={14} />
+                <span>Seller Center</span>
               </Link>
             </div>
           )}
@@ -263,7 +268,9 @@ export default function ShopProfilePage() {
       {/* Products Grid */}
       {(!shop.products || shop.products.length === 0) ? (
         <div className="mt-8 rounded-3xl border border-dashed border-neutral-300 bg-white py-16 text-center text-sm text-neutral-400">
-          <div className="text-4xl mb-2">📦</div>
+          <div className="mx-auto w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400 mb-3">
+            <Package size={24} />
+          </div>
           <p className="font-bold text-neutral-600">ร้านนี้ยังไม่มีสินค้าเปิดขาย</p>
           {isOwner && (
             <button

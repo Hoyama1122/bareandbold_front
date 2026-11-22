@@ -30,10 +30,10 @@ export default function Hero() {
         {/* ฝั่งขวา: รูปภาพและวงกลมพื้นหลังที่โผล่ออกมาจากด้านหลังอย่างชัดเจน */}
         <div className="relative flex items-center justify-center min-h-[440px] md:min-h-[540px]">
           
-          {/* 🟡 วงกลมพื้นหลังขยับเยื้องเพิ่มมิติเชิงลึก */}
+          {/* วงกลมพื้นหลังขยับเยื้องเพิ่มมิติเชิงลึก */}
           <div className="absolute w-[80%] sm:w-[70%] md:w-[80%] aspect-square rounded-full bg-[#EADCC9] translate-x-[8%] translate-y-[4%] z-0" />
 
-          {/* 🖼️ กล่องใส่รูปทรงสี่เหลี่ยมผืนผ้าขอบมน แสดงรูปสินค้าแรกจากระบบ Seed ใหม่ */}
+          {/* กล่องใส่รูปทรงสี่เหลี่ยมผืนผ้าขอบมน แสดงรูปสินค้าแรกจากระบบ Seed ใหม่ */}
           <div className="relative w-[85%] sm:w-[75%] md:w-[80%] aspect-[3/4] rounded-[2rem] overflow-hidden shadow-2xl border border-white/60 z-10 bg-white">
             <Image
               src="https://i.pinimg.com/736x/d6/b6/9f/d6b69f5318eb42d58e3812b16ff50a01.jpg"

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { Store, Menu } from "lucide-react";
 
 function BrandSunburstIcon({ className = "h-7 w-7" }) {
   return (
@@ -207,7 +208,9 @@ export default function SellerLayout({ children }) {
   if (!shop) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F8F9FA] px-6 text-center text-slate-900">
-        <div className="text-5xl">🏪</div>
+        <div className="w-16 h-16 rounded-2xl bg-slate-200/60 flex items-center justify-center text-slate-600">
+          <Store size={32} />
+        </div>
         <h1 className="text-2xl font-extrabold text-slate-900">
           คุณยังไม่มีร้านค้า
         </h1>
@@ -395,10 +398,10 @@ export default function SellerLayout({ children }) {
             <button
               type="button"
               onClick={() => setSidebarOpen((prev) => !prev)}
-              className="rounded-lg border border-slate-200 p-2 text-sm font-bold text-slate-700 hover:bg-slate-50 lg:hidden cursor-pointer"
+              className="rounded-lg border border-slate-200 p-2 text-slate-700 hover:bg-slate-50 lg:hidden cursor-pointer"
               aria-label="เปิดปิดเมนู"
             >
-              ☰
+              <Menu size={18} />
             </button>
             <h1 className="text-lg font-extrabold text-slate-900 sm:text-xl">
               {pageTitle}

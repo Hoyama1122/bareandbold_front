@@ -286,9 +286,16 @@ export default function SellerShopProfilePage() {
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#115E59] disabled:opacity-50 text-white text-xs font-bold transition cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#115E59] disabled:opacity-50 text-white text-xs font-bold transition cursor-pointer inline-flex items-center gap-1.5"
             >
-              {saving ? "กำลังบันทึก..." : "✓ บันทึกข้อมูลร้านและบัญชี"}
+              {saving ? (
+                "กำลังบันทึก..."
+              ) : (
+                <>
+                  <Check size={14} />
+                  <span>บันทึกข้อมูลร้านและบัญชี</span>
+                </>
+              )}
             </button>
           </div>
         </form>

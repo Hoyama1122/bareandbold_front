@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { productService } from "@/services/product.service";
 import { uploadService } from "@/services/upload.service";
+import { X, AlertTriangle, Upload, Check } from "lucide-react";
 
 const SAMPLE_JEWELRY_IMAGES = [
   {
@@ -240,9 +241,10 @@ export default function AddProductModal({
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-neutral-800 flex items-center justify-center transition cursor-pointer text-lg font-bold"
+            className="w-9 h-9 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-neutral-800 flex items-center justify-center transition cursor-pointer"
+            title="ปิด"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -250,7 +252,7 @@ export default function AddProductModal({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           {error && (
             <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
-              <span>⚠️</span>
+              <AlertTriangle size={16} className="shrink-0 text-rose-600" />
               <span>{error}</span>
             </div>
           )}
@@ -409,7 +411,8 @@ export default function AddProductModal({
                   onChange={handleFileUpload}
                   className="hidden"
                 />
-                <span>📁 อัปโหลดรูปภาพ</span>
+                <Upload size={14} />
+                <span>อัปโหลดรูปภาพ</span>
                 {uploadingImage && <span className="w-3 h-3 border-2 border-neutral-600 border-t-transparent rounded-full animate-spin" />}
               </label>
 
@@ -474,9 +477,10 @@ export default function AddProductModal({
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(idx)}
-                      className="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition cursor-pointer shadow"
+                      className="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer shadow"
+                      title="ลบรูปภาพ"
                     >
-                      ✕
+                      <X size={12} />
                     </button>
                   </div>
                 ))}
@@ -584,7 +588,10 @@ export default function AddProductModal({
                   <span>กำลังบันทึกสินค้า...</span>
                 </>
               ) : (
-                <span>✓ บันทึกและเปิดขายสินค้า</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Check size={14} />
+                  <span>บันทึกและเปิดขายสินค้า</span>
+                </span>
               )}
             </button>
           </div>

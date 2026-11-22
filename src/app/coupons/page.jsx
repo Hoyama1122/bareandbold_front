@@ -32,7 +32,9 @@ function formatDate(d) {
 }
 
 function CouponGiftIllustration({ type = "PLATFORM" }) {
-  const symbol = type === "SHIPPING" ? "🚚" : type === "SHOP" ? "★" : "%";
+  const isShipping = type === "SHIPPING";
+  const isShop = type === "SHOP";
+  const label = isShipping ? "FREE" : isShop ? "SHOP" : "%";
   return (
     <svg
       viewBox="0 0 120 76"
@@ -68,14 +70,14 @@ function CouponGiftIllustration({ type = "PLATFORM" }) {
         <circle cx="0" cy="0" r="13.5" fill="#E35D67" />
         <text
           x="0"
-          y="5.5"
+          y={isShipping || isShop ? "3.5" : "5.5"}
           textAnchor="middle"
           fill="#FFFFFF"
-          fontSize={type === "SHIPPING" ? "13" : "16"}
-          fontWeight="800"
+          fontSize={isShipping ? "8" : isShop ? "7" : "15"}
+          fontWeight="900"
           fontFamily="sans-serif"
         >
-          {symbol}
+          {label}
         </text>
       </g>
     </svg>

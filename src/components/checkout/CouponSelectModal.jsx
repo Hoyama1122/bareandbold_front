@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Tag, Check, X, ArrowRight, AlertCircle, Sparkles, Percent, Truck, Loader2 } from "lucide-react";
+import { Tag, Check, X, ArrowRight, AlertCircle, Sparkles, Percent, Truck, Loader2, Ticket } from "lucide-react";
 import { voucherService } from "@/services/voucher.service";
 
 export default function CouponSelectModal({
@@ -246,9 +246,10 @@ export default function CouponSelectModal({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 flex items-center justify-center transition cursor-pointer text-sm font-bold"
+            className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-500 flex items-center justify-center transition cursor-pointer"
+            title="ปิด"
           >
-            ✕
+            <X size={16} />
           </button>
         </div>
 
@@ -287,7 +288,7 @@ export default function CouponSelectModal({
           {appliedCoupon && (
             <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#556B2F]/10 border border-[#556B2F]/20 text-[#556B2F]">
               <div className="flex items-center gap-2.5">
-                <span className="text-base">🎟️</span>
+                <Ticket size={18} className="shrink-0 text-[#556B2F]" />
                 <div>
                   <p className="text-xs font-extrabold">
                     กำลังใช้งาน: {appliedCoupon.title}

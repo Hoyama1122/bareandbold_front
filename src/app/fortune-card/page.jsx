@@ -235,10 +235,10 @@ export default function FortuneCardPage() {
                   onChange={(e) => setAspect(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-[#EADECC] bg-[#FDFBF7] text-sm text-[#3C322A] focus:outline-hidden focus:border-[#556B2F] font-medium"
                 >
-                  <option value="wealth">💰 เสริมการเงิน โชคลาภ และค้าขายร่ำรวย</option>
-                  <option value="work">💼 เสริมการงาน อำนาจ บารมี และความก้าวหน้า</option>
-                  <option value="love">💖 เสริมความรัก เสน่ห์เมตตามหานิยม</option>
-                  <option value="peace">🌿 เสริมสุขภาพ จิตใจสงบ และปัดเป่าพลังลบ</option>
+                  <option value="wealth">เสริมการเงิน โชคลาภ และค้าขายร่ำรวย</option>
+                  <option value="work">เสริมการงาน อำนาจ บารมี และความก้าวหน้า</option>
+                  <option value="love">เสริมความรัก เสน่ห์เมตตามหานิยม</option>
+                  <option value="peace">เสริมสุขภาพ จิตใจสงบ และปัดเป่าพลังลบ</option>
                 </select>
               </div>
 

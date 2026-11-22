@@ -136,7 +136,7 @@ function SearchableSelect({
               >
                 <span className={value === opt ? "font-semibold" : ""}>{opt}</span>
                 {value === opt && (
-                  <span style={{ color: OLIVE }}>✓</span>
+                  <Check size={14} style={{ color: OLIVE }} />
                 )}
               </li>
             ))
@@ -681,7 +681,7 @@ export default function ShippingForm({
               />
             </div>
 
-            {/* Action Buttons (✕ ยกเลิก , ✓ บันทึกที่อยู่นี้) */}
+            {/* Action Buttons (Cancel, Save) */}
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-200/60">
               {savedAddresses.length > 0 && (
                 <button

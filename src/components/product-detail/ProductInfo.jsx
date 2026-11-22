@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { Store, Check, XCircle } from "lucide-react";
 
 export default function ProductInfo({
   product,
@@ -56,9 +57,9 @@ export default function ProductInfo({
           {product.shop?.slug ? (
             <Link
               href={`/shop/${product.shop.slug}`}
-              className="inline-flex items-center gap-1.5 text-[#556B2F] hover:text-[#3C322A] hover:underline transition font-extrabold"
+              className="inline-flex items-center gap-1 text-[#556B2F] hover:text-[#3C322A] hover:underline transition font-extrabold"
             >
-              <span>🏪</span>
+              <Store size={13} className="shrink-0" />
               <span>{product.shop.name}</span>
             </Link>
           ) : (
@@ -94,8 +95,9 @@ export default function ProductInfo({
         </div>
         <div className="mt-4 border-b border-gray-100 pb-6">
           {product.type === "READY_TO_SHIP" && product.stock === 0 ? (
-            <p className="text-red-600 font-semibold">
-              ❌ สินค้าหมด
+            <p className="text-red-600 font-semibold flex items-center gap-1.5">
+              <XCircle size={16} />
+              <span>สินค้าหมด</span>
             </p>
           ) : product.type === "READY_TO_SHIP" && product.stock <= 5 ? (
             <p className="text-orange-500 font-semibold">
@@ -138,8 +140,9 @@ export default function ProductInfo({
                         )}
                       </p>
                       {chosenValue ? (
-                        <span className="text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full border border-[#556B2F]/20">
-                          ✓ เลือกแล้ว: {chosenValue}
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full border border-[#556B2F]/20">
+                          <Check size={12} />
+                          <span>เลือกแล้ว: {chosenValue}</span>
                         </span>
                       ) : hasError ? (
                         <span className="text-xs font-bold text-rose-600 bg-rose-100 px-2.5 py-0.5 rounded-full animate-pulse border border-rose-200">
@@ -222,8 +225,9 @@ export default function ProductInfo({
                       <span className="text-rose-500 font-bold">*</span>
                     </p>
                     {material ? (
-                      <span className="text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full border border-[#556B2F]/20">
-                        ✓ เลือกแล้ว: {material}
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full border border-[#556B2F]/20">
+                        <Check size={12} />
+                        <span>เลือกแล้ว: {material}</span>
                       </span>
                     ) : optionErrors["material"] ? (
                       <span className="text-xs font-bold text-rose-600 bg-rose-100 px-2.5 py-0.5 rounded-full animate-pulse border border-rose-200">
@@ -283,8 +287,9 @@ export default function ProductInfo({
                       <span className="text-rose-500 font-bold">*</span>
                     </p>
                     {size ? (
-                      <span className="text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full border border-[#556B2F]/20">
-                        ✓ เลือกแล้ว: {size}
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#556B2F] bg-[#556B2F]/10 px-2.5 py-0.5 rounded-full border border-[#556B2F]/20">
+                        <Check size={12} />
+                        <span>เลือกแล้ว: {size}</span>
                       </span>
                     ) : optionErrors["size"] ? (
                       <span className="text-xs font-bold text-rose-600 bg-rose-100 px-2.5 py-0.5 rounded-full animate-pulse border border-rose-200">
@@ -473,7 +478,7 @@ export default function ProductInfo({
       {/* Action Buttons */}
       {isOwnProduct && (
         <div className="mt-8 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-800 flex items-center gap-2">
-          <span>🏪</span>
+          <Store size={16} className="shrink-0 text-amber-700" />
           <div>
             <span className="font-bold">สินค้าในร้านของคุณเอง:</span> คุณไม่สามารถสั่งซื้อสินค้าจากร้านค้าของตนเองได้
           </div>

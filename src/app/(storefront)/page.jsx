@@ -7,6 +7,7 @@ import PromoBanners from "@/components/home/PromoBanners";
 import TrustBadges from "@/components/home/TrustBadges";
 import ProductCard from "@/components/product/ProductCard";
 import { productService } from "@/services/product.service";
+import { Sparkles } from "lucide-react";
 
 
 export default function Storefront() {
@@ -102,7 +103,9 @@ export default function Storefront() {
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20 text-zinc-400 font-medium font-anuphan border border-dashed border-[#F5F0E6] rounded-2xl bg-white/50">
-            <span className="text-4xl block mb-3">💎</span>
+            <div className="mx-auto w-12 h-12 rounded-full bg-[#556B2F]/10 flex items-center justify-center text-[#556B2F] mb-3">
+              <Sparkles size={24} />
+            </div>
             <p>ยังไม่มีสินค้าในหมวดหมู่นี้ในขณะนี้</p>
           </div>
         ) : (

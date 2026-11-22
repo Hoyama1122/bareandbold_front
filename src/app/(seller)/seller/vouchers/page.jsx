@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { voucherService } from "@/services/voucher.service";
+import { Ticket, BarChart2, X } from "lucide-react";
 
 function baht(n) {
   return Number(n || 0).toLocaleString("th-TH");
@@ -330,7 +331,8 @@ export default function SellerVouchersPage() {
               : "border-transparent text-slate-500 hover:text-slate-700"
           }`}
         >
-          🎟️ คูปองของร้านค้า
+          <Ticket size={18} />
+          <span>คูปองของร้านค้า</span>
         </button>
         <button
           onClick={() => setActiveTab("REDEMPTIONS")}
@@ -340,7 +342,8 @@ export default function SellerVouchersPage() {
               : "border-transparent text-slate-500 hover:text-slate-700"
           }`}
         >
-          📊 ประวัติลูกค้าใช้คูปอง & กำไรขาดทุน
+          <BarChart2 size={18} />
+          <span>ประวัติลูกค้าใช้คูปอง & กำไรขาดทุน</span>
         </button>
       </div>
 
@@ -690,9 +693,10 @@ export default function SellerVouchersPage() {
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="rounded-lg px-2.5 py-1 text-sm font-bold text-slate-400 hover:bg-slate-100 cursor-pointer"
+                className="rounded-lg p-1 text-sm font-bold text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+                title="ปิด"
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 

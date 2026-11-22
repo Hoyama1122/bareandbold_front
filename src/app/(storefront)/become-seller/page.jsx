@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { shopService } from "@/services/shop.service";
 import { uploadService } from "@/services/upload.service";
+import { Clock, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 
 const EMPTY_FORM = {
   name: "",
@@ -27,22 +28,22 @@ const STATUS_META = {
   PENDING: {
     label: "รอการตรวจสอบและอนุมัติ",
     color: "bg-amber-50 text-amber-700 border-amber-200",
-    icon: "⏳",
+    icon: Clock,
   },
   APPROVED: {
     label: "ร้านค้าได้รับอนุมัติแล้ว",
     color: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    icon: "✅",
+    icon: CheckCircle2,
   },
   REJECTED: {
     label: "คำขอเปิดร้านถูกปฏิเสธ",
     color: "bg-rose-50 text-rose-700 border-rose-200",
-    icon: "❌",
+    icon: XCircle,
   },
   SUSPENDED: {
     label: "ร้านค้าถูกระงับการใช้งาน",
     color: "bg-neutral-100 text-neutral-700 border-neutral-200",
-    icon: "⛔",
+    icon: AlertTriangle,
   },
 };
 
@@ -196,6 +197,7 @@ export default function BecomeSellerPage() {
 
   const showForm = !shop || editing;
   const statusMeta = shop ? STATUS_META[shop.status] || STATUS_META.PENDING : null;
+  const StatusIcon = statusMeta?.icon;
 
   return (
     <div className="mx-auto w-full max-w-4xl px-6 py-14">
@@ -214,7 +216,9 @@ export default function BecomeSellerPage() {
       {shop && !editing && (
         <div className={`mb-8 rounded-3xl border p-7 ${statusMeta.color}`}>
           <div className="flex items-start gap-4">
-            <div className="text-3xl">{statusMeta.icon}</div>
+            <div className="w-12 h-12 rounded-2xl bg-white/70 flex items-center justify-center shrink-0">
+              <StatusIcon size={24} />
+            </div>
             <div className="flex-1">
               <h2 className="text-lg font-extrabold">{statusMeta.label}</h2>
               <p className="mt-1 text-sm opacity-80">

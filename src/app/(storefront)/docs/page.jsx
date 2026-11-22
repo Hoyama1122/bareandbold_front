@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { Star } from "lucide-react";
 
 // Simple custom SVG icons
 const SearchIcon = () => (
@@ -441,7 +442,10 @@ export default function DocsPage() {
                   </div>
                   <h4 className="text-base font-black text-[#3C322A]">3. ผู้จัดการ (Manager / Admin)</h4>
                   <ul className="space-y-2.5 text-xs text-[#6A5242] font-bold list-disc pl-4">
-                    <li className="list-none -ml-4 text-[#556B2F] font-black">★ ครอบคลุมสิทธิ์การทำงานทั้งหมดของพนักงาน (Staff)</li>
+                    <li className="list-none -ml-4 text-[#556B2F] font-black flex items-center gap-1.5">
+                      <Star size={12} className="fill-[#556B2F] text-[#556B2F] shrink-0" />
+                      <span>ครอบคลุมสิทธิ์การทำงานทั้งหมดของพนักงาน (Staff)</span>
+                    </li>
                     <li>จัดการลูกค้า (Customer Management)</li>
                     <li>ดูรายงานและสถิติ (Reports & Analytics Dashboard)</li>
                     <li>ตั้งค่าระบบ (System Settings)</li>

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { sellerService } from "@/services/seller.service";
+import { Package, X } from "lucide-react";
 
 export default function SellerRefundsPage() {
   const [refunds, setRefunds] = useState([]);
@@ -159,8 +160,8 @@ export default function SellerRefundsPage() {
         </div>
       ) : !Array.isArray(refunds) || refunds.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 p-12 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl">
-            📦
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+            <Package size={24} />
           </div>
           <p className="mt-3 text-base font-semibold text-slate-800">
             ยังไม่มีรายการคำขอคืนเงิน
@@ -318,9 +319,10 @@ export default function SellerRefundsPage() {
             </div>
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-white hover:bg-black"
+              className="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-white hover:bg-black transition cursor-pointer"
+              title="ปิด"
             >
-              ✕
+              <X size={18} />
             </button>
           </div>
         </div>
