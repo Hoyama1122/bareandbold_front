@@ -74,6 +74,8 @@ const mapBackendCartToLocal = (backendCart) => {
   });
 };
 
+let isMergingCart = false;
+
 export const cartService = {
   // Check if logged in
   isLoggedIn: () => {
@@ -270,9 +272,7 @@ export const cartService = {
     window.dispatchEvent(new Event("cartUpdated"));
   },
 
-let isMergingCart = false;
-
-// Merge Guest Cart into User Cart
+  // Merge Guest Cart into User Cart
   mergeCart: async () => {
     if (typeof window === "undefined" || isMergingCart) return;
 
