@@ -93,6 +93,53 @@ export default function SellerVouchersPage() {
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState(null);
 
+  // Tab: MY_VOUCHERS vs REDEMPTIONS
+  const [activeTab, setActiveTab] = useState("MY_VOUCHERS");
+
+  // Redemptions & P&L State
+  const [redemptions, setRedemptions] = useState([]);
+  const [redemptionsLoading, setRedemptionsLoading] = useState(false);
+  const [redemptionsSummary, setRedemptionsSummary] = useState({
+    totalRedemptions: 0,
+    shopDiscountGiven: 0,
+    platformDiscountReceived: 0,
+    grossSales: 0,
+    commissionPaid: 0,
+    netEarnings: 0,
+  });
+  const [redemptionSearch, setRedemptionSearch] = useState("");
+  const [redemptionPage, setRedemptionPage] = useState(1);
+  const [redemptionPagination, setRedemptionPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+
+  const loadRedemptions = useCallback(async () => {
+    if (!shop?.id) return;
+    try {
+      setRedemptionsLoading(true);
+      setErrorMsg("");
+      const res = await voucherService.sellerListRedemptions({
+        search: redemptionSearch.trim() || undefined,
+        page: redemptionPage,
+        pageSize: 20,
+      });
+      if (res?.success) {
+        setRedemptions(res.data || []);
+        if (res.summary) setRedemptionsSummary(res.summary);
+        if (res.pagination) setRedemptionPagination(res.pagination);
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err.message || "ไม่สามารถโหลดประวัติการใช้คูปองได้");
+    } finally {
+      setRedemptionsLoading(false);
+    }
+  }, [shop?.id, redemptionSearch, redemptionPage]);
+
+  useEffect(() => {
+    if (activeTab === "REDEMPTIONS") {
+      loadRedemptions();
+    }
+  }, [activeTab, loadRedemptions]);
+
   const loadVouchers = useCallback(async () => {
     if (!shop?.id) return;
     try {
@@ -273,8 +320,34 @@ export default function SellerVouchersPage() {
         </button>
       </div>
 
-      {/* KPI Cards */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {/* Top Tabs */}
+      <div className="flex border-b border-slate-200">
+        <button
+          onClick={() => setActiveTab("MY_VOUCHERS")}
+          className={`flex items-center gap-2 border-b-2 px-6 py-3 text-sm font-bold transition cursor-pointer ${
+            activeTab === "MY_VOUCHERS"
+              ? "border-teal-700 text-teal-800"
+              : "border-transparent text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          🎟️ คูปองของร้านค้า
+        </button>
+        <button
+          onClick={() => setActiveTab("REDEMPTIONS")}
+          className={`flex items-center gap-2 border-b-2 px-6 py-3 text-sm font-bold transition cursor-pointer ${
+            activeTab === "REDEMPTIONS"
+              ? "border-teal-700 text-teal-800"
+              : "border-transparent text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          📊 ประวัติลูกค้าใช้คูปอง & กำไรขาดทุน
+        </button>
+      </div>
+
+      {activeTab === "MY_VOUCHERS" ? (
+        <>
+          {/* KPI Cards */}
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpiCards.map((c) => (
           <div
             key={c.label}
@@ -441,6 +514,170 @@ export default function SellerVouchersPage() {
           </div>
         )}
       </section>
+      </>
+      ) : (
+        <div className="space-y-6">
+          {/* Shop P&L Metrics */}
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs">
+              <p className="text-xs font-bold text-slate-600">ยอดขายรวมจากคูปอง</p>
+              <p className="mt-2 text-2xl font-extrabold text-slate-900">
+                ฿{baht(redemptionsSummary.grossSales)}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                จากลูกค้าที่ใช้คูปอง {redemptionsSummary.totalRedemptions} ครั้ง
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs">
+              <p className="text-xs font-bold text-slate-600">ส่วนลดที่ร้านออกให้</p>
+              <p className="mt-2 text-2xl font-extrabold text-amber-600">
+                -฿{baht(redemptionsSummary.shopDiscountGiven)}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Platform หนุน ฿{baht(redemptionsSummary.platformDiscountReceived)}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs">
+              <p className="text-xs font-bold text-slate-600">ค่าคอมมิชชัน GP 5%</p>
+              <p className="mt-2 text-2xl font-extrabold text-slate-600">
+                -฿{baht(redemptionsSummary.commissionPaid)}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                ค่าธรรมเนียมแพลตฟอร์ม
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-2xs">
+              <p className="text-xs font-bold text-emerald-800">รายรับสุทธิที่ได้รับจริง</p>
+              <p className="mt-2 text-2xl font-black text-emerald-700">
+                +฿{baht(redemptionsSummary.netEarnings)}
+              </p>
+              <p className="mt-1 text-xs font-semibold text-emerald-600">
+                โอนเข้ากระเป๋าร้านเมื่อส่งสำเร็จ
+              </p>
+            </div>
+          </section>
+
+          {/* Search Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+            <div className="text-sm font-bold text-slate-800">
+              รายการคำสั่งซื้อที่ใช้คูปอง ({redemptionsSummary.totalRedemptions} รายการ)
+            </div>
+            <input
+              type="text"
+              value={redemptionSearch}
+              onChange={(e) => {
+                setRedemptionSearch(e.target.value);
+                setRedemptionPage(1);
+              }}
+              placeholder="ค้นหาโค้ด, ชื่อลูกค้า, เลขออเดอร์..."
+              className="w-72 rounded-xl border border-slate-200 px-3.5 py-2 text-xs outline-none focus:border-teal-600"
+            />
+          </div>
+
+          {/* Table */}
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs">
+            {redemptionsLoading ? (
+              <div className="py-16 text-center text-sm text-slate-500">
+                กำลังโหลดประวัติการใช้งาน...
+              </div>
+            ) : redemptions.length === 0 ? (
+              <div className="py-16 text-center text-sm text-slate-500">
+                ยังไม่มีข้อมูลลูกค้าใช้คูปองในร้านของคุณ
+              </div>
+            ) : (
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-100 bg-slate-50/80 text-[11px] font-bold text-slate-600 uppercase">
+                  <tr>
+                    <th className="px-5 py-3.5">วันที่ / เวลา</th>
+                    <th className="px-5 py-3.5">คูปอง</th>
+                    <th className="px-5 py-3.5">ลูกค้า</th>
+                    <th className="px-5 py-3.5">เลขที่ SubOrder</th>
+                    <th className="px-5 py-3.5 text-right">ยอดสั่งซื้อ</th>
+                    <th className="px-5 py-3.5 text-right">ส่วนลด</th>
+                    <th className="px-5 py-3.5 text-center">ผู้รับภาระ</th>
+                    <th className="px-5 py-3.5 text-right">รายรับสุทธิ</th>
+                    <th className="px-5 py-3.5 text-center">สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {redemptions.map((r) => (
+                    <tr key={r.id} className="hover:bg-slate-50/70 transition">
+                      <td className="px-5 py-4 whitespace-nowrap text-slate-500">
+                        {new Date(r.createdAt).toLocaleString("th-TH")}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="font-mono font-bold text-slate-900">
+                          {r.voucher?.code || "-"}
+                        </span>
+                        <div className="text-[11px] text-slate-400">{r.voucher?.title}</div>
+                      </td>
+                      <td className="px-5 py-4 font-semibold text-slate-800">
+                        {r.user?.firstName || "ลูกค้า"} {r.user?.lastName || ""}
+                      </td>
+                      <td className="px-5 py-4 font-mono font-medium text-slate-700">
+                        {r.subOrder?.subOrderNumber || "-"}
+                      </td>
+                      <td className="px-5 py-4 text-right font-medium text-slate-800 whitespace-nowrap">
+                        ฿{baht(r.subOrder?.subtotal || 0)}
+                      </td>
+                      <td className="px-5 py-4 text-right font-bold text-amber-600 whitespace-nowrap">
+                        -฿{baht(r.discountAmount)}
+                      </td>
+                      <td className="px-5 py-4 text-center whitespace-nowrap">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            r.fundedBy === "SHOP"
+                              ? "bg-teal-50 text-teal-800 border border-teal-200"
+                              : "bg-indigo-50 text-indigo-800 border border-indigo-200"
+                          }`}
+                        >
+                          {r.fundedBy === "SHOP" ? "ร้านค้าออก" : "แพลตฟอร์มหนุน"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">
+                        +฿{baht(r.subOrder?.netAmount || 0)}
+                      </td>
+                      <td className="px-5 py-4 text-center whitespace-nowrap">
+                        <span className="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                          {r.subOrder?.status || "APPLIED"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {/* Pagination */}
+            {redemptionPagination.totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
+                <div>
+                  หน้า {redemptionPagination.page} จาก {redemptionPagination.totalPages} (ทั้งหมด {redemptionPagination.total} รายการ)
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    disabled={redemptionPage <= 1}
+                    onClick={() => setRedemptionPage((p) => Math.max(1, p - 1))}
+                    className="rounded-lg border border-slate-200 px-3 py-1 disabled:opacity-40 cursor-pointer"
+                  >
+                    ก่อนหน้า
+                  </button>
+                  <button
+                    disabled={redemptionPage >= redemptionPagination.totalPages}
+                    onClick={() => setRedemptionPage((p) => p + 1)}
+                    className="rounded-lg border border-slate-200 px-3 py-1 disabled:opacity-40 cursor-pointer"
+                  >
+                    ถัดไป
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Create / Edit Modal */}
       {showModal && (

@@ -61,4 +61,7 @@ export const voucherService = {
     apiFetch(`/seller/vouchers/${id}`, {
       method: "DELETE",
     }),
+
+  sellerListRedemptions: (params = {}) =>
+    apiFetch(`/seller/vouchers/redemptions${buildQuery(params)}`),
 };
