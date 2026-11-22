@@ -281,9 +281,6 @@ export default function CheckoutPage() {
         try {
           const parsed = JSON.parse(cart);
           setOrderItems(parsed);
-          if (cartService.isLoggedIn() && parsed.length > 0) {
-            cartService.mergeCart().catch((e) => console.error("Cart sync error:", e));
-          }
         } catch {
           setOrderItems([]);
         }
@@ -293,7 +290,6 @@ export default function CheckoutPage() {
     };
 
     loadCart();
-    cartService.fetchCart();
     platformService
       .getPublicSettings()
       .then(setShippingSettings)

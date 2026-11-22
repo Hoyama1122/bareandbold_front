@@ -270,9 +270,11 @@ export const cartService = {
     window.dispatchEvent(new Event("cartUpdated"));
   },
 
-  // Merge Guest Cart into User Cart
+let isMergingCart = false;
+
+// Merge Guest Cart into User Cart
   mergeCart: async () => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || isMergingCart) return;
 
     const guestCart = JSON.parse(localStorage.getItem("bare_cart") || "[]");
     if (guestCart.length === 0) {
@@ -282,6 +284,7 @@ export const cartService = {
     }
 
     try {
+      isMergingCart = true;
       const itemsToMerge = guestCart.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -305,6 +308,8 @@ export const cartService = {
       // Fallback: fetch user's backend cart anyway
       await cartService.fetchCart();
       window.dispatchEvent(new Event("cartUpdated"));
+    } finally {
+      isMergingCart = false;
     }
   },
 };

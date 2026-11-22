@@ -164,12 +164,14 @@ export default function CouponSelectModal({
         throw new Error("ยอดคำสั่งซื้อไม่ตรงตามเงื่อนไขของคูปองนี้");
       }
 
-      const matchedVoucher = vouchers.find((v) => v.code === cleanCode) || {
+      const matchedVoucher = {
+        ...(vouchers.find((v) => v.code === cleanCode) || {}),
         id: applied.id,
         code: applied.code,
         title: applied.title,
         type: applied.type,
         discountAmount: applied.discountAmount,
+        discountDisplay: `ลด ฿${Number(applied.discountAmount).toLocaleString()}`,
       };
 
       setSelectedCoupon(matchedVoucher);
@@ -199,6 +201,7 @@ export default function CouponSelectModal({
         const selected = {
           ...v,
           discountAmount: applied.discountAmount,
+          discountDisplay: `ลด ฿${Number(applied.discountAmount).toLocaleString()}`,
         };
         setSelectedCoupon(selected);
         onApplyCoupon(selected, res.quote);
