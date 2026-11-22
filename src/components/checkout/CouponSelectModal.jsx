@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Tag, Check, X, ArrowRight, AlertCircle, Sparkles, Percent, Truck, Loader2 } from "lucide-react";
 import { voucherService } from "@/services/voucher.service";
 
@@ -20,6 +20,14 @@ export default function CouponSelectModal({
   const [quoting, setQuoting] = useState(false);
   const [vouchers, setVouchers] = useState([]);
   const [selectedCoupon, setSelectedCoupon] = useState(appliedCoupon);
+
+  const quoteItems = useMemo(() => {
+    return (orderItems || []).map((it) => ({
+      productId: it.productId || it.id,
+      quantity: it.quantity || 1,
+      accessories: Array.isArray(it.accessories) ? it.accessories : [],
+    }));
+  }, [orderItems]);
 
   useEffect(() => {
     setSelectedCoupon(appliedCoupon);
@@ -92,14 +100,6 @@ export default function CouponSelectModal({
 
   const eligibleCoupons = evaluatedVouchers.filter((v) => v.isEligible && v.status === "ACTIVE");
   const ineligibleCoupons = evaluatedVouchers.filter((v) => !v.isEligible || v.status !== "ACTIVE");
-
-  const quoteItems = React.useMemo(() => {
-    return (orderItems || []).map((it) => ({
-      productId: it.productId || it.id,
-      quantity: it.quantity || 1,
-      accessories: Array.isArray(it.accessories) ? it.accessories : [],
-    }));
-  }, [orderItems]);
 
   const handleApplyTypedCode = async (e) => {
     e.preventDefault();
