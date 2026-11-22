@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ProductInfo({
   product,
@@ -20,6 +21,9 @@ export default function ProductInfo({
   isLiked,
   toggleWishlist
 }) {
+  const { shop } = useAuth();
+  const isOwnProduct = Boolean(shop?.id && product?.shopId && shop.id === product.shopId);
+
   const isCustomProduct =
     product.type === "MADE_TO_ORDER" ||
     product.type === "CUSTOM" ||
@@ -467,21 +471,31 @@ export default function ProductInfo({
       </div>
 
       {/* Action Buttons */}
+      {isOwnProduct && (
+        <div className="mt-8 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-800 flex items-center gap-2">
+          <span>🏪</span>
+          <div>
+            <span className="font-bold">สินค้าในร้านของคุณเอง:</span> คุณไม่สามารถสั่งซื้อสินค้าจากร้านค้าของตนเองได้
+          </div>
+        </div>
+      )}
+
       {(() => {
         const isOutOfStock = product.type === "READY_TO_SHIP" && product.stock === 0;
+        const isDisabled = isOutOfStock || isOwnProduct;
         return (
-          <div className="flex flex-col gap-3 mt-10">
+          <div className="flex flex-col gap-3 mt-6">
             <div className="flex gap-3">
               <button
                 onClick={addToCart}
-                disabled={isOutOfStock}
+                disabled={isDisabled}
                 className={`flex-1 py-4 rounded-xl font-bold transition duration-200 text-sm ${
-                  isOutOfStock
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  isDisabled
+                    ? "bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300"
                     : "border border-[#7a5b46] text-[#7a5b46] hover:bg-[#7a5b46]/5 cursor-pointer"
                 }`}
               >
-                {isOutOfStock ? "สินค้าหมด" : "เพิ่มลงตะกร้า"}
+                {isOwnProduct ? "สินค้าในร้านของคุณเอง" : (isOutOfStock ? "สินค้าหมด" : "เพิ่มลงตะกร้า")}
               </button>
               
               <button
@@ -505,14 +519,18 @@ export default function ProductInfo({
 
             <button
               onClick={buyNow}
-              disabled={isOutOfStock}
+              disabled={isDisabled}
               className={`w-full py-4 rounded-xl font-bold transition duration-200 text-sm ${
-                isOutOfStock
+                isDisabled
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-[#7a5b46] text-white hover:bg-[#7a5b46]/90 cursor-pointer"
               }`}
             >
-              {isCustomProduct ? "สั่งทำสินค้าทันที" : "สั่งซื้อทันที"}
+              {isOwnProduct
+                ? "ไม่สามารถสั่งซื้อสินค้าของตนเองได้"
+                : (isOutOfStock
+                  ? "สินค้าหมด"
+                  : (isCustomProduct ? "สั่งทำสินค้าทันที" : "สั่งซื้อทันที"))}
             </button>
           </div>
         );

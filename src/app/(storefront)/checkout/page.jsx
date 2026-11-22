@@ -21,6 +21,7 @@ import PaymentForm from "@/components/checkout/PaymentForm";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import CouponSelectModal from "@/components/checkout/CouponSelectModal";
 import { voucherService } from "@/services/voucher.service";
+import { useAuth } from "@/context/AuthContext";
 
 function baht(n) {
   return n.toLocaleString("th-TH");
@@ -46,6 +47,18 @@ export default function CheckoutPage() {
   const [shippingSettings, setShippingSettings] = useState(
     DEFAULT_PLATFORM_SETTINGS,
   );
+
+  const { shop } = useAuth();
+
+  const ownShopItems = useMemo(() => {
+    if (!shop?.id || !orderItems || orderItems.length === 0) return [];
+    return orderItems.filter((item) => {
+      const itemShopId = item.product?.shopId || item.shopId;
+      return itemShopId === shop.id;
+    });
+  }, [shop?.id, orderItems]);
+
+  const hasOwnShopItems = ownShopItems.length > 0;
 
   // Coupon states
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -333,6 +346,10 @@ export default function CheckoutPage() {
 
   const handleConfirm = async (e) => {
     e.preventDefault();
+    if (hasOwnShopItems) {
+      setError(`ไม่อนุญาตให้สั่งซื้อสินค้าจากร้านค้าของตนเอง (${shop?.name}) กรุณาลบสินค้านี้ออกจากตะกร้าก่อนสั่งซื้อ`);
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -490,6 +507,18 @@ export default function CheckoutPage() {
 
         <CheckoutSteps currentStep={2} />
 
+        {hasOwnShopItems && (
+          <div className="mb-6 rounded-2xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-800 shadow-sm flex items-start gap-3">
+            <span className="text-xl">⚠️</span>
+            <div>
+              <p className="font-bold">ไม่อนุญาตให้สั่งซื้อสินค้าจากร้านค้าของตนเอง</p>
+              <p className="mt-0.5 text-xs text-rose-700">
+                คุณกำลังเข้าสู่ระบบในฐานะเจ้าของร้าน <b>"{shop?.name}"</b> และมีสินค้าของร้านคุณ ({ownShopItems.map((i) => i.product?.name || i.name).join(", ")}) อยู่ในรายการสั่งซื้อ ระบบไม่อนุญาตให้สั่งซื้อสินค้าจากร้านตนเอง กรุณากลับไปลบสินค้านี้ออกจากตะกร้าก่อนดำเนินการต่อ
+              </p>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 p-4 rounded-lg bg-red-50 text-red-600 text-sm border border-red-200">
             {error}
@@ -534,6 +563,7 @@ export default function CheckoutPage() {
               onRemoveCoupon={() => setAppliedCoupon(null)}
               baht={baht}
               loading={loading}
+              disabled={hasOwnShopItems}
             />
           </div>
         </form>

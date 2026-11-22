@@ -20,6 +20,7 @@ export default function OrderSummary({
   onRemoveCoupon,
   baht,
   loading,
+  disabled = false,
 }) {
   return (
     <div
@@ -208,11 +209,11 @@ export default function OrderSummary({
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || disabled}
         className="w-full py-3.5 rounded-xl font-bold kanit disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] select-none text-sm cursor-pointer shadow-sm hover:opacity-95"
         style={{ background: INK, color: CREAM }}
       >
-        {loading ? "กำลังดำเนินการ..." : "ยืนยันคำสั่งซื้อ"}
+        {disabled ? "ไม่สามารถสั่งซื้อสินค้าของร้านตนเองได้" : (loading ? "กำลังดำเนินการ..." : "ยืนยันคำสั่งซื้อ")}
       </button>
 
       <p className="text-xs text-center -mt-2 flex items-center justify-center gap-1.5" style={{ color: MUTED }}>
