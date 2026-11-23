@@ -595,10 +595,10 @@ export default function OrderHistoryPage() {
                       let badgeLabel = "รอร้านค้าตรวจสอบคำขอ";
                       if (["WAITING_RETURN", "APPROVED"].includes(rf.status)) {
                         badgeCls = "bg-sky-100 text-sky-900 border-sky-300";
-                        badgeLabel = isExchange ? "อนุมัติเปลี่ยนสินค้า — รอลูกค้าส่งชิ้นเดิมคืน" : "อนุมัติคืนสินค้า — รอลูกค้าส่งสินค้าคืน";
+                        badgeLabel = "นัดรถเข้ารับแล้ว — รอรถไปรับที่บ้าน";
                       } else if (rf.status === "RETURNING") {
                         badgeCls = "bg-indigo-100 text-indigo-900 border-indigo-300";
-                        badgeLabel = "จัดส่งของคืนแล้ว — ร้านกำลังรอรับพัสดุ";
+                        badgeLabel = "ขนส่งรับของแล้ว — กำลังส่งกลับร้าน";
                       } else if (rf.status === "INSPECTING") {
                         badgeCls = "bg-purple-100 text-purple-900 border-purple-300";
                         badgeLabel = "ร้านได้รับของคืนแล้ว — กำลังตรวจสภาพสินค้า";
@@ -622,8 +622,8 @@ export default function OrderHistoryPage() {
                       // Stepper step calculations
                       const exchangeSteps = [
                         { key: "PENDING", label: "ยื่นคำขอ" },
-                        { key: "WAITING_RETURN", label: "อนุมัติส่งคืน" },
-                        { key: "RETURNING", label: "ส่งของคืนแล้ว" },
+                        { key: "WAITING_RETURN", label: "นัดรถไปรับของ" },
+                        { key: "RETURNING", label: "ขนส่งรับของแล้ว" },
                         { key: "PRODUCING_NEW", label: "เตรียมชิ้นใหม่" },
                         { key: "EXCHANGE_SHIPPED", label: "ส่งชิ้นใหม่แล้ว" },
                         { key: "COMPLETED", label: "เปลี่ยนสำเร็จ" },
@@ -637,11 +637,11 @@ export default function OrderHistoryPage() {
                       else if (rf.status === "REJECTED") exchangeActiveIdx = -1;
 
                       const refundSteps = [
-                        { key: "PENDING", label: "ยื่นคำขอคืนเงิน" },
-                        { key: "WAITING_RETURN", label: "อนุมัติส่งคืน" },
-                        { key: "RETURNING", label: "ส่งของคืนแล้ว" },
+                        { key: "PENDING", label: "ยื่นคำขอ" },
+                        { key: "WAITING_RETURN", label: "นัดรถไปรับของ" },
+                        { key: "RETURNING", label: "ขนส่งรับของแล้ว" },
                         { key: "INSPECTING", label: "ตรวจสภาพของ" },
-                        { key: "REFUNDED", label: "โอนเงินคืนสำเร็จ" },
+                        { key: "REFUNDED", label: "โอนเงินคืนแล้ว" },
                       ];
                       let refundActiveIdx = 0;
                       if (["WAITING_RETURN", "APPROVED"].includes(rf.status)) refundActiveIdx = 1;
@@ -741,76 +741,62 @@ export default function OrderHistoryPage() {
                             )}
                           </div>
 
-                          {/* Return Address & Buyer Input Form (If waiting for buyer to ship back) */}
-                          {needsReturnShipment && (
-                            <div className="rounded-xl border border-sky-200 bg-sky-50/70 p-3.5 space-y-3">
-                              <div>
-                                <div className="flex items-center justify-between">
-                                  <span className="font-bold text-sky-950 flex items-center gap-1.5">
-                                    <MapPin size={14} className="text-sky-700" />
-                                    ที่อยู่สำหรับส่งสินค้าคืนให้ร้านค้า:
-                                  </span>
-                                  {rf.returnAddress && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleCopyReturnAddress(rf.returnAddress, rf.id)}
-                                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-700 hover:text-sky-900 bg-white px-2 py-0.5 rounded border border-sky-300"
-                                    >
-                                      {copiedAddressId === rf.id ? <Check size={12} /> : <Copy size={12} />}
-                                      {copiedAddressId === rf.id ? "คัดลอกแล้ว" : "คัดลอกที่อยู่"}
-                                    </button>
-                                  )}
-                                </div>
-                                <p className="mt-1 font-medium text-sky-900 bg-white p-2.5 rounded-lg border border-sky-200 text-xs select-all">
-                                  {rf.returnAddress || "ร้านค้า Bare & Bold (ศูนย์รับคืนสินค้า) — กรุณาส่งคืนตามที่อยู่ที่ร้านค้าระบุ"}
-                                </p>
+                          {/* Doorstep Pick-up Card (ร้านค้าส่งรถขนส่งไปรับพัสดุที่บ้านลูกค้า 100%) */}
+                          {["WAITING_RETURN", "APPROVED", "RETURNING"].includes(rf.status) && (
+                            <div className="rounded-2xl border border-sky-300 bg-gradient-to-br from-sky-50 via-white to-sky-50/50 p-4 space-y-3 shadow-xs">
+                              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-sky-100 pb-2.5">
+                                <span className="font-bold text-sky-950 flex items-center gap-2 text-xs">
+                                  <Truck size={17} className="text-sky-700" />
+                                  ร้านค้าได้นัดหมายรถขนส่งเข้ารับพัสดุที่บ้านของคุณแล้ว
+                                </span>
+                                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-800 border border-sky-200">
+                                  Doorstep Pick-up
+                                </span>
                               </div>
 
-                              {/* Form to submit return tracking */}
-                              <div className="bg-white p-3 rounded-lg border border-sky-200 space-y-2">
-                                <p className="font-bold text-zinc-800 flex items-center gap-1.5">
-                                  <Truck size={14} className="text-sky-700" />
-                                  กรอกข้อมูลพัสดุที่คุณส่งคืน:
-                                </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                  <div>
-                                    <label className="block text-[11px] text-zinc-500 mb-1">บริษัทขนส่ง</label>
-                                    <select
-                                      value={returnCarrierInputs[rf.id] || "Flash Express"}
-                                      onChange={(e) =>
-                                        setReturnCarrierInputs((prev) => ({ ...prev, [rf.id]: e.target.value }))
-                                      }
-                                      className="w-full rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-xs text-zinc-800"
-                                    >
-                                      <option value="Flash Express">Flash Express</option>
-                                      <option value="Kerry Express">Kerry Express</option>
-                                      <option value="ไปรษณีย์ไทย EMS">ไปรษณีย์ไทย (Thailand Post EMS)</option>
-                                      <option value="J&T Express">J&T Express</option>
-                                      <option value="Ninja Van">Ninja Van</option>
-                                      <option value="อื่นๆ">อื่นๆ</option>
-                                    </select>
-                                  </div>
-                                  <div>
-                                    <label className="block text-[11px] text-zinc-500 mb-1">หมายเลขพัสดุ (Tracking Number)</label>
-                                    <input
-                                      type="text"
-                                      placeholder="เช่น TH1234567890"
-                                      value={returnTrackingInputs[rf.id] || ""}
-                                      onChange={(e) =>
-                                        setReturnTrackingInputs((prev) => ({ ...prev, [rf.id]: e.target.value }))
-                                      }
-                                      className="w-full rounded-lg border border-zinc-300 px-2.5 py-1.5 text-xs font-mono text-zinc-800"
-                                    />
-                                  </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-sky-950">
+                                <div className="bg-white p-2.5 rounded-xl border border-sky-200 space-y-0.5">
+                                  <span className="text-[11px] text-zinc-500 block">บริษัทขนส่งที่เข้ารับ:</span>
+                                  <span className="font-bold text-sky-900">{rf.returnCarrier || "Flash Express"}</span>
                                 </div>
-                                <button
-                                  type="button"
-                                  disabled={submittingReturnId === rf.id}
-                                  onClick={() => handleBuyerSubmitReturnShipment(rf.id)}
-                                  className="w-full mt-1.5 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-bold py-2 text-xs transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
-                                >
-                                  {submittingReturnId === rf.id ? "กำลังบันทึก..." : "ยืนยันส่งพัสดุคืนแล้ว"}
-                                </button>
+                                <div className="bg-white p-2.5 rounded-xl border border-sky-200 space-y-0.5">
+                                  <span className="text-[11px] text-zinc-500 block">วันที่นัดหมายเข้ารับ:</span>
+                                  <span className="font-bold text-sky-900">
+                                    {rf.pickupScheduledAt
+                                      ? new Date(rf.pickupScheduledAt).toLocaleDateString("th-TH", {
+                                          weekday: "long",
+                                          year: "numeric",
+                                          month: "long",
+                                          day: "numeric",
+                                        })
+                                      : "กำลังประสานงานนัดหมาย"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {rf.returnTrackingNumber && (
+                                <div className="bg-white p-2.5 rounded-xl border border-sky-200 flex items-center justify-between text-xs">
+                                  <span className="text-zinc-600">เลขบุ๊คกิ้ง / พัสดุเข้ารับ:</span>
+                                  <span className="font-mono font-bold text-sky-900 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+                                    {rf.returnTrackingNumber}
+                                  </span>
+                                </div>
+                              )}
+
+                              {order.shippingAddress && (
+                                <div className="text-[11px] text-zinc-600 bg-white/80 p-2.5 rounded-xl border border-sky-100">
+                                  <span className="font-semibold text-zinc-700">สถานที่เข้ารับ (บ้านคุณ): </span>
+                                  <span>{order.shippingAddress} (ผู้รับ: {order.recipientName || "-"} โทร: {order.recipientPhone || "-"})</span>
+                                </div>
+                              )}
+
+                              <div className="bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/80 text-[11px] text-amber-900 space-y-0.5">
+                                <p className="font-bold flex items-center gap-1">
+                                  <span>📦</span> คำแนะนำสำหรับผู้ซื้อ:
+                                </p>
+                                <p>
+                                  กรุณาแพ็คสินค้าใส่กล่องเดิมให้เรียบร้อย และรอเจ้าหน้าที่ขนส่งโทรติดต่อก่อนเข้ารับตามวันนัดหมาย ท่านไม่ต้องเดินทางไปส่งเองที่สาขา
+                                </p>
                               </div>
                             </div>
                           )}

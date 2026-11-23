@@ -65,10 +65,14 @@ export const sellerService = {
     });
   },
 
-  approveRefund: async (id, sellerNote, returnAddress) => {
+  approveRefund: async (id, data, fallbackAddress) => {
+    const body =
+      typeof data === "object"
+        ? data
+        : { sellerNote: data, returnAddress: fallbackAddress };
     return apiFetch(`/seller/refunds/${id}/approve`, {
       method: "PUT",
-      body: JSON.stringify({ sellerNote, returnAddress }),
+      body: JSON.stringify(body),
     });
   },
 

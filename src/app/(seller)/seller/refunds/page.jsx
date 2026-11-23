@@ -48,6 +48,13 @@ export default function SellerRefundsPage() {
   const [dialogRefund, setDialogRefund] = useState(null);
   const [actionNote, setActionNote] = useState("");
   const [returnAddressInput, setReturnAddressInput] = useState("");
+  const [pickupCarrierInput, setPickupCarrierInput] = useState("Flash Express");
+  const [pickupDateInput, setPickupDateInput] = useState(() => {
+    const tmr = new Date();
+    tmr.setDate(tmr.getDate() + 1);
+    return tmr.toISOString().split("T")[0];
+  });
+  const [pickupTrackingInput, setPickupTrackingInput] = useState("");
   const [exchangeCarrierInput, setExchangeCarrierInput] = useState("Flash Express");
   const [exchangeTrackingInput, setExchangeTrackingInput] = useState("");
   const [slipFile, setSlipFile] = useState(null);
@@ -94,8 +101,17 @@ export default function SellerRefundsPage() {
     setDialogRefund(rf);
     setActionNote("");
     setReturnAddressInput(rf.returnAddress || "");
-    setExchangeCarrierInput("Flash Express");
-    setExchangeTrackingInput("");
+    setPickupCarrierInput(rf.returnCarrier || "Flash Express");
+    const tmr = new Date();
+    tmr.setDate(tmr.getDate() + 1);
+    setPickupDateInput(
+      rf.pickupScheduledAt
+        ? new Date(rf.pickupScheduledAt).toISOString().split("T")[0]
+        : tmr.toISOString().split("T")[0]
+    );
+    setPickupTrackingInput(rf.returnTrackingNumber || "");
+    setExchangeCarrierInput(rf.exchangeCarrier || "Flash Express");
+    setExchangeTrackingInput(rf.exchangeTrackingNumber || "");
     setSlipFile(null);
     setSlipPreview(null);
   };
@@ -122,11 +138,13 @@ export default function SellerRefundsPage() {
       setActionLoading(true);
 
       if (actionDialog === "approve") {
-        await sellerService.approveRefund(
-          dialogRefund.id,
-          actionNote,
-          returnAddressInput
-        );
+        await sellerService.approveRefund(dialogRefund.id, {
+          returnCarrier: pickupCarrierInput,
+          pickupScheduledAt: pickupDateInput ? new Date(pickupDateInput) : null,
+          returnTrackingNumber: pickupTrackingInput.trim() || null,
+          sellerNote: actionNote,
+          returnAddress: returnAddressInput,
+        });
       } else if (actionDialog === "reject") {
         await sellerService.rejectRefund(dialogRefund.id, actionNote);
       } else if (actionDialog === "receive") {
@@ -424,23 +442,30 @@ export default function SellerRefundsPage() {
                   </div>
                 </div>
 
-                {/* Return Shipment Tracking (Submitted by Buyer) */}
-                {rf.returnTrackingNumber && (
-                  <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3.5 text-xs text-indigo-950 flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <Truck size={16} className="text-indigo-700" />
-                      <div>
-                        <span className="font-bold">พัสดุที่ลูกค้าส่งคืน: </span>
-                        <span>{rf.returnCarrier || "ขนส่งเอกชน"} </span>
-                        <span className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-indigo-300">
-                          {rf.returnTrackingNumber}
-                        </span>
+                {/* Doorstep Pickup Tracking & Details */}
+                {(rf.returnTrackingNumber || rf.pickupScheduledAt || rf.status === "WAITING_RETURN") && (
+                  <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50/70 p-3.5 text-xs text-sky-950 space-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Truck size={16} className="text-sky-700" />
+                        <span className="font-bold text-sky-900">การเข้ารับพัสดุที่บ้านลูกค้า (Doorstep Pick-up):</span>
+                        <span>{rf.returnCarrier || "Flash Express"}</span>
+                        {rf.returnTrackingNumber && (
+                          <span className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-sky-300">
+                            {rf.returnTrackingNumber}
+                          </span>
+                        )}
                       </div>
+                      {rf.pickupScheduledAt && (
+                        <span className="text-[11px] font-semibold text-sky-700 bg-white px-2.5 py-0.5 rounded border border-sky-200">
+                          นัดเข้ารับวันที่: {new Date(rf.pickupScheduledAt).toLocaleDateString("th-TH", { dateStyle: "long" })}
+                        </span>
+                      )}
                     </div>
-                    {rf.returnShippedAt && (
-                      <span className="text-[11px] text-indigo-600">
-                        จัดส่งเมื่อ {new Date(rf.returnShippedAt).toLocaleString("th-TH")}
-                      </span>
+                    {rf.order?.shippingAddress && (
+                      <p className="text-[11px] text-slate-600">
+                        <span className="font-semibold text-slate-700">สถานที่เข้ารับ:</span> {rf.order.shippingAddress} (ผู้รับ: {rf.order.recipientName || "-"} โทร: {rf.order.recipientPhone || "-"})
+                      </p>
                     )}
                   </div>
                 )}
@@ -630,24 +655,90 @@ export default function SellerRefundsPage() {
             </div>
 
             <form onSubmit={handleActionSubmit} className="space-y-4">
-              {/* APPROVE DIALOG */}
+              {/* APPROVE & SCHEDULE DOORSTEP PICKUP DIALOG */}
               {actionDialog === "approve" && (
-                <div className="space-y-3">
-                  <p className="text-xs text-slate-600">
-                    เมื่ออนุมัติ ระบบจะเปลี่ยนสถานะเป็น{" "}
-                    <span className="font-bold text-sky-700">"รอลูกค้าส่งคืน (WAITING_RETURN)"</span>{" "}
-                    และแสดงที่อยู่จัดส่งคืนให้ผู้ซื้อทราบ เพื่อให้ผู้ซื้อส่งของคืนและกรอกเลขพัสดุ
-                  </p>
+                <div className="space-y-3.5">
+                  <div className="rounded-xl border border-sky-200 bg-sky-50/80 p-3 text-xs text-sky-950 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold flex items-center gap-1.5 text-sky-900">
+                        <Truck size={15} className="text-sky-700" />
+                        สถานที่นัดเข้ารับพัสดุ (บ้านลูกค้า):
+                      </span>
+                      {dialogRefund.order?.shippingAddress && (
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(dialogRefund.order.shippingAddress, "customer-addr")}
+                          className="text-[11px] font-semibold text-sky-700 hover:text-sky-900 underline cursor-pointer"
+                        >
+                          {copiedId === "customer-addr" ? "คัดลอกแล้ว" : "คัดลอกที่อยู่"}
+                        </button>
+                      )}
+                    </div>
+                    <p className="font-semibold text-slate-800">
+                      ผู้รับ: {dialogRefund.order?.recipientName || `${dialogRefund.user?.firstName || ""} ${dialogRefund.user?.lastName || ""}`} | โทร: {dialogRefund.order?.recipientPhone || dialogRefund.user?.phone || "-"}
+                    </p>
+                    <p className="text-slate-600 bg-white p-2 rounded border border-sky-200 font-mono text-[11px]">
+                      {dialogRefund.order?.shippingAddress || "ที่อยู่ตามคำสั่งซื้อ"}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        บริษัทขนส่งที่นัดเข้ารับ
+                      </label>
+                      <select
+                        value={pickupCarrierInput}
+                        onChange={(e) => setPickupCarrierInput(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-800"
+                      >
+                        <option value="Flash Express">Flash Express</option>
+                        <option value="Kerry Express">Kerry Express</option>
+                        <option value="ไปรษณีย์ไทย EMS">ไปรษณีย์ไทย (Thailand Post EMS)</option>
+                        <option value="J&T Express">J&T Express</option>
+                        <option value="SCG Express">SCG Express</option>
+                        <option value="Ninja Van">Ninja Van</option>
+                        <option value="อื่นๆ">อื่นๆ</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        วันที่นัดหมายเข้ารับที่บ้านลูกค้า
+                      </label>
+                      <input
+                        type="date"
+                        value={pickupDateInput}
+                        onChange={(e) => setPickupDateInput(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-800 font-medium"
+                        required
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      ที่อยู่สำหรับให้ลูกค้าส่งสินค้าคืน:
+                      เลขพัสดุ / เลขบุ๊คกิ้งเข้ารับ (Tracking No.)
                     </label>
-                    <textarea
-                      value={returnAddressInput}
-                      onChange={(e) => setReturnAddressInput(e.target.value)}
-                      placeholder="เช่น ร้าน Bare & Bold เลขที่ 123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กทม. 10110 โทร 081-234-5678"
-                      rows={3}
-                      className="w-full rounded-xl border border-slate-200 p-2.5 text-xs text-slate-800 focus:border-[#0F766E] focus:outline-none"
+                    <input
+                      type="text"
+                      placeholder="เช่น TH01234567890 (หรือกรอกภายหลัง)"
+                      value={pickupTrackingInput}
+                      onChange={(e) => setPickupTrackingInput(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono text-slate-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      คำแนะนำถึงลูกค้า (แสดงให้ลูกค้าทราบ):
+                    </label>
+                    <input
+                      type="text"
+                      value={actionNote}
+                      onChange={(e) => setActionNote(e.target.value)}
+                      placeholder="เช่น กรุณาแพ็คสินค้าใส่กล่องเดิม คนขับจะโทรหาก่อนเข้ารับช่วงเช้า"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-800"
                     />
                   </div>
                 </div>
