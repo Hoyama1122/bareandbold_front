@@ -1,15 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const apiFetch = async (endpoint, options = {}) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("bare_auth_token") : null;
   const headers = {
     "Content-Type": "application/json",
+    "X-App-Client": "storefront",
     ...options.headers,
   };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
@@ -29,24 +25,21 @@ const apiFetch = async (endpoint, options = {}) => {
 export const wishlistService = {
   isLoggedIn: () => {
     if (typeof window === "undefined") return false;
-    const token = localStorage.getItem("bare_auth_token");
-    return !!token && token !== "undefined" && token !== "null";
+    return document.cookie.includes("bare_user_token") || document.cookie.includes("token");
   },
 
   fetchWishlist: async () => {
     if (typeof window === "undefined") return [];
 
-    if (wishlistService.isLoggedIn()) {
-      try {
-        const data = await apiFetch("/wishlist");
-        if (data.success && data.wishlist) {
-          const items = data.wishlist.map(w => w.product).filter(Boolean);
-          localStorage.setItem("bare_wishlist", JSON.stringify(items));
-          return items;
-        }
-      } catch (err) {
-        console.error("Error fetching wishlist:", err);
+    try {
+      const data = await apiFetch("/wishlist");
+      if (data.success && data.wishlist) {
+        const items = data.wishlist.map(w => w.product).filter(Boolean);
+        localStorage.setItem("bare_wishlist", JSON.stringify(items));
+        return items;
       }
+    } catch {
+      // Fallback
     }
 
     const local = localStorage.getItem("bare_wishlist");

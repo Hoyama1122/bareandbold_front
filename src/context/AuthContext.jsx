@@ -42,24 +42,21 @@ export function AuthProvider({ children }) {
   const refresh = useCallback(async () => {
     if (typeof window === "undefined") return null;
 
-    const token = localStorage.getItem("bare_auth_token");
-    if (!token) {
-      setUser(null);
-      setRole(null);
-      setShop(null);
-      setAccountType(null);
-      setLoading(false);
-      return null;
-    }
-
     try {
       const data = await apiFetch("/auth/profile");
-      setUser(data.user);
-      setRole(data.role || data.user?.role || "BUYER");
-      setAccountType(data.accountType || "USER");
-      setShop(data.shop || null);
-      localStorage.setItem("bare_user", JSON.stringify(data.user));
-      return data;
+      if (data && data.user) {
+        setUser(data.user);
+        setRole(data.role || data.user?.role || "BUYER");
+        setAccountType(data.accountType || "USER");
+        setShop(data.shop || null);
+        return data;
+      } else {
+        setUser(null);
+        setRole(null);
+        setShop(null);
+        setAccountType(null);
+        return null;
+      }
     } catch {
       clearLocalAuth();
       setUser(null);
@@ -73,21 +70,18 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    // Purge legacy auth tokens from localStorage for pure cookie session
+    clearLocalAuth();
     refresh();
   }, [refresh]);
 
   const login = async (email, password) => {
     const data = await authService.login(email, password);
-    localStorage.setItem("bare_auth_token", data.token);
-    localStorage.setItem("bare_user", JSON.stringify(data.user));
-    localStorage.setItem("bare_user_email", data.user.email);
+    clearLocalAuth();
 
     setUser(data.user);
     setRole(data.user.role || "BUYER");
     setShop(data.user.shop || null);
-
-    // ดึงข้อมูลเต็ม (shop, สิทธิ์ล่าสุด) จาก DB
-    await refresh();
 
     // รวมตะกร้า local storage เข้ากับ user cart ในฐานข้อมูล
     try {
@@ -96,6 +90,8 @@ export function AuthProvider({ children }) {
       console.error("Cart merge error:", e);
     }
 
+    // ดึงข้อมูลเต็ม (shop, สิทธิ์ล่าสุด) จาก DB ผ่าน cookie session
+    await refresh();
     return data;
   };
 

@@ -2,15 +2,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 // Helper for authorized API calls
 const apiFetch = async (endpoint, options = {}) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("bare_auth_token") : null;
   const headers = {
     "Content-Type": "application/json",
+    "X-App-Client": "storefront",
     ...options.headers,
   };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
@@ -77,31 +73,27 @@ const mapBackendCartToLocal = (backendCart) => {
 let isMergingCart = false;
 
 export const cartService = {
-  // Check if logged in
+  // Check if logged in via cookie
   isLoggedIn: () => {
     if (typeof window === "undefined") return false;
-    const token = localStorage.getItem("bare_auth_token");
-    return !!token && token !== "undefined" && token !== "null";
+    return document.cookie.includes("bare_user_token") || document.cookie.includes("token");
   },
 
   // Fetch Cart (syncs with local storage and notifies components)
   fetchCart: async () => {
     if (typeof window === "undefined") return [];
 
-    if (cartService.isLoggedIn()) {
-      try {
-        const data = await apiFetch("/cart", { method: "GET" });
-        if (data.success && data.cart) {
-          const localItems = mapBackendCartToLocal(data.cart);
-          localStorage.setItem("bare_cart", JSON.stringify(localItems));
-          return localItems;
-        }
-      } catch (err) {
-        console.error("Error fetching cart from backend:", err);
+    try {
+      const data = await apiFetch("/cart", { method: "GET" });
+      if (data.success && data.cart) {
+        const localItems = mapBackendCartToLocal(data.cart);
+        localStorage.setItem("bare_cart", JSON.stringify(localItems));
+        return localItems;
       }
+    } catch {
+      // Fallback to guest cart if unauthenticated
     }
 
-    // Return guest cart from local storage if not logged in or fetch failed
     const localCart = localStorage.getItem("bare_cart");
     return localCart ? JSON.parse(localCart) : [];
   },

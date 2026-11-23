@@ -18,28 +18,25 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   // Check login status on open
   useEffect(() => {
     if (isOpen) {
-      const token = localStorage.getItem("bare_auth_token");
-      if (token) {
-        fetchUserProfile(token);
-      } else {
-        setUser(null);
-        setAuthState("login");
-      }
+      fetchUserProfile();
       // Reset msgs
       setErrorMsg("");
       setSuccessMsg("");
     }
   }, [isOpen]);
 
-  const fetchUserProfile = async (token) => {
+  const fetchUserProfile = async () => {
     setLoading(true);
     try {
-      const data = await authService.getProfile(token);
-      setUser(data.user);
-      setAuthState("dashboard");
-    } catch (err) {
-      console.error(err);
-      localStorage.removeItem("bare_auth_token");
+      const data = await authService.getProfile();
+      if (data && data.user) {
+        setUser(data.user);
+        setAuthState("dashboard");
+      } else {
+        setUser(null);
+        setAuthState("login");
+      }
+    } catch {
       setUser(null);
       setAuthState("login");
     } finally {
@@ -95,18 +92,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
     try {
       const data = await authService.login(email, password);
-      localStorage.setItem("bare_auth_token", data.token);
-      
+      // Pure cookie session: purge legacy localStorage tokens
+      localStorage.removeItem("bare_auth_token");
+      localStorage.removeItem("bare_user");
+      localStorage.removeItem("bare_user_email");
 
-localStorage.setItem(
-  "bare_user",
-  JSON.stringify(data.user)
-);
-
-localStorage.setItem(
-  "bare_user_email",
-  data.user.email
-);
       setUser(data.user);
       setAuthState("dashboard");
       setPassword("");

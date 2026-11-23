@@ -29,14 +29,11 @@ export default function SellerHomePage() {
   const [loadingProducts, setLoadingProducts] = useState(true);
 
   const getHeaders = useCallback(() => {
-    const storedToken =
-      token ||
-      (typeof window !== "undefined"
-        ? localStorage.getItem("bare_auth_token") ||
-          localStorage.getItem("token")
-        : null);
-    return storedToken ? { Authorization: `Bearer ${storedToken}` } : {};
-  }, [token]);
+    return {
+      "Content-Type": "application/json",
+      "X-App-Client": "storefront",
+    };
+  }, []);
 
   useEffect(() => {
     const loadDashboard = async () => {

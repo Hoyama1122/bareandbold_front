@@ -7,17 +7,6 @@
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-export const getAuthToken = () => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("bare_auth_token");
-};
-
-/**
- * Fetch กลางของ storefront/seller
- * - แนบ Bearer token จาก localStorage (ค่าเดิมของโปรเจกต์)
- * - รองรับ FormData โดยไม่ตั้ง Content-Type เอง
- * - โยน Error พร้อมข้อความจาก backend
- */
 export async function apiFetch(endpoint, options = {}) {
   const isFormData =
     typeof FormData !== "undefined" && options.body instanceof FormData;
@@ -27,11 +16,6 @@ export async function apiFetch(endpoint, options = {}) {
     "X-App-Client": "storefront",
     ...options.headers,
   };
-
-  const token = getAuthToken();
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
 
   const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
   const response = await fetch(`${API_URL}${path}`, {

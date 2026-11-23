@@ -60,17 +60,11 @@ export default function SellerProductsPage() {
   const [busyProductId, setBusyProductId] = useState(null);
 
   const getAuthHeaders = useCallback(() => {
-    const storedToken =
-      token ||
-      (typeof window !== "undefined"
-        ? localStorage.getItem("bare_auth_token") ||
-          localStorage.getItem("token")
-        : null);
     return {
       "Content-Type": "application/json",
-      ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {}),
+      "X-App-Client": "storefront",
     };
-  }, [token]);
+  }, []);
 
   const fetchMyProducts = useCallback(async () => {
     if (!shop?.id) return;

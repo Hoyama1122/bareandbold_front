@@ -69,33 +69,20 @@ export default function Header({
     }
   }, [authLoading, contextLoggedIn, authUser]);
 
- useEffect(() => {
-  if (typeof window === "undefined") return;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-  const loadProfile = () => {
-    const token = localStorage.getItem("bare_auth_token");
-
-    if (token) {
-      setIsLoggedIn(true);
-
-      const savedUser = localStorage.getItem("bare_user");
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
-      }
-
+    const loadAvatar = () => {
       const savedAvatar = localStorage.getItem("avatar");
-      setAvatar(savedAvatar);
-    }
-  };
+      if (savedAvatar) setAvatar(savedAvatar);
+    };
 
-  loadProfile();
-
-  window.addEventListener("profileUpdated", loadProfile);
-
-  return () => {
-    window.removeEventListener("profileUpdated", loadProfile);
-  };
-}, []);
+    loadAvatar();
+    window.addEventListener("profileUpdated", loadAvatar);
+    return () => {
+      window.removeEventListener("profileUpdated", loadAvatar);
+    };
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -180,19 +167,17 @@ setAvatar(null);
   };
 
   const handleAuthSuccess = (user) => {
-  const hasToken = !!localStorage.getItem("bare_auth_token");
+    setIsLoggedIn(true);
+    setUser(user);
+    refreshAuth();
 
-  setIsLoggedIn(hasToken);
-  setUser(user);
-  refreshAuth();
+    const savedAvatar = localStorage.getItem("avatar");
+    setAvatar(savedAvatar);
 
-  const savedAvatar = localStorage.getItem("avatar");
-  setAvatar(savedAvatar);
-
-  if (onAuthStatusChange) {
-    onAuthStatusChange(hasToken, user);
-  }
-};
+    if (onAuthStatusChange) {
+      onAuthStatusChange(true, user);
+    }
+  };
 
   return (
     <>

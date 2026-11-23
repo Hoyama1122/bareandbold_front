@@ -1,16 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const apiFetch = async (endpoint, options = {}) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("bare_auth_token") : null;
   const headers = {
     "Content-Type": "application/json",
     "X-App-Client": "storefront",
     ...options.headers,
   };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,

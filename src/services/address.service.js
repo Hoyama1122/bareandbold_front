@@ -1,15 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const apiFetch = async (endpoint, options = {}) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("bare_auth_token") : null;
   const headers = {
     "Content-Type": "application/json",
+    "X-App-Client": "storefront",
     ...options.headers,
   };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
@@ -35,14 +31,7 @@ const apiFetch = async (endpoint, options = {}) => {
 };
 
 export const addressService = {
-  isLoggedIn: () => {
-    if (typeof window === "undefined") return false;
-    const token = localStorage.getItem("bare_auth_token");
-    return !!token && token !== "undefined" && token !== "null";
-  },
-
   getAddresses: async () => {
-    if (!addressService.isLoggedIn()) return [];
     try {
       const data = await apiFetch("/addresses");
       return data.addresses || [];
@@ -53,7 +42,6 @@ export const addressService = {
   },
 
   createAddress: async (addressData) => {
-    if (!addressService.isLoggedIn()) throw new Error("Please log in first");
     const data = await apiFetch("/addresses", {
       method: "POST",
       body: JSON.stringify(addressData),

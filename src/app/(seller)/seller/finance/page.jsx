@@ -52,17 +52,11 @@ export default function SellerFinancePage() {
   const [payoutErrorMsg, setPayoutErrorMsg] = useState("");
 
   const getHeaders = useCallback(() => {
-    const storedToken =
-      token ||
-      (typeof window !== "undefined"
-        ? localStorage.getItem("bare_auth_token") ||
-          localStorage.getItem("token")
-        : null);
     return {
       "Content-Type": "application/json",
-      ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {}),
+      "X-App-Client": "storefront",
     };
-  }, [token]);
+  }, []);
 
   const loadFinanceData = useCallback(async () => {
     if (!shop?.id) return;
