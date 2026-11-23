@@ -1,280 +1,109 @@
+# 📋 Bare & Bold — Master System Plan & Architecture
 
-# 📋 Bare & Bold — Project Plan & Team Task Division
-
-> ระบบ e-commerce สร้อยข้อมือแบบ custom / ready-to-ship
-> Tech Stack: **Next.js** (Frontend + Backoffice) · **Hono + Bun** (Backend) · **PostgreSQL / Neon** (DB) · **Cloudflare R2** (Storage) · **Prisma ORM**
+> ระบบ Multi-Vendor e-Commerce เครื่องประดับและกำไลสายมู (Custom Made-to-Order & Ready-to-Ship)  
+> **Tech Stack:** Next.js 16 (Storefront & Backoffice) · Hono + Bun (Backend REST API) · PostgreSQL / Neon (DB) · Cloudflare R2 (Storage) · Prisma ORM 7
 
 ---
 
 ## 🏗️ Architecture Overview
 
 ```
-bareandbold_front/      ← หน้าร้านค้า (ลูกค้า)       :3000
-bareandbold_backoffice/ ← หลังบ้าน (Staff/Admin)     :3001
-bareandbold_backend/    ← REST API (Hono/Bun)         :8000
+bareandbold_front/      ← หน้าร้านค้า (ผู้ซื้อ) + ศูนย์ผู้ขาย (Seller Center) :3000
+bareandbold_backoffice/ ← หลังบ้านระบบกลางสำหรับ Admin / Staff                 :3001
+bareandbold_backend/    ← REST API Server (Hono / Bun)                        :8000
 ```
 
 ---
 
-## 📦 Database Models (Prisma Schema)
+## 📦 Database Models (Prisma Schema — 26 Models)
 
-| Model                     | ความหมาย                                                    |
-| ------------------------- | ------------------------------------------------------------------- |
-| `User`                  | ลูกค้า — สมัครสมาชิก / เข้าสู่ระบบ     |
-| `Employee`              | พนักงาน — Staff / Admin                                     |
-| `Product`               | สินค้า (สร้อยข้อมือ)                               |
-| `ProductImage`          | รูปสินค้า (position 0 = หน้าปก)                      |
-| `CustomOption`          | ตัวเลือกสินค้า custom เช่น "ขนาดข้อมือ" |
-| `CustomOptionValue`     | ค่าของตัวเลือก เช่น "15cm", "16cm"                |
-| `Category`              | หมวดหมู่วัสดุ เช่น CHARM, BEAD, CORD               |
-| `Accessory`             | วัสดุตกแต่ง (ชิ้นส่วนสร้อย)                 |
-| `ProductAccessory`      | many-to-many: สินค้า ↔ วัสดุที่ใช้ได้          |
-| `Cart` / `CartItem`   | ตะกร้าสินค้าของลูกค้า                          |
-| `CartItemAccessory`     | วัสดุที่เลือกในตะกร้า                          |
-| `Order` / `OrderItem` | ออเดอร์ที่ซื้อแล้ว                                |
-| `OrderItemAccessory`    | วัสดุที่ซื้อพร้อมสินค้า (ราคา snapshot)  |
-| `Payment`               | การชำระเงิน (รองรับ Omise)                         |
-| `Shipping`              | การจัดส่ง + tracking number                                |
+| Category | Models | หน้าที่หลัก |
+| :--- | :--- | :--- |
+| **Auth & Users** | `User`, `Address`, `Employee` | ระบบบัญชีลูกค้า, พนักงาน Admin/Staff, สมุดที่อยู่จัดส่ง |
+| **Shop & Vendor** | `Shop`, `ShopTransaction`, `PayoutRequest` | ร้านค้าพาร์ตเนอร์, บัญชี Ledger (SALE, COMMISSION, PAYOUT), คำขอถอนเงิน |
+| **Products & Customization** | `Product`, `ProductImage`, `CustomOption`, `CustomOptionValue`, `Category`, `Accessory`, `ProductAccessory` | สินค้าพร้อมส่ง/สั่งทำ, ตัวเลือกขนาดข้อมือ, คลังวัสดุตกแต่ง (จี้มงคล, ลูกปัดหิน, เชือกถัก) |
+| **Cart & Ordering** | `Cart`, `CartItem`, `CartItemAccessory`, `Order`, `SubOrder`, `OrderItem`, `OrderItemAccessory` | ตะกร้าสินค้า, Multi-Vendor Split Order, Snapshot ราคาและส่วนลด |
+| **Payment & Shipping** | `Payment`, `Shipping` | การชำระเงิน (PromptPay/Omise), การจัดส่งพร้อม Tracking No. |
+| **Reviews & Feedback** | `Review`, `ReviewImage`, `ShopReview` | รีวิวสินค้าและร้านค้า (Verified Purchase), ให้คะแนนดาว |
+| **Marketing & Vouchers** | `Voucher`, `UserVoucher`, `VoucherRedemption` | คูปองส่วนลด Platform, Shop, Shipping Voucher (ส่งฟรี) |
+| **After-Sales & Ops** | `RefundRequest`, `RefundRequestImage`, `PlatformSettings`, `AuditLog`, `Notification` | การคืนเงิน/เปลี่ยนสินค้า, การตั้งค่า GP/ค่าส่ง, บันทึกประวัติการทำงาน, แจ้งเตือน |
 
 ---
 
-## 🔌 Backend API Endpoints (สำเร็จแล้ว ✅)
+## 🔌 Backend API Endpoints (สมบูรณ์ 100% ✅)
 
-### Auth
+### 1. Authentication & Users
+- `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/profile`
+- `POST /api/auth/backoffice/login`, `POST /api/auth/backoffice/register`
+- `GET/POST/PUT/DELETE /api/addresses`
 
-| Method | Endpoint                          | คำอธิบาย                                |
-| ------ | --------------------------------- | ----------------------------------------------- |
-| POST   | `/api/auth/register`            | สมัครสมาชิก (ลูกค้า)           |
-| POST   | `/api/auth/login`               | เข้าสู่ระบบ (ลูกค้า)           |
-| POST   | `/api/auth/logout`              | ออกจากระบบ                            |
-| GET    | `/api/auth/profile`             | ดึงข้อมูลโปรไฟล์                |
-| POST   | `/api/auth/backoffice/login`    | เข้าสู่ระบบ (Employee)               |
-| POST   | `/api/auth/backoffice/register` | สร้างบัญชีพนักงาน (Admin only) |
+### 2. Products, Categories & Accessories
+- `GET /api/products`, `GET /api/products/:id` (Public Catalog & Search)
+- `GET /api/categories`, `GET /api/accessories` (คลังวัสดุ 43 รายการ)
+- `POST /api/upload?folder=...` (Cloudflare R2 Image Upload)
 
-### Products
+### 3. Cart, Orders & Multi-Vendor Split Order
+- `GET/POST/PUT/DELETE /api/cart` (Cart sync & merge)
+- `POST /api/orders` (Multi-Vendor Checkout, Split SubOrders, Voucher Quote snapshot)
+- `GET /api/orders`, `GET /api/orders/:id` (Buyer Order History)
+- `POST /api/orders/sub-orders/:id/confirm-received` (Escrow release รายร้าน)
+- `POST /api/orders/admin/auto-complete` + **Background Cron Runner** (`startAutoCompleteCron`)
 
-| Method | Endpoint              | คำอธิบาย                          |
-| ------ | --------------------- | ----------------------------------------- |
-| GET    | `/api/products`     | ดึงสินค้าทั้งหมด (public) |
-| GET    | `/api/products/:id` | ดึงสินค้าตาม ID (public)      |
-| POST   | `/api/products`     | สร้างสินค้า (Employee)         |
-| PUT    | `/api/products/:id` | แก้ไขสินค้า (Employee)         |
-| DELETE | `/api/products/:id` | ลบสินค้า (Employee)               |
+### 4. Seller Center APIs
+- `GET /api/seller/dashboard` (KPIs, GMV, Orders count)
+- `GET/POST/PUT/DELETE /api/seller/products` (CRUD สินค้าร้านตนเอง)
+- `GET/PUT /api/seller/orders` (Fulfillment: รับออเดอร์, เริ่มร้อยกำไล PRODUCING, ใส่เลขพัสดุ SHIPPED)
+- `GET /api/seller/sales-summary`, `GET /api/seller/wallet`, `GET/POST /api/seller/payouts` (Wallet & Payout)
+- `GET/POST/PUT/PATCH/DELETE /api/seller/vouchers` (คูปองของร้านค้า)
+- `GET /api/seller/refunds` (จัดการคำขอคืนเงินของร้าน)
 
-### Categories
+### 5. Vouchers & Promotion Engine
+- `GET /api/vouchers` (หน้ารวมคูปองและกระเป๋าคูปองผู้ซื้อ)
+- `POST /api/vouchers/claim` (เก็บโค้ดส่วนลด)
+- `POST /api/vouchers/quote` (Server-authoritative Quote คำนวณส่วนลด Platform/Shop/Shipping)
 
-| Method | Endpoint                | คำอธิบาย                              |
-| ------ | ----------------------- | --------------------------------------------- |
-| GET    | `/api/categories`     | ดึงหมวดหมู่ทั้งหมด (public) |
-| GET    | `/api/categories/:id` | ดึงหมวดหมู่ตาม ID               |
-| POST   | `/api/categories`     | สร้างหมวดหมู่ (Employee)         |
-| PUT    | `/api/categories/:id` | แก้ไขหมวดหมู่ (Employee)         |
-| DELETE | `/api/categories/:id` | ลบหมวดหมู่ (Employee)               |
+### 6. Reviews & Ratings
+- `POST /api/reviews` (รีวิวสินค้าเฉพาะผู้ที่ซื้อจริง)
+- `GET /api/products/:id/reviews` (ดึงรีวิวสินค้าพร้อมรูป)
+- `GET/POST /api/shops/:id/reviews` (ดึงและเขียนรีวิวร้านค้า)
 
-### Accessories
+### 7. Refunds & Customer Support
+- `POST /api/refunds/request` (ยื่นคำขอคืนเงิน/เปลี่ยนสินค้า)
+- `GET /api/refunds/my` (ติดตามสถานะคำขอคืนเงิน)
+- `PUT /api/refunds/:id/approve`, `PUT /api/refunds/:id/reject`
 
-| Method | Endpoint                 | คำอธิบาย                        |
-| ------ | ------------------------ | --------------------------------------- |
-| GET    | `/api/accessories`     | ดึงวัสดุทั้งหมด (public) |
-| GET    | `/api/accessories/:id` | ดึงวัสดุตาม ID               |
-| POST   | `/api/accessories`     | สร้างวัสดุ (Employee)         |
-| PUT    | `/api/accessories/:id` | แก้ไขวัสดุ (Employee)         |
-| DELETE | `/api/accessories/:id` | ลบวัสดุ (Employee)               |
-
-### Upload
-
-| Method | Endpoint                        | คำอธิบาย                            |
-| ------ | ------------------------------- | ------------------------------------------- |
-| POST   | `/api/upload?folder=products` | อัปโหลดรูปภาพ → Cloudflare R2 |
-
-### ⏳ ยังไม่มี (ต้องสร้าง)
-
-- `GET/POST /api/cart` — ตะกร้าสินค้า
-- `GET/POST /api/orders` — ออเดอร์
-- `POST /api/payments/checkout` — ชำระเงิน (Omise)
-- `PUT /api/shipping/:orderId` — อัปเดตการจัดส่ง
+### 8. Admin & Backoffice Portal
+- `GET/PUT /api/admin/shops` (อนุมัติ/ระงับร้านค้า)
+- `GET/PUT /api/admin/products/:id/moderate` (ซ่อน/ระงับสินค้า)
+- `GET/PUT /api/admin/payouts` (อนุมัติโอนเงิน Payout ร้านค้า)
+- `GET/PUT /api/admin/settings` (ตั้งค่า GP 5%, ค่าส่ง ฿50)
+- `GET /api/admin/analytics` (GMV, GP, Platform Analytics)
+- `GET /api/admin/audit-logs` (ประวัติการกระทำของเจ้าหน้าที่)
 
 ---
 
-## 👥 Team Task Division (4 คน)
+## 👥 สรุปบทบาทและการส่งมอบงานของทีม (Team Delivery)
 
----
+1. **Role 1 — Frontend Engineer (Storefront & Catalog) + QA + Voucher Owner:**
+   - หน้าร้านค้า, แคตตาล็อก, ตัวกรองสินค้า, หน้าร้านค้าผู้ขาย `/shop/[slug]`
+   - ระบบการ์ดสุ่มดวงและจับคู่จี้หินมงคล `/fortune-card` (ทักษาปกรณ์ 7 วัน)
+   - ระบบคูปองส่วนลด `/coupons`, `/vouchers`, Voucher Selector ตอน Checkout
+   - ดูแล QA Test Plan และการทดสอบระบบร่วมกับทีม
 
-### 🔵 คนที่ 1 — Frontend: หน้าร้านค้า (Product & Homepage)
+2. **Role 2 — Frontend Engineer (Cart, Checkout & Orders):**
+   - ตะกร้าสินค้า Multi-vendor, Checkout สรุปยอดแยกตามร้าน
+   - ประวัติคำสั่งซื้อ `/orders`, ปุ่มยืนยันรับสินค้าเพื่อปล่อยเงิน Escrow
+   - ระบบรีวิวสินค้าและร้านค้า (`ReviewModal` & `ProductReviewsSection`)
+   - ระบบยื่นและติดตามคำขอคืนเงิน/เปลี่ยนสินค้า (แท็บ `REFUNDS`)
 
-**รับผิดชอบ:** `bareandbold_front/`
+3. **Role 3 — Fullstack Engineer (Seller Center & Backoffice):**
+   - ระบบ Onboarding สมัครร้านค้า `/become-seller`
+   - ศูนย์ผู้ขาย (Seller Center) ครบวงจร: Dashboard, Products, Orders, Vouchers, Finance/Payout, Shop Profile, Refunds
+   - หลังบ้านแอดมิน (Backoffice): จัดการร้านค้า, ตรวจสอบสินค้า, อนุมัติ Payout, ตรวจสอบรีวิว, รายงานสถิติ, และ Audit Logs
 
-#### งานที่ต้องทำ:
-
-- [ ] เชื่อมต่อ **Homepage** (`/`) กับ API จริง — แสดงสินค้าจาก `/api/products`
-- [ ] สร้างหน้า **รายการสินค้า** (`/products`) — grid + filter ตามประเภท
-- [ ] สร้างหน้า **รายละเอียดสินค้า** (`/products/[id]`) — รูป gallery, ราคา, ปุ่มเพิ่มตะกร้า
-- [ ] ทำ **Custom Builder** — ถ้าสินค้าเป็น MADE_TO_ORDER ให้เลือกวัสดุ + ขนาดข้อมือได้
-- [ ] ทำให้ Product Card ดึงรูปจาก `images[0].url` เป็น cover
-
-#### API ที่ใช้:
-
-```
-GET /api/products
-GET /api/products/:id
-GET /api/categories
-GET /api/accessories
-```
-
----
-
-### 🟢 คนที่ 2 — Frontend: Auth, Cart & Checkout
-
-**รับผิดชอบ:** `bareandbold_front/` (ส่วน auth + cart)
-
-#### งานที่ต้องทำ:
-
-- [ ] สร้างหน้า **Login / Register** (`/auth/login`, `/auth/register`) — เชื่อม API จริง
-- [ ] ระบบ **ตะกร้าสินค้า** — เพิ่ม/ลด/ลบ สินค้า + เลือก accessory
-- [ ] หน้า **Cart** (`/cart`) — สรุปรายการก่อนชำระ
-- [ ] หน้า **Checkout** (`/checkout`) — กรอกที่อยู่ + เลือกวิธีชำระเงิน
-- [ ] หน้า **Order History** (`/account/orders`) — ประวัติคำสั่งซื้อ
-
-#### API ที่ใช้:
-
-```
-POST /api/auth/register
-POST /api/auth/login
-GET  /api/auth/profile
-GET/POST /api/cart          ← ต้องสร้าง backend ด้วย
-POST /api/orders            ← ต้องสร้าง backend ด้วย
-POST /api/payments/checkout ← ต้องสร้าง backend ด้วย
-```
-
----
-
-### 🟡
-
-#### Models ที่ใช้:
-
-```
-Cart, CartItem, CartItemAccessory
-Order, OrderItem, OrderItemAccessory
-Payment, Shipping
-```
-
----
-
-### 🟠 คนที่ 4 — Backoffice: Orders, Customers & Accessories
-
-**รับผิดชอบ:** `bareandbold_backoffice/`
-
-#### งานที่ต้องทำ:
-
-- [ ] **หน้าออเดอร์** (`/dashboard/orders`) — ดึงรายการออเดอร์ทั้งหมด, อัปเดตสถานะ, เพิ่ม tracking number
-- [ ] **หน้าลูกค้า** (`/dashboard/customers`) — แสดงรายชื่อและข้อมูลลูกค้า
-- [ ] **จัดการวัสดุ (Accessories)** ใน Settings — CRUD วัสดุตกแต่ง (ชื่อ, ราคา, หมวดหมู่, รูป)
-- [ ] **เชื่อม Accessories กับสินค้า** — ใน ProductForm เพิ่ม multi-select วัสดุที่สินค้านี้ใช้ได้
-
-#### API ที่ใช้:
-
-```
-GET /api/admin/orders       ← ต้องสร้างกับคนที่ 3
-PUT /api/admin/orders/:id   ← อัปเดตสถานะ + tracking
-GET /api/users              ← ดึงลูกค้า (Admin only)
-GET/POST/PUT/DELETE /api/accessories
-```
-
----
-
-## ✅ สิ่งที่ทำสำเร็จแล้ว (Done)
-
-### Backend ✅
-
-- [X] Auth system (Customer + Employee) พร้อม JWT + HTTP-only cookie
-- [X] Product CRUD API + image relations
-- [X] Category CRUD API
-- [X] Accessory CRUD API
-- [X] Upload API → Cloudflare R2 (พร้อม folder prefix `products/`)
-- [X] Prisma Schema ครบทุก model + sync กับ Neon PostgreSQL
-- [X] Seed script สำหรับ Admin/Staff
-
-### Backoffice ✅
-
-- [X] Login page + Auth context
-- [X] Dashboard overview (KPI cards)
-- [X] Product list + สร้าง/แก้ไข/ลบสินค้า
-- [X] ProductForm — cover image แยกจาก gallery, Ant Design dropdown, layout 2 column
-- [X] Category management (Settings page)
-- [X] Upload รูปภาพไปยัง R2 ตาม folder
-- [X] Sidebar navigation + role-based menu (Admin/Staff)
-
-### Frontend ✅
-
-- [X] Homepage UI (Hero, Promo, Product cards, Footer)
-- [X] Login / Register page (UI เสร็จ)
-- [X] Header + language toggle
-
----
-
-## 🔮 Priority Queue (ลำดับงาน)
-
-```
-Priority 1 (สำคัญที่สุด):
-  → Backend: Cart API + Order API
-  → Frontend: เชื่อม Product API จริงกับ Homepage
-
-Priority 2:
-  → Backend: Payment API (Omise)
-  → Frontend: Cart + Checkout page
-
-Priority 3:
-  → Backoffice: Orders management + Accessories management
-  → Frontend: Order history page
-
-Priority 4 (Nice to have):
-  → Custom product builder (MADE_TO_ORDER)
-  → Accessory linking in ProductForm
-  → Membership tiers
-  → Promotion campaigns
-```
-
----
-
-## 🔑 Environment Variables ที่ต้องมี
-
-### Backend (`.env`)
-
-```env
-DATABASE_URL=
-DIRECT_URL=
-JWT_SECRET=
-CLOUDFLARE_R2_ACCOUNT_ID=
-CLOUDFLARE_R2_ACCESS_KEY_ID=
-CLOUDFLARE_R2_SECRET_ACCESS_KEY=
-CLOUDFLARE_R2_BUCKET_NAME=
-NEXT_PUBLIC_R2_PUBLIC_URL=
-OMISE_SECRET_KEY=       ← ต้องเพิ่ม
-OMISE_PUBLIC_KEY=       ← ต้องเพิ่ม
-```
-
-### Frontend / Backoffice (`.env`)
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
-### คนที่ 3 — Backend: Cart, Order & Payment APIs
-
-**รับผิดชอบ:** `bareandbold_backend/`
-
-#### งานที่ต้องทำ:
-
-- [ ] สร้าง **Cart API** — `GET/POST/PUT/DELETE /api/cart`
-  - เพิ่มสินค้า + เลือก accessories ลงตะกร้า
-  - ตะกร้าผูกกับ User (1 User = 1 Cart)
-- [ ] สร้าง **Order API** — `POST /api/orders`
-  - สร้างออเดอร์จาก Cart ปัจจุบัน
-  - Snapshot ราคา ณ เวลาที่สั่ง
-  - ล้าง Cart หลังสร้างออเดอร์
-- [ ] สร้าง **Payment API** — `POST /api/payments/checkout`
-  - เชื่อมต่อ Omise Payment Gateway
-  - รองรับ Credit Card / PromptPay
-  - อัปเดต `Payment.status` และ `Order.status`
-- [ ] สร้าง **Order History API** — `GET /api/orders` (ของ user ตัวเอง)
-- [ ] สร้าง **Admin Orders API** — `GET/PUT /api/admin/orders` (สำหรับ backoffice)
+4. **Role 4 — Backend & Database Engineer:**
+   - สถาปัตยกรรม Database Prisma Schema 26 โมเดล
+   - Multi-Vendor Split Order Engine, Escrow Settlement & Transaction Ledger
+   - Server-Authoritative Voucher Engine & Quote Evaluation
+   - Background Cron Runner สำหรับ Auto-complete ออเดอร์เมื่อครบ 7 วัน
+   - การรักษาความปลอดภัย Role Middleware, Wash Trading Prevention และ Inventory Deduction
