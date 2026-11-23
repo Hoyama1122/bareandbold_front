@@ -366,6 +366,7 @@ export default function ProductInfo({
             if (categoryName === "CHARM") displayName = "จี้ประดับ (Charm)";
             else if (categoryName === "BEAD") displayName = "ลูกปัดหินนำโชค (Bead)";
             else if (categoryName === "CORD") displayName = "สายรัดและเชือกถัก (Cord)";
+            else if (categoryName === "STONE") displayName = "หินมงคลนำโชค (Gemstone)";
 
             if (!groups[displayName]) {
               groups[displayName] = [];

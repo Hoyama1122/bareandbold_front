@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import useEmblaCarousel from "embla-carousel-react";
 import { productService } from "@/services/product.service";
 import { cartService } from "@/services/cart.service";
@@ -17,6 +17,7 @@ import { Check, X } from "lucide-react";
 
 export default function ProductDetailClient({ nameSlug }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [product, setProduct] = useState(null);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -82,6 +83,18 @@ export default function ProductDetailClient({ nameSlug }) {
               console.error("Failed to load full product by ID:", e);
             }
             setProduct(fullProduct);
+
+            // Auto pre-select accessory if passed in query param (e.g. from fortune card)
+            const targetAccId = searchParams.get("accessoryId") || searchParams.get("charmId");
+            if (targetAccId && Array.isArray(fullProduct.accessories)) {
+              const matchedAcc = fullProduct.accessories.find(
+                (item) => item.accessory?.id === targetAccId || item.accessoryId === targetAccId
+              );
+              if (matchedAcc?.accessory) {
+                setSelectedAccessories([matchedAcc.accessory]);
+              }
+            }
+
             const rawImgs = (fullProduct.images && fullProduct.images.length > 0
               ? fullProduct.images.map(img => typeof img === "object" ? img?.url : img)
               : [fullProduct.imageUrl]
