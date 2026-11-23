@@ -58,16 +58,38 @@ export const sellerService = {
   getRefunds: async (params = {}) => {
     const query = new URLSearchParams();
     if (params.status && params.status !== "ALL") query.set("status", params.status);
+    if (params.requestType && params.requestType !== "ALL") query.set("requestType", params.requestType);
     const qs = query.toString() ? `?${query.toString()}` : "";
     return apiFetch(`/seller/refunds${qs}`, {
       method: "GET",
     });
   },
 
-  approveRefund: async (id, sellerNote) => {
+  approveRefund: async (id, sellerNote, returnAddress) => {
     return apiFetch(`/seller/refunds/${id}/approve`, {
       method: "PUT",
-      body: JSON.stringify({ sellerNote }),
+      body: JSON.stringify({ sellerNote, returnAddress }),
+    });
+  },
+
+  receiveReturn: async (id, note) => {
+    return apiFetch(`/seller/refunds/${id}/receive-return`, {
+      method: "PUT",
+      body: JSON.stringify({ note }),
+    });
+  },
+
+  shipExchange: async (id, { exchangeCarrier, exchangeTrackingNumber, note }) => {
+    return apiFetch(`/seller/refunds/${id}/ship-exchange`, {
+      method: "PUT",
+      body: JSON.stringify({ exchangeCarrier, exchangeTrackingNumber, note }),
+    });
+  },
+
+  completeRefund: async (id, { refundSlipUrl, sellerNote }) => {
+    return apiFetch(`/seller/refunds/${id}/complete-refund`, {
+      method: "PUT",
+      body: JSON.stringify({ refundSlipUrl, sellerNote }),
     });
   },
 

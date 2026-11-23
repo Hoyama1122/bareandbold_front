@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { orderService } from "@/services/order.service";
 import { cartService } from "@/services/cart.service";
 import { paymentService } from "@/services/payment.service";
-import {Clock,MapPin,Truck,AlertCircle,ShoppingBag,Store,ChevronDown,ChevronUp,RotateCcw,ImagePlus,Star} from "lucide-react";
+import {Clock,MapPin,Truck,AlertCircle,ShoppingBag,Store,ChevronDown,ChevronUp,RotateCcw,ImagePlus,Star,CheckCircle2,PackageCheck,ExternalLink,Copy,Check} from "lucide-react";
 import ReviewModal from "@/components/orders/ReviewModal";
 import { uploadService } from "@/services/upload.service";
 
@@ -235,6 +235,13 @@ export default function OrderHistoryPage() {
   const [submittingRefund, setSubmittingRefund] = useState(false);
   const [reviewModalOrder, setReviewModalOrder] = useState(null);
 
+  // Return shipment & exchange receipt states
+  const [returnCarrierInputs, setReturnCarrierInputs] = useState({});
+  const [returnTrackingInputs, setReturnTrackingInputs] = useState({});
+  const [submittingReturnId, setSubmittingReturnId] = useState(null);
+  const [confirmingExchangeId, setConfirmingExchangeId] = useState(null);
+  const [copiedAddressId, setCopiedAddressId] = useState(null);
+
   const eligibleReturnOrders = orders.filter((order) =>
     ["DELIVERED", "COMPLETED"].includes(order.status)
   );
@@ -305,6 +312,51 @@ export default function OrderHistoryPage() {
     } finally {
       setSubmittingConfirmId(null);
     }
+  };
+
+  const handleBuyerSubmitReturnShipment = async (refundId) => {
+    const carrier = returnCarrierInputs[refundId] || "Flash Express";
+    const tracking = (returnTrackingInputs[refundId] || "").trim();
+    if (!tracking) {
+      alert("กรุณากรอกหมายเลขพัสดุที่ท่านส่งคืนให้ร้านค้า");
+      return;
+    }
+    try {
+      setSubmittingReturnId(refundId);
+      await orderService.submitReturnShipment(refundId, {
+        returnCarrier: carrier,
+        returnTrackingNumber: tracking,
+      });
+      alert("บันทึกเลขพัสดุส่งคืนเรียบร้อยแล้ว ร้านค้ากำลังรอรับพัสดุ");
+      fetchOrders();
+    } catch (err) {
+      alert(err.message || "เกิดข้อผิดพลาดในการบันทึกเลขพัสดุส่งคืน");
+    } finally {
+      setSubmittingReturnId(null);
+    }
+  };
+
+  const handleBuyerConfirmExchangeReceipt = async (refundId) => {
+    if (!window.confirm("ยืนยันว่าท่านได้รับสินค้าชิ้นใหม่ที่เปลี่ยนเรียบร้อยแล้วใช่ไหม?")) {
+      return;
+    }
+    try {
+      setConfirmingExchangeId(refundId);
+      await orderService.confirmExchangeReceipt(refundId);
+      alert("ยืนยันรับสินค้าชิ้นใหม่เรียบร้อยแล้ว การเปลี่ยนสินค้าเสร็จสมบูรณ์");
+      fetchOrders();
+    } catch (err) {
+      alert(err.message || "เกิดข้อผิดพลาดในการยืนยัน");
+    } finally {
+      setConfirmingExchangeId(null);
+    }
+  };
+
+  const handleCopyReturnAddress = (text, id) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(text);
+    setCopiedAddressId(id);
+    setTimeout(() => setCopiedAddressId(null), 2500);
   };
 
   const handleReturnFormSubmit = async (event) => {
@@ -531,33 +583,342 @@ export default function OrderHistoryPage() {
                   })}
                 </div>
 
-                {/* แสดงสถานะคำขอคืนเงิน / เปลี่ยนสินค้า (ถ้ามี) */}
+                {/* แสดงสถานะคำขอคืนเงิน / เปลี่ยนสินค้า (Full Lifecycle & Actionable UI) */}
                 {Array.isArray(order.refundRequests) && order.refundRequests.length > 0 && (
-                  <div className="mx-6 mb-3 p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold flex items-center gap-1.5 text-amber-800">
-                        <RotateCcw size={14} />
-                        คำขอ{order.refundRequests[0].requestType === "EXCHANGE" ? "เปลี่ยนสินค้า" : "คืนเงิน"} (#{order.refundRequests[0].id.slice(0, 8)})
-                      </span>
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] ${
-                          order.refundRequests[0].status === "APPROVED"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : order.refundRequests[0].status === "REJECTED"
-                            ? "bg-rose-100 text-rose-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}
-                      >
-                        {order.refundRequests[0].status === "APPROVED"
-                          ? "อนุมัติแล้ว"
-                          : order.refundRequests[0].status === "REJECTED"
-                          ? "ปฏิเสธคำขอ"
-                          : "รอเจ้าหน้าที่ตรวจสอบ"}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-amber-800/80">
-                      เหตุผล: {order.refundRequests[0].reason} {order.refundRequests[0].adminNote ? `(หมายเหตุจากแอดมิน: ${order.refundRequests[0].adminNote})` : ""}
-                    </p>
+                  <div className="mx-6 mb-4 space-y-3">
+                    {order.refundRequests.map((rf) => {
+                      const isExchange = rf.requestType === "EXCHANGE";
+                      const isRefund = !isExchange;
+
+                      // Status Badge configuration
+                      let badgeCls = "bg-amber-100 text-amber-900 border-amber-300";
+                      let badgeLabel = "รอร้านค้าตรวจสอบคำขอ";
+                      if (["WAITING_RETURN", "APPROVED"].includes(rf.status)) {
+                        badgeCls = "bg-sky-100 text-sky-900 border-sky-300";
+                        badgeLabel = isExchange ? "อนุมัติเปลี่ยนสินค้า — รอลูกค้าส่งชิ้นเดิมคืน" : "อนุมัติคืนสินค้า — รอลูกค้าส่งสินค้าคืน";
+                      } else if (rf.status === "RETURNING") {
+                        badgeCls = "bg-indigo-100 text-indigo-900 border-indigo-300";
+                        badgeLabel = "จัดส่งของคืนแล้ว — ร้านกำลังรอรับพัสดุ";
+                      } else if (rf.status === "INSPECTING") {
+                        badgeCls = "bg-purple-100 text-purple-900 border-purple-300";
+                        badgeLabel = "ร้านได้รับของคืนแล้ว — กำลังตรวจสภาพสินค้า";
+                      } else if (rf.status === "PRODUCING_NEW") {
+                        badgeCls = "bg-teal-100 text-teal-900 border-teal-300";
+                        badgeLabel = "ร้านได้รับของเดิมแล้ว — กำลังผลิต/เตรียมชิ้นใหม่";
+                      } else if (rf.status === "EXCHANGE_SHIPPED") {
+                        badgeCls = "bg-emerald-100 text-emerald-900 border-emerald-300";
+                        badgeLabel = "ร้านค้าจัดส่งสินค้าชิ้นใหม่แล้ว";
+                      } else if (rf.status === "REFUNDED") {
+                        badgeCls = "bg-emerald-100 text-emerald-900 border-emerald-300";
+                        badgeLabel = "โอนเงินคืนสำเร็จแล้ว";
+                      } else if (rf.status === "COMPLETED") {
+                        badgeCls = "bg-emerald-100 text-emerald-900 border-emerald-300";
+                        badgeLabel = isExchange ? "เปลี่ยนสินค้าเสร็จสมบูรณ์" : "การคืนสินค้าเสร็จสมบูรณ์";
+                      } else if (rf.status === "REJECTED") {
+                        badgeCls = "bg-rose-100 text-rose-900 border-rose-300";
+                        badgeLabel = "ปฏิเสธคำขอ";
+                      }
+
+                      // Stepper step calculations
+                      const exchangeSteps = [
+                        { key: "PENDING", label: "ยื่นคำขอ" },
+                        { key: "WAITING_RETURN", label: "อนุมัติส่งคืน" },
+                        { key: "RETURNING", label: "ส่งของคืนแล้ว" },
+                        { key: "PRODUCING_NEW", label: "เตรียมชิ้นใหม่" },
+                        { key: "EXCHANGE_SHIPPED", label: "ส่งชิ้นใหม่แล้ว" },
+                        { key: "COMPLETED", label: "เปลี่ยนสำเร็จ" },
+                      ];
+                      let exchangeActiveIdx = 0;
+                      if (["WAITING_RETURN", "APPROVED"].includes(rf.status)) exchangeActiveIdx = 1;
+                      else if (rf.status === "RETURNING") exchangeActiveIdx = 2;
+                      else if (["PRODUCING_NEW", "INSPECTING"].includes(rf.status)) exchangeActiveIdx = 3;
+                      else if (rf.status === "EXCHANGE_SHIPPED") exchangeActiveIdx = 4;
+                      else if (rf.status === "COMPLETED") exchangeActiveIdx = 5;
+                      else if (rf.status === "REJECTED") exchangeActiveIdx = -1;
+
+                      const refundSteps = [
+                        { key: "PENDING", label: "ยื่นคำขอคืนเงิน" },
+                        { key: "WAITING_RETURN", label: "อนุมัติส่งคืน" },
+                        { key: "RETURNING", label: "ส่งของคืนแล้ว" },
+                        { key: "INSPECTING", label: "ตรวจสภาพของ" },
+                        { key: "REFUNDED", label: "โอนเงินคืนสำเร็จ" },
+                      ];
+                      let refundActiveIdx = 0;
+                      if (["WAITING_RETURN", "APPROVED"].includes(rf.status)) refundActiveIdx = 1;
+                      else if (rf.status === "RETURNING") refundActiveIdx = 2;
+                      else if (rf.status === "INSPECTING") refundActiveIdx = 3;
+                      else if (["REFUNDED", "COMPLETED"].includes(rf.status)) refundActiveIdx = 4;
+                      else if (rf.status === "REJECTED") refundActiveIdx = -1;
+
+                      const stepsToRender = isExchange ? exchangeSteps : refundSteps;
+                      const activeStepIdx = isExchange ? exchangeActiveIdx : refundActiveIdx;
+
+                      const needsReturnShipment = ["WAITING_RETURN", "APPROVED"].includes(rf.status) && !rf.returnTrackingNumber;
+
+                      return (
+                        <div
+                          key={rf.id}
+                          className="rounded-2xl border border-[#EADECC] bg-white p-4 shadow-sm space-y-3.5 text-xs"
+                        >
+                          {/* Card Header */}
+                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-100 pb-3">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`px-2.5 py-1 rounded-md font-bold text-[11px] ${
+                                  isExchange
+                                    ? "bg-teal-50 text-teal-800 border border-teal-200"
+                                    : "bg-amber-50 text-amber-800 border border-amber-200"
+                                }`}
+                              >
+                                {isExchange ? "คำขอเปลี่ยนสินค้าชิ้นใหม่" : "คำขอคืนเงิน"}
+                              </span>
+                              <span className="font-mono text-zinc-400">#{rf.id.slice(0, 8)}</span>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full font-bold text-[11px] border ${badgeCls}`}>
+                              {badgeLabel}
+                            </span>
+                          </div>
+
+                          {/* Stepper Timeline */}
+                          {rf.status !== "REJECTED" && (
+                            <div className="py-2 px-1">
+                              <div className="flex items-center justify-between relative">
+                                <div className="absolute left-3 right-3 top-3.5 h-0.5 bg-zinc-200 -z-0" />
+                                {stepsToRender.map((st, i) => {
+                                  const isDone = activeStepIdx >= i;
+                                  const isCurrent = activeStepIdx === i;
+                                  return (
+                                    <div key={st.key} className="flex flex-col items-center relative z-10 flex-1">
+                                      <div
+                                        className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
+                                          isDone
+                                            ? isExchange
+                                              ? "bg-[#0F766E] text-white ring-4 ring-teal-50"
+                                              : "bg-amber-600 text-white ring-4 ring-amber-50"
+                                            : "bg-zinc-100 text-zinc-400 border border-zinc-200"
+                                        }`}
+                                      >
+                                        {isDone && !isCurrent ? <Check size={12} strokeWidth={3} /> : i + 1}
+                                      </div>
+                                      <span
+                                        className={`mt-1.5 text-[10px] text-center leading-tight max-w-[70px] ${
+                                          isCurrent
+                                            ? "font-bold text-zinc-900"
+                                            : isDone
+                                            ? "font-medium text-zinc-700"
+                                            : "text-zinc-400"
+                                        }`}
+                                      >
+                                        {st.label}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Reason & Details */}
+                          <div className="bg-[#FAF8F5] rounded-xl p-3 border border-[#EADECC]/70 space-y-1 text-zinc-700">
+                            <p>
+                              <span className="font-bold text-zinc-800">เหตุผล: </span>
+                              {rf.reason}
+                              {rf.condition && (
+                                <span className="text-zinc-500 ml-2">(สภาพ: {rf.condition})</span>
+                              )}
+                            </p>
+                            {rf.details && (
+                              <p className="text-zinc-600">
+                                <span className="font-bold text-zinc-800">รายละเอียด: </span>
+                                {rf.details}
+                              </p>
+                            )}
+                            {rf.adminNote && (
+                              <p className="text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-200/60 mt-1">
+                                <span className="font-bold">หมายเหตุจากร้านค้า/แอดมิน: </span>
+                                {rf.adminNote}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Return Address & Buyer Input Form (If waiting for buyer to ship back) */}
+                          {needsReturnShipment && (
+                            <div className="rounded-xl border border-sky-200 bg-sky-50/70 p-3.5 space-y-3">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <span className="font-bold text-sky-950 flex items-center gap-1.5">
+                                    <MapPin size={14} className="text-sky-700" />
+                                    ที่อยู่สำหรับส่งสินค้าคืนให้ร้านค้า:
+                                  </span>
+                                  {rf.returnAddress && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopyReturnAddress(rf.returnAddress, rf.id)}
+                                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-700 hover:text-sky-900 bg-white px-2 py-0.5 rounded border border-sky-300"
+                                    >
+                                      {copiedAddressId === rf.id ? <Check size={12} /> : <Copy size={12} />}
+                                      {copiedAddressId === rf.id ? "คัดลอกแล้ว" : "คัดลอกที่อยู่"}
+                                    </button>
+                                  )}
+                                </div>
+                                <p className="mt-1 font-medium text-sky-900 bg-white p-2.5 rounded-lg border border-sky-200 text-xs select-all">
+                                  {rf.returnAddress || "ร้านค้า Bare & Bold (ศูนย์รับคืนสินค้า) — กรุณาส่งคืนตามที่อยู่ที่ร้านค้าระบุ"}
+                                </p>
+                              </div>
+
+                              {/* Form to submit return tracking */}
+                              <div className="bg-white p-3 rounded-lg border border-sky-200 space-y-2">
+                                <p className="font-bold text-zinc-800 flex items-center gap-1.5">
+                                  <Truck size={14} className="text-sky-700" />
+                                  กรอกข้อมูลพัสดุที่คุณส่งคืน:
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="block text-[11px] text-zinc-500 mb-1">บริษัทขนส่ง</label>
+                                    <select
+                                      value={returnCarrierInputs[rf.id] || "Flash Express"}
+                                      onChange={(e) =>
+                                        setReturnCarrierInputs((prev) => ({ ...prev, [rf.id]: e.target.value }))
+                                      }
+                                      className="w-full rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-xs text-zinc-800"
+                                    >
+                                      <option value="Flash Express">Flash Express</option>
+                                      <option value="Kerry Express">Kerry Express</option>
+                                      <option value="ไปรษณีย์ไทย EMS">ไปรษณีย์ไทย (Thailand Post EMS)</option>
+                                      <option value="J&T Express">J&T Express</option>
+                                      <option value="Ninja Van">Ninja Van</option>
+                                      <option value="อื่นๆ">อื่นๆ</option>
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <label className="block text-[11px] text-zinc-500 mb-1">หมายเลขพัสดุ (Tracking Number)</label>
+                                    <input
+                                      type="text"
+                                      placeholder="เช่น TH1234567890"
+                                      value={returnTrackingInputs[rf.id] || ""}
+                                      onChange={(e) =>
+                                        setReturnTrackingInputs((prev) => ({ ...prev, [rf.id]: e.target.value }))
+                                      }
+                                      className="w-full rounded-lg border border-zinc-300 px-2.5 py-1.5 text-xs font-mono text-zinc-800"
+                                    />
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  disabled={submittingReturnId === rf.id}
+                                  onClick={() => handleBuyerSubmitReturnShipment(rf.id)}
+                                  className="w-full mt-1.5 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-bold py-2 text-xs transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
+                                >
+                                  {submittingReturnId === rf.id ? "กำลังบันทึก..." : "ยืนยันส่งพัสดุคืนแล้ว"}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Return Tracking info if already submitted */}
+                          {rf.returnTrackingNumber && (
+                            <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 p-3 flex flex-wrap items-center justify-between gap-2 text-indigo-950">
+                              <div className="flex items-center gap-2">
+                                <Truck size={15} className="text-indigo-700" />
+                                <div>
+                                  <span className="font-bold">พัสดุส่งคืน: </span>
+                                  <span>{rf.returnCarrier || "ขนส่ง"} </span>
+                                  <span className="font-mono font-bold text-indigo-900 bg-white px-2 py-0.5 rounded border border-indigo-200">
+                                    {rf.returnTrackingNumber}
+                                  </span>
+                                </div>
+                              </div>
+                              {rf.returnShippedAt && (
+                                <span className="text-[11px] text-indigo-600">
+                                  ส่งเมื่อ {new Date(rf.returnShippedAt).toLocaleString("th-TH")}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Exchange Shipped Info & Buyer Confirm Receipt Button */}
+                          {isExchange && rf.exchangeTrackingNumber && (
+                            <div className="rounded-xl border border-emerald-300 bg-emerald-50/80 p-3.5 space-y-2 text-emerald-950">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <span className="font-bold flex items-center gap-1.5 text-emerald-900">
+                                  <PackageCheck size={16} className="text-emerald-700" />
+                                  ร้านค้าได้จัดส่งสินค้าชิ้นใหม่ให้ท่านแล้ว!
+                                </span>
+                                {rf.exchangeShippedAt && (
+                                  <span className="text-[11px] text-emerald-700">
+                                    จัดส่งเมื่อ {new Date(rf.exchangeShippedAt).toLocaleString("th-TH")}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs">
+                                ขนส่ง: <span className="font-semibold">{rf.exchangeCarrier || "ขนส่งเอกชน"}</span> | เลขพัสดุชิ้นใหม่:{" "}
+                                <span className="font-mono font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-300">
+                                  {rf.exchangeTrackingNumber}
+                                </span>
+                              </p>
+                              {rf.status === "EXCHANGE_SHIPPED" && (
+                                <button
+                                  type="button"
+                                  disabled={confirmingExchangeId === rf.id}
+                                  onClick={() => handleBuyerConfirmExchangeReceipt(rf.id)}
+                                  className="w-full mt-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+                                >
+                                  {confirmingExchangeId === rf.id ? "กำลังยืนยัน..." : "ฉันได้รับสินค้าชิ้นใหม่แล้ว (เสร็จสิ้น)"}
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Refund Completed & Slip Details */}
+                          {isRefund && rf.status === "REFUNDED" && (
+                            <div className="rounded-xl border border-emerald-300 bg-emerald-50/80 p-3.5 space-y-2 text-emerald-950">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold flex items-center gap-1.5 text-emerald-900">
+                                  <CheckCircle2 size={16} className="text-emerald-700" />
+                                  โอนเงินคืนสำเร็จแล้ว ฿{baht(rf.amount)}
+                                </span>
+                                {rf.refundTransferredAt && (
+                                  <span className="text-[11px] text-emerald-700">
+                                    โอนเมื่อ {new Date(rf.refundTransferredAt).toLocaleString("th-TH")}
+                                  </span>
+                                )}
+                              </div>
+                              {rf.bankAccountNumber && (
+                                <p className="text-xs text-emerald-800">
+                                  โอนเข้า: {rf.bankName} เลขบัญชี {rf.bankAccountNumber} ({rf.bankAccountName})
+                                </p>
+                              )}
+                              {rf.refundSlipUrl && (
+                                <div className="pt-1">
+                                  <a
+                                    href={rf.refundSlipUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline bg-white px-3 py-1.5 rounded-lg border border-emerald-300"
+                                  >
+                                    <ExternalLink size={13} />
+                                    ดูสลิปหลักฐานการโอนเงิน
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Rejected Info */}
+                          {rf.status === "REJECTED" && (
+                            <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-rose-950 space-y-1">
+                              <span className="font-bold flex items-center gap-1.5 text-rose-900">
+                                <AlertCircle size={15} className="text-rose-700" />
+                                คำขอคืนสินค้าถูกปฏิเสธ
+                              </span>
+                              <p className="text-xs text-rose-800">
+                                เหตุผล: {rf.adminNote || "ร้านค้าไม่สามารถรับเปลี่ยนหรือคืนสินค้าตามคำขอนี้ได้"}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 

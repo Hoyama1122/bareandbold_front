@@ -72,6 +72,19 @@ export const orderService = {
       body: JSON.stringify(requestData),
     });
   },
+
+  submitReturnShipment: async (refundId, { returnCarrier, returnTrackingNumber }) => {
+    return await apiFetch(`/refunds/${refundId}/return-shipment`, {
+      method: "POST",
+      body: JSON.stringify({ returnCarrier, returnTrackingNumber }),
+    });
+  },
+
+  confirmExchangeReceipt: async (refundId) => {
+    return await apiFetch(`/refunds/${refundId}/confirm-receipt`, {
+      method: "POST",
+    });
+  },
 };
 
 // Named exports to maintain compatibility with other branches/components
