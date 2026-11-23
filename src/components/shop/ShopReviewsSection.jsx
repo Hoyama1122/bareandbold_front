@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Star, Trash2, Pencil, ThumbsUp } from "lucide-react";
+import { Star, Trash2, Pencil, ThumbsUp, ArrowUpDown } from "lucide-react";
 import { reviewService } from "@/services/review.service";
 import { useAuth } from "@/context/AuthContext";
 
@@ -505,8 +505,9 @@ export default function ShopReviewsSection({ shopSlug, shopName, isOwner }) {
               )}
 
               {reviews.length > 4 && (
-                <p className="mt-3 text-center text-[11px] text-[#9A8B74]">
-                  ↕ เลื่อนขึ้น-ลงในกรอบเพื่อดูรีวิวทั้งหมด ({reviews.length} รายการ)
+                <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[11px] text-[#9A8B74]">
+                  <ArrowUpDown size={12} className="shrink-0" />
+                  <span>เลื่อนขึ้น-ลงในกรอบเพื่อดูรีวิวทั้งหมด ({reviews.length} รายการ)</span>
                 </p>
               )}
 

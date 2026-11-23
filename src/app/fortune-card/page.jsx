@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   Gem,
   Award,
+  Lightbulb,
 } from "lucide-react";
 
 // ฐานข้อมูลหินมงคล จี้มงคล และสีกาลกิณีตามหลักทักษาปกรณ์ไทย (Authentic Thai Astrology KB)
@@ -710,8 +711,9 @@ export default function FortuneCardPage() {
                 คำพยากรณ์และพลังธาตุ:
               </p>
               <p className="text-[#55473A]">{currentAspect.prediction}</p>
-              <p className="text-xs text-[#556B2F] font-semibold mt-2">
-                💡 ข้อแนะนำ: {currentAspect.advice}
+              <p className="text-xs text-[#556B2F] font-semibold mt-2 flex items-center gap-1.5">
+                <Lightbulb size={14} className="shrink-0" />
+                <span>ข้อแนะนำ: {currentAspect.advice}</span>
               </p>
             </div>
 

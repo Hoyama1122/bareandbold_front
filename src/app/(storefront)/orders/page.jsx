@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { orderService } from "@/services/order.service";
 import { cartService } from "@/services/cart.service";
 import { paymentService } from "@/services/payment.service";
-import {Clock,MapPin,Truck,AlertCircle,ShoppingBag,Store,ChevronDown,ChevronUp,RotateCcw,ImagePlus,Star,CheckCircle2,PackageCheck,ExternalLink,Copy,Check} from "lucide-react";
+import {Clock,MapPin,Truck,AlertCircle,ShoppingBag,Store,ChevronDown,ChevronUp,RotateCcw,ImagePlus,Star,CheckCircle2,PackageCheck,ExternalLink,Copy,Check,Package} from "lucide-react";
 import ReviewModal from "@/components/orders/ReviewModal";
 import { uploadService } from "@/services/upload.service";
 
@@ -791,8 +791,9 @@ export default function OrderHistoryPage() {
                               )}
 
                               <div className="bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/80 text-[11px] text-amber-900 space-y-0.5">
-                                <p className="font-bold flex items-center gap-1">
-                                  <span>📦</span> คำแนะนำสำหรับผู้ซื้อ:
+                                <p className="font-bold flex items-center gap-1.5">
+                                  <Package size={14} className="text-amber-700" />
+                                  <span>คำแนะนำสำหรับผู้ซื้อ:</span>
                                 </p>
                                 <p>
                                   กรุณาแพ็คสินค้าใส่กล่องเดิมให้เรียบร้อย และรอเจ้าหน้าที่ขนส่งโทรติดต่อก่อนเข้ารับตามวันนัดหมาย ท่านไม่ต้องเดินทางไปส่งเองที่สาขา

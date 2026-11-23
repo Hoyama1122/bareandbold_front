@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { Store, Menu } from "lucide-react";
+import { Store, Menu, Clock } from "lucide-react";
 
 function BrandSunburstIcon({ className = "h-7 w-7" }) {
   return (
@@ -230,7 +230,9 @@ export default function SellerLayout({ children }) {
   if (shop.status !== "APPROVED") {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#F8F9FA] px-6 text-center text-slate-900">
-        <div className="text-5xl">⏳</div>
+        <div className="rounded-2xl bg-amber-50 p-4 text-amber-600 shadow-sm">
+          <Clock className="h-12 w-12 stroke-[1.75]" />
+        </div>
         <h1 className="text-2xl font-extrabold text-slate-900">
           ร้านของคุณยังไม่พร้อมใช้งาน
         </h1>

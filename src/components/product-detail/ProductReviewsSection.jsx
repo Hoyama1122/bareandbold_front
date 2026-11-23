@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { Star, Trash2, Pencil, X, ThumbsUp, Camera } from "lucide-react";
+import { Star, Trash2, Pencil, X, ThumbsUp, Camera, ArrowUpDown } from "lucide-react";
 import { reviewService } from "@/services/review.service";
 import { useAuth } from "@/context/AuthContext";
 
@@ -575,8 +575,9 @@ export default function ProductReviewsSection({ productId }) {
               )}
 
               {visibleReviews.length > 4 && (
-                <p className="mt-3 text-center text-[11px] text-[#9A8B74]">
-                  ↕ เลื่อนขึ้น-ลงในกรอบเพื่อดูรีวิวทั้งหมด ({visibleReviews.length} รายการ)
+                <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[11px] text-[#9A8B74]">
+                  <ArrowUpDown size={12} className="shrink-0" />
+                  <span>เลื่อนขึ้น-ลงในกรอบเพื่อดูรีวิวทั้งหมด ({visibleReviews.length} รายการ)</span>
                 </p>
               )}
 

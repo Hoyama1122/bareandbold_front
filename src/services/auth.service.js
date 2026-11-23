@@ -4,6 +4,7 @@ const apiFetch = async (endpoint, options = {}) => {
   const token = typeof window !== "undefined" ? localStorage.getItem("bare_auth_token") : null;
   const headers = {
     "Content-Type": "application/json",
+    "X-App-Client": "storefront",
     ...options.headers,
   };
 

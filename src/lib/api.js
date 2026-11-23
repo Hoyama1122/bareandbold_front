@@ -24,6 +24,7 @@ export async function apiFetch(endpoint, options = {}) {
 
   const headers = {
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
+    "X-App-Client": "storefront",
     ...options.headers,
   };
 
