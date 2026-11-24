@@ -73,12 +73,6 @@ const mapBackendCartToLocal = (backendCart) => {
 let isMergingCart = false;
 
 export const cartService = {
-  // Check if logged in via cookie
-  isLoggedIn: () => {
-    if (typeof window === "undefined") return false;
-    return document.cookie.includes("bare_user_token") || document.cookie.includes("token");
-  },
-
   // Fetch Cart (syncs with local storage and notifies components)
   fetchCart: async () => {
     if (typeof window === "undefined") return [];
@@ -87,11 +81,34 @@ export const cartService = {
       const data = await apiFetch("/cart", { method: "GET" });
       if (data.success && data.cart) {
         const localItems = mapBackendCartToLocal(data.cart);
+
+        // Check if there are unmerged guest items in localStorage
+        const guest = localStorage.getItem("bare_cart");
+        if (guest) {
+          try {
+            const guestItems = JSON.parse(guest);
+            const hasGuestItems = Array.isArray(guestItems) && guestItems.some(
+              (i) => i && (String(i.id).startsWith("guest_") || !i.id)
+            );
+            if (hasGuestItems) {
+              await cartService.mergeCart();
+              const retryData = await apiFetch("/cart", { method: "GET" });
+              if (retryData.success && retryData.cart) {
+                const retryItems = mapBackendCartToLocal(retryData.cart);
+                localStorage.setItem("bare_cart", JSON.stringify(retryItems));
+                window.dispatchEvent(new Event("cartUpdated"));
+                return retryItems;
+              }
+            }
+          } catch (e) {}
+        }
+
         localStorage.setItem("bare_cart", JSON.stringify(localItems));
+        window.dispatchEvent(new Event("cartUpdated"));
         return localItems;
       }
-    } catch {
-      // Fallback to guest cart if unauthenticated
+    } catch (err) {
+      // Unauthenticated (guest user) -> fallback to localStorage guest cart
     }
 
     const localCart = localStorage.getItem("bare_cart");
@@ -109,27 +126,25 @@ export const cartService = {
         }))
       : [];
 
-    if (cartService.isLoggedIn()) {
-      try {
-        await apiFetch("/cart", {
-          method: "POST",
-          body: JSON.stringify({
-            productId,
-            quantity,
-            customDetails: { material, size },
-            accessories: accessoriesPayload,
-          }),
-        });
-        await cartService.fetchCart();
-        window.dispatchEvent(new Event("cartUpdated"));
-        return;
-      } catch (err) {
-        console.error("Error adding to backend cart:", err);
-        throw err;
-      }
+    // Try sending directly to backend (authenticated user with bare_user_token cookie)
+    try {
+      await apiFetch("/cart", {
+        method: "POST",
+        body: JSON.stringify({
+          productId,
+          quantity,
+          customDetails: { material, size },
+          accessories: accessoriesPayload,
+        }),
+      });
+      await cartService.fetchCart();
+      window.dispatchEvent(new Event("cartUpdated"));
+      return;
+    } catch (err) {
+      // If unauthorized (guest), proceed to guest cart below
     }
 
-    // Guest cart logic fallback
+    // Guest cart fallback logic
     let cart = [];
     try {
       const local = localStorage.getItem("bare_cart");
@@ -137,7 +152,7 @@ export const cartService = {
         cart = JSON.parse(local);
       }
     } catch (e) {
-      console.error("Error parsing guest cart:", e);
+      cart = [];
     }
 
     if (!Array.isArray(cart)) {
@@ -156,11 +171,11 @@ export const cartService = {
       cart[existingIndex].quantity += quantity;
     } else {
       cart.push({
-        id: Date.now(), // Unique ID for guest cart item
+        id: `guest_${Date.now()}_${Math.random().toString(36).substring(7)}`,
         productId,
         shopId: productDetails.shopId || null,
         shopName: productDetails.shopName || "Bare & Bold",
-        name: productDetails.name || "",
+        name: productDetails.name || "Custom Jewelry",
         image: productDetails.image || "",
         price: productDetails.price || 0,
         quantity,
@@ -178,37 +193,32 @@ export const cartService = {
   updateCartItem: async (productId, quantity, material, size, cartItemId) => {
     if (typeof window === "undefined") return;
 
-    if (cartService.isLoggedIn()) {
-      try {
-        await apiFetch("/cart", {
-          method: "PUT",
-          body: JSON.stringify({
-            productId,
-            quantity,
-            customDetails: { material, size },
-          }),
-        });
-        await cartService.fetchCart();
-        window.dispatchEvent(new Event("cartUpdated"));
-        return;
-      } catch (err) {
-        console.error("Error updating backend cart item:", err);
-        throw err;
-      }
+    // Try backend first
+    try {
+      await apiFetch("/cart", {
+        method: "PUT",
+        body: JSON.stringify({
+          productId,
+          quantity,
+          customDetails: { material, size },
+        }),
+      });
+      await cartService.fetchCart();
+      window.dispatchEvent(new Event("cartUpdated"));
+      return;
+    } catch (err) {
+      // Fall back to guest cart
     }
 
-    // Guest cart fallback
     let cart = [];
     try {
       const local = localStorage.getItem("bare_cart");
       if (local) cart = JSON.parse(local);
-    } catch (e) {
-      console.error("Error parsing guest cart:", e);
-    }
+    } catch (e) {}
     if (!Array.isArray(cart)) cart = [];
 
     const updated = cart
-      .map((item) => (item.id === cartItemId ? { ...item, quantity } : item))
+      .map((item) => (item.id === cartItemId || item.productId === productId ? { ...item, quantity } : item))
       .filter((item) => item.quantity > 0);
 
     localStorage.setItem("bare_cart", JSON.stringify(updated));
@@ -219,31 +229,26 @@ export const cartService = {
   removeCartItem: async (productId, cartItemId) => {
     if (typeof window === "undefined") return;
 
-    if (cartService.isLoggedIn()) {
-      try {
-        await apiFetch(`/cart?productId=${productId}`, {
-          method: "DELETE",
-        });
-        await cartService.fetchCart();
-        window.dispatchEvent(new Event("cartUpdated"));
-        return;
-      } catch (err) {
-        console.error("Error removing from backend cart:", err);
-        throw err;
-      }
+    // Try backend first
+    try {
+      await apiFetch(`/cart?productId=${productId}`, {
+        method: "DELETE",
+      });
+      await cartService.fetchCart();
+      window.dispatchEvent(new Event("cartUpdated"));
+      return;
+    } catch (err) {
+      // Fall back to guest cart
     }
 
-    // Guest cart fallback
     let cart = [];
     try {
       const local = localStorage.getItem("bare_cart");
       if (local) cart = JSON.parse(local);
-    } catch (e) {
-      console.error("Error parsing guest cart:", e);
-    }
+    } catch (e) {}
     if (!Array.isArray(cart)) cart = [];
 
-    const updated = cart.filter((item) => item.id !== cartItemId);
+    const updated = cart.filter((item) => item.id !== cartItemId && item.productId !== productId);
     localStorage.setItem("bare_cart", JSON.stringify(updated));
     window.dispatchEvent(new Event("cartUpdated"));
   },
@@ -252,13 +257,9 @@ export const cartService = {
   clearCart: async () => {
     if (typeof window === "undefined") return;
 
-    if (cartService.isLoggedIn()) {
-      try {
-        await apiFetch("/cart/clear", { method: "POST" });
-      } catch (err) {
-        console.error("Error clearing backend cart:", err);
-      }
-    }
+    try {
+      await apiFetch("/cart/clear", { method: "POST" });
+    } catch (err) {}
 
     localStorage.removeItem("bare_cart");
     window.dispatchEvent(new Event("cartUpdated"));
@@ -270,14 +271,16 @@ export const cartService = {
 
     const guestCart = JSON.parse(localStorage.getItem("bare_cart") || "[]");
     if (guestCart.length === 0) {
-      // Just fetch backend cart directly
       await cartService.fetchCart();
       return;
     }
 
     try {
       isMergingCart = true;
-      const itemsToMerge = guestCart.map((item) => ({
+      const guestItemsToMerge = guestCart.filter((i) => i && (String(i.id).startsWith("guest_") || !i.id));
+      const itemsToProcess = guestItemsToMerge.length > 0 ? guestItemsToMerge : guestCart;
+
+      const itemsToMerge = itemsToProcess.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
         customDetails: {
@@ -297,7 +300,6 @@ export const cartService = {
       window.dispatchEvent(new Event("cartUpdated"));
     } catch (err) {
       console.error("Failed to merge guest cart with backend:", err);
-      // Fallback: fetch user's backend cart anyway
       await cartService.fetchCart();
       window.dispatchEvent(new Event("cartUpdated"));
     } finally {

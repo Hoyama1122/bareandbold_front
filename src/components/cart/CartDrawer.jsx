@@ -13,43 +13,29 @@ export default function CartDrawer({ isOpen, onClose }) {
     setMounted(true);
 
     async function loadCart() {
-      if (cartService.isLoggedIn()) {
-        // Read directly from synced local storage to avoid redundant GET requests
-        const local = localStorage.getItem("bare_cart");
-        if (local) {
-          try {
-            setCartItems(JSON.parse(local));
-            return;
-          } catch (e) {}
+      // 1. Immediately read from localStorage for instant display
+      const local = localStorage.getItem("bare_cart");
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed)) {
+            setCartItems(parsed);
+          }
+        } catch (e) {}
+      }
+      // 2. Fetch authoritative cart (syncs with backend DB if authenticated and merges any guest items)
+      try {
+        const synced = await cartService.fetchCart();
+        if (Array.isArray(synced)) {
+          setCartItems(synced);
         }
-        const data = await getCart();
-        if (data.success && data.cart) {
-          setCartItems(data.cart.items);
-        } else {
-          setCartItems([]);
-        }
-      } else {
-        const local = await cartService.fetchCart();
-        setCartItems(
-          local.map((item) => ({
-            id: item.id,
-            productId: item.productId,
-            quantity: item.quantity,
-            customDetails: { material: item.material, size: item.size },
-            product: {
-              id: item.productId,
-              name: item.name,
-              price: item.price,
-              images: [{ url: item.image }],
-            },
-          }))
-        );
+      } catch (err) {
+        console.error("Failed to fetch cart:", err);
       }
     }
 
     if (isOpen) {
       loadCart();
-      cartService.fetchCart();
     }
 
     window.addEventListener("cartUpdated", loadCart);
@@ -71,52 +57,32 @@ export default function CartDrawer({ isOpen, onClose }) {
     // Optimistic UI Update: change value instantly in state
     const originalItems = [...cartItems];
     setCartItems((prev) =>
-      prev.map((it) => (it.productId === productId ? { ...it, quantity: newQty } : it))
+      prev.map((it) => (it.productId === productId || it.id === item.id ? { ...it, quantity: newQty } : it))
     );
 
     if (newQty === 0) {
-      await removeItem(productId);
+      await removeItem(productId, item?.id);
     } else {
-      if (cartService.isLoggedIn()) {
-        try {
-          await cartService.updateCartItem(
-            productId,
-            newQty,
-            item.customDetails?.material || "Silver",
-            item.customDetails?.size || "16 cm",
-            item.id
-          );
-          // Let the cartUpdated event handler automatically sync the UI
-        } catch (err) {
-          console.error("Failed to update item quantity:", err);
-          setCartItems(originalItems); // Revert on failure
-        }
-      } else {
-        const localItems = JSON.parse(localStorage.getItem("bare_cart") || "[]");
-        const updated = localItems.map((it) => {
-          if (it.productId === productId) {
-            return { ...it, quantity: newQty };
-          }
-          return it;
-        });
-        localStorage.setItem("bare_cart", JSON.stringify(updated));
-        window.dispatchEvent(new Event("cartUpdated"));
+      try {
+        await cartService.updateCartItem(
+          productId,
+          newQty,
+          item.customDetails?.material || item.material || "Silver",
+          item.customDetails?.size || item.size || "16 cm",
+          item.id
+        );
+      } catch (err) {
+        console.error("Failed to update item quantity:", err);
+        setCartItems(originalItems); // Revert on failure
       }
     }
   };
 
-  const removeItem = async (productId) => {
-    if (cartService.isLoggedIn()) {
-      const result = await removeCartItem(productId);
-      if (result.success) {
-        const data = await getCart();
-        setCartItems(data.cart.items);
-      }
-    } else {
-      const localItems = JSON.parse(localStorage.getItem("bare_cart") || "[]");
-      const updated = localItems.filter((it) => it.productId !== productId);
-      localStorage.setItem("bare_cart", JSON.stringify(updated));
-      window.dispatchEvent(new Event("cartUpdated"));
+  const removeItem = async (productId, cartItemId) => {
+    try {
+      await cartService.removeCartItem(productId, cartItemId);
+    } catch (err) {
+      console.error("Failed to remove item from cart:", err);
     }
   };
 
@@ -183,7 +149,7 @@ export default function CartDrawer({ isOpen, onClose }) {
             cartItems.map((item, index) => (
               <div key={item.id || `${item.productId || item.product?.id || ""}-${index}`} className="flex gap-4 p-3 bg-[#FDFBF7] rounded-xl border border-[#F5F0E6] relative group">
                 <button
-                  onClick={() => removeItem(item.productId)}
+                  onClick={() => removeItem(item.productId, item.id)}
                   className="absolute top-2 right-2 text-zinc-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">

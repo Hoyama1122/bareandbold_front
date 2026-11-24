@@ -275,7 +275,7 @@ export default function CheckoutPage() {
   };
 
   useEffect(() => {
-    const loadCart = () => {
+    const loadCart = async () => {
       const cart = localStorage.getItem("bare_cart");
       if (cart) {
         try {
@@ -286,6 +286,15 @@ export default function CheckoutPage() {
         }
       } else {
         setOrderItems([]);
+      }
+
+      try {
+        const synced = await cartService.fetchCart();
+        if (Array.isArray(synced)) {
+          setOrderItems(synced);
+        }
+      } catch (err) {
+        console.error("Failed to sync cart on checkout:", err);
       }
     };
 
@@ -350,6 +359,10 @@ export default function CheckoutPage() {
 
   const handleConfirm = async (e) => {
     e.preventDefault();
+    if (!orderItems || orderItems.length === 0) {
+      setError("ไม่มีสินค้าในตะกร้า กรุณาเลือกสินค้าก่อนทำการสั่งซื้อ");
+      return;
+    }
     if (hasOwnShopItems) {
       setError(`ไม่อนุญาตให้สั่งซื้อสินค้าจากร้านค้าของตนเอง (${shop?.name}) กรุณาลบสินค้านี้ออกจากตะกร้าก่อนสั่งซื้อ`);
       return;
@@ -358,6 +371,8 @@ export default function CheckoutPage() {
     setError("");
 
     try {
+      // Ensure backend cart is synchronized
+      await cartService.fetchCart();
       let recipientName = "";
       let recipientPhone = "";
       let shippingAddress = "";

@@ -31,17 +31,29 @@ export default function CartSummaryPage() {
   );
 
   useEffect(() => {
-    const loadCart = () => {
+    const loadCart = async () => {
       const cart = localStorage.getItem("bare_cart");
       if (cart) {
-        setItems(JSON.parse(cart));
+        try {
+          setItems(JSON.parse(cart));
+        } catch (e) {
+          setItems([]);
+        }
       } else {
         setItems([]);
+      }
+
+      try {
+        const synced = await cartService.fetchCart();
+        if (Array.isArray(synced)) {
+          setItems(synced);
+        }
+      } catch (err) {
+        console.error("Failed to sync cart:", err);
       }
     };
 
     loadCart();
-    cartService.fetchCart();
     platformService
       .getPublicSettings()
       .then(setShippingSettings)
