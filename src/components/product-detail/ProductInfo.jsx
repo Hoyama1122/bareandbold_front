@@ -1,7 +1,237 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { Store, Check, XCircle } from "lucide-react";
+import { Store, Check, XCircle, ChevronDown, X, Search, Sparkles } from "lucide-react";
+
+function AccessoryThumbnail({ imageUrl, name }) {
+  const [error, setError] = useState(false);
+
+  if (!imageUrl || error) {
+    return (
+      <div className="w-10 h-10 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400 shrink-0">
+        <Sparkles size={16} />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      alt={name}
+      onError={() => setError(true)}
+      className="w-10 h-10 rounded-lg object-cover border border-stone-200 shrink-0 bg-white"
+    />
+  );
+}
+
+function AccessoryGroupDropdown({
+  groupName,
+  items,
+  selectedAccessories,
+  setSelectedAccessories,
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const selectedInGroup = items
+    .map((item) => item.accessory)
+    .filter((acc) => acc && selectedAccessories.some((a) => a.id === acc.id));
+
+  const selectedInGroupPrice = selectedInGroup.reduce(
+    (sum, acc) => sum + (acc.price ? Number(acc.price) : 0),
+    0
+  );
+
+  const filteredItems = items.filter((item) => {
+    const acc = item.accessory;
+    if (!acc) return false;
+    if (!search.trim()) return true;
+    return (acc.name || "").toLowerCase().includes(search.toLowerCase().trim());
+  });
+
+  const toggleSelect = (acc) => {
+    if (acc.stock <= 0) return;
+    const isSelected = selectedAccessories.some((a) => a.id === acc.id);
+    if (isSelected) {
+      setSelectedAccessories(selectedAccessories.filter((a) => a.id !== acc.id));
+    } else {
+      setSelectedAccessories([...selectedAccessories, acc]);
+    }
+  };
+
+  const removeAcc = (id) => {
+    setSelectedAccessories(selectedAccessories.filter((a) => a.id !== id));
+  };
+
+  const clearGroup = () => {
+    const groupAccIds = new Set(items.map((i) => i.accessory?.id).filter(Boolean));
+    setSelectedAccessories(selectedAccessories.filter((a) => !groupAccIds.has(a.id)));
+  };
+
+  return (
+    <div className="space-y-2">
+      {/* Trigger Button */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer text-left shadow-2xs group ${
+          isOpen
+            ? "border-[#7a5b46] bg-amber-50/40 ring-1 ring-[#7a5b46]/20"
+            : "border-stone-200 bg-white hover:border-[#7a5b46]"
+        }`}
+      >
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="font-bold text-xs text-[#7a5b46] uppercase tracking-wider">
+            เลือก{groupName}
+          </span>
+          {selectedInGroup.length > 0 ? (
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-[#7a5b46] border border-amber-300 flex items-center gap-1">
+              <Check size={11} className="stroke-[2.5]" />
+              เลือกแล้ว {selectedInGroup.length} รายการ (+฿{selectedInGroupPrice.toLocaleString()})
+            </span>
+          ) : (
+            <span className="text-[11px] text-stone-400 font-medium">
+              (แตะเพื่อเลือก{groupName})
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 text-stone-400 group-hover:text-[#7a5b46] transition-colors shrink-0">
+          <span className="text-xs font-semibold">{isOpen ? "ย่อเก็บ" : "เลือก"}</span>
+          <ChevronDown
+            size={16}
+            className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          />
+        </div>
+      </button>
+
+      {/* Selected chips summary when items are chosen */}
+      {selectedInGroup.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-0.5">
+          {selectedInGroup.map((acc) => (
+            <span
+              key={acc.id}
+              className="inline-flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-lg bg-stone-100 border border-stone-200 text-xs text-stone-800"
+            >
+              <AccessoryThumbnail imageUrl={acc.imageUrl} name={acc.name} />
+              <span className="font-medium truncate max-w-[120px]">{acc.name}</span>
+              <span className="text-[11px] text-[#7a5b46] font-bold shrink-0">
+                {acc.price > 0 ? `+฿${parseFloat(acc.price).toLocaleString()}` : "ฟรี"}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeAcc(acc.id);
+                }}
+                className="text-stone-400 hover:text-rose-500 cursor-pointer ml-0.5"
+                title="ลบออก"
+              >
+                <X size={13} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Dropdown Panel */}
+      {isOpen && (
+        <div className="rounded-xl border border-stone-200 bg-[#FDFBF7] p-3 space-y-2.5 shadow-sm animate-in fade-in-50 duration-150">
+          {/* Search bar if many items */}
+          {items.length > 5 && (
+            <div className="relative">
+              <Search
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400"
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={`ค้นหาใน${groupName} (${items.length} รายการ)...`}
+                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-stone-200 bg-white focus:outline-none focus:border-[#7a5b46]"
+              />
+            </div>
+          )}
+
+          {/* Scrollable list */}
+          <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1 divide-y divide-stone-100/60">
+            {filteredItems.length === 0 ? (
+              <p className="text-center text-xs text-stone-400 py-4">ไม่พบรายการที่ค้นหา</p>
+            ) : (
+              filteredItems.map((item) => {
+                const acc = item.accessory;
+                if (!acc) return null;
+                const isOutOfStock = acc.stock <= 0;
+                const isSelected = selectedAccessories.some((a) => a.id === acc.id);
+
+                return (
+                  <div
+                    key={acc.id}
+                    onClick={() => toggleSelect(acc)}
+                    className={`p-2 rounded-lg border flex items-center justify-between gap-3 transition-all cursor-pointer ${
+                      isOutOfStock
+                        ? "opacity-50 cursor-not-allowed bg-stone-50 border-stone-200"
+                        : isSelected
+                        ? "bg-amber-50/80 border-[#7a5b46] ring-1 ring-[#7a5b46] text-[#7a5b46]"
+                        : "bg-white border-stone-200 hover:border-stone-300 text-stone-800"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <AccessoryThumbnail imageUrl={acc.imageUrl} name={acc.name} />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold truncate">{acc.name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[11px] font-semibold text-[#7a5b46]">
+                            {acc.price > 0
+                              ? `+฿${parseFloat(acc.price).toLocaleString()}`
+                              : "ฟรี"}
+                          </span>
+                          {isOutOfStock && (
+                            <span className="text-[9px] font-extrabold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                              ของหมด
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-all ${
+                        isSelected
+                          ? "bg-[#7a5b46] border-[#7a5b46] text-white"
+                          : "border-stone-300 bg-white"
+                      }`}
+                    >
+                      {isSelected && <Check size={12} className="stroke-[3]" />}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Footer actions */}
+          <div className="flex items-center justify-between pt-2 border-t border-stone-200 text-xs">
+            <button
+              type="button"
+              onClick={clearGroup}
+              disabled={selectedInGroup.length === 0}
+              className="text-stone-400 hover:text-rose-600 disabled:opacity-30 disabled:hover:text-stone-400 font-semibold cursor-pointer"
+            >
+              ล้างที่เลือก ({selectedInGroup.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="px-3.5 py-1.5 rounded-lg bg-[#7a5b46] text-white font-bold text-xs hover:bg-[#634835] transition cursor-pointer"
+            >
+              เสร็จสิ้น
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ProductInfo({
   product,
@@ -375,67 +605,28 @@ export default function ProductInfo({
           });
 
           return (
-            <div className="mt-8 space-y-6">
-              {Object.entries(groups).map(([groupName, items]) => (
-                <div key={groupName} className="space-y-3">
-                  <p className="font-bold text-xs text-[#7a5b46] uppercase tracking-wider">
-                    เลือก{groupName}
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {items.map((item) => {
-                      const acc = item.accessory;
-                      const isOutOfStock = acc.stock <= 0;
-                      const isSelected = selectedAccessories.some((a) => a.id === acc.id);
-
-                      const toggleSelect = () => {
-                        if (isOutOfStock) return;
-                        if (isSelected) {
-                          setSelectedAccessories(selectedAccessories.filter((a) => a.id !== acc.id));
-                        } else {
-                          setSelectedAccessories([...selectedAccessories, acc]);
-                        }
-                      };
-
-                      return (
-                        <button
-                          key={acc.id}
-                          type="button"
-                          disabled={isOutOfStock}
-                          onClick={toggleSelect}
-                          className={`p-3 rounded-xl border flex flex-col items-center justify-between text-center transition-all cursor-pointer relative ${
-                            isOutOfStock
-                              ? "border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed"
-                              : isSelected
-                              ? "border-[#7a5b46] bg-[#7a5b46]/5 text-[#7a5b46] ring-2 ring-[#7a5b46]"
-                              : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-                          }`}
-                        >
-                          {isOutOfStock && (
-                            <span className="absolute top-1.5 right-1.5 bg-rose-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
-                              ของหมด
-                            </span>
-                          )}
-                          {acc.imageUrl && acc.imageUrl.trim() !== "" ? (
-                            <img
-                              src={acc.imageUrl}
-                              alt={acc.name}
-                              className="w-12 h-12 rounded-lg object-cover mb-2 border border-gray-100"
-                            />
-                          ) : (
-                            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] text-gray-400 font-bold mb-2">
-                              No Img
-                            </div>
-                          )}
-                          <span className="text-xs font-bold line-clamp-1">{acc.name}</span>
-                          <span className="text-[11px] font-semibold text-[#7a5b46] mt-1">
-                            {acc.price > 0 ? `+฿${parseFloat(acc.price).toLocaleString()}` : "ฟรี"}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+            <div className="mt-8 space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="font-bold text-xs text-[#7a5b46] uppercase tracking-wider">
+                  ตกแต่งและปรับแต่งเพิ่มเติม (Custom Accessories)
+                </p>
+                {selectedAccessories.length > 0 && (
+                  <span className="text-[11px] font-bold text-[#7a5b46]">
+                    เลือกทั้งหมด {selectedAccessories.length} ชิ้น (+฿{accessoriesPrice.toLocaleString()})
+                  </span>
+                )}
+              </div>
+              <div className="space-y-3">
+                {Object.entries(groups).map(([groupName, items]) => (
+                  <AccessoryGroupDropdown
+                    key={groupName}
+                    groupName={groupName}
+                    items={items}
+                    selectedAccessories={selectedAccessories}
+                    setSelectedAccessories={setSelectedAccessories}
+                  />
+                ))}
+              </div>
             </div>
           );
         })()}
