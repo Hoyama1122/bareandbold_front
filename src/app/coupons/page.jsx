@@ -173,15 +173,24 @@ export default function CouponsPage() {
       setClaimingId(voucherId);
       setNotice({ type: "", text: "" });
       const res = await voucherService.claimVoucher(voucherId);
+      setVouchers((prev) =>
+        prev.map((v) => (v.id === voucherId ? { ...v, isClaimed: true } : v))
+      );
       setNotice({
         type: "success",
         text: res.message || "เก็บคูปองเข้ากระเป๋าเรียบร้อยแล้ว",
       });
       await loadData();
     } catch (err) {
+      const errMsg = err.message || "ไม่สามารถเก็บคูปองได้";
+      if (errMsg.includes("เก็บคูปองนี้ไปแล้ว")) {
+        setVouchers((prev) =>
+          prev.map((v) => (v.id === voucherId ? { ...v, isClaimed: true } : v))
+        );
+      }
       setNotice({
         type: "error",
-        text: err.message || "ไม่สามารถเก็บคูปองได้",
+        text: errMsg,
       });
     } finally {
       setClaimingId(null);
@@ -436,8 +445,22 @@ export default function CouponsPage() {
                 return (
                   <div
                     key={v.id}
-                    className="relative flex items-stretch rounded-2xl bg-white p-2.5 shadow-[0_6px_24px_rgba(60,50,42,0.08)] border border-[#EFE4D2] hover:shadow-[0_10px_28px_rgba(60,50,42,0.12)] transition"
+                    className={`relative flex items-stretch rounded-2xl p-2.5 transition overflow-hidden ${
+                      v.isClaimed
+                        ? "bg-[#FAF7F2] border border-[#DDD5C7] shadow-none filter grayscale contrast-90 opacity-75"
+                        : "bg-white shadow-[0_6px_24px_rgba(60,50,42,0.08)] border border-[#EFE4D2] hover:shadow-[0_10px_28px_rgba(60,50,42,0.12)]"
+                    }`}
                   >
+                    {/* Overlay badge & blur for collected vouchers */}
+                    {v.isClaimed && (
+                      <div className="absolute inset-0 z-20 rounded-2xl bg-white/45 backdrop-blur-[0.5px] pointer-events-none flex items-center justify-center">
+                        <div className="rounded-xl border-2 border-stone-600/70 bg-stone-900/85 px-4 py-1.5 text-xs font-black tracking-widest text-white shadow-md flex items-center gap-1.5 rotate-[-2deg]">
+                          <Check size={14} className="stroke-[3] text-emerald-400" />
+                          <span>เก็บคูปองแล้ว</span>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Top & Bottom Semicircle Ticket Notches */}
                     <div
                       aria-hidden="true"
@@ -527,12 +550,12 @@ export default function CouponsPage() {
                             type="button"
                             disabled={disabled || claimingId === v.id}
                             onClick={() => handleClaim(v.id)}
-                            className={`inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-xs font-extrabold transition cursor-pointer ${
+                            className={`inline-flex items-center gap-1 rounded-full px-4 py-1.5 text-xs font-extrabold transition ${
                               v.isClaimed
-                                ? "bg-[#556B2F]/15 text-[#556B2F] cursor-default"
+                                ? "bg-stone-300 text-stone-600 border border-stone-400/50 cursor-not-allowed shadow-none"
                                 : disabled
                                   ? "bg-white/70 text-[#B4A38C] cursor-not-allowed"
-                                  : "bg-[#C23B43] text-white shadow-xs hover:bg-[#A62E36]"
+                                  : "bg-[#C23B43] text-white shadow-xs hover:bg-[#A62E36] cursor-pointer"
                             }`}
                           >
                             {v.isClaimed ? (

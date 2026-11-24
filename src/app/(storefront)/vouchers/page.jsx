@@ -69,10 +69,19 @@ export default function VouchersPage() {
       setClaimingId(voucherId);
       setNotice({ type: "", text: "" });
       const res = await voucherService.claimVoucher(voucherId);
+      setVouchers((prev) =>
+        prev.map((v) => (v.id === voucherId ? { ...v, isClaimed: true } : v))
+      );
       setNotice({ type: "success", text: res.message || "เก็บคูปองเรียบร้อยแล้ว" });
       await loadData();
     } catch (err) {
-      setNotice({ type: "error", text: err.message || "เก็บคูปองไม่สำเร็จ" });
+      const errMsg = err.message || "เก็บคูปองไม่สำเร็จ";
+      if (errMsg.includes("เก็บคูปองนี้ไปแล้ว")) {
+        setVouchers((prev) =>
+          prev.map((v) => (v.id === voucherId ? { ...v, isClaimed: true } : v))
+        );
+      }
+      setNotice({ type: "error", text: errMsg });
     } finally {
       setClaimingId(null);
     }
@@ -259,8 +268,21 @@ export default function VouchersPage() {
               return (
                 <div
                   key={v.id}
-                  className="flex overflow-hidden rounded-2xl border border-[#EADECC] bg-white shadow-2xs"
+                  className={`relative flex overflow-hidden rounded-2xl border transition ${
+                    v.isClaimed
+                      ? "bg-[#FAF7F2] border-[#DDD5C7] shadow-none filter grayscale contrast-90 opacity-75"
+                      : "border-[#EADECC] bg-white shadow-2xs"
+                  }`}
                 >
+                  {/* Overlay badge & blur for collected vouchers */}
+                  {v.isClaimed && (
+                    <div className="absolute inset-0 z-20 rounded-2xl bg-white/45 backdrop-blur-[0.5px] pointer-events-none flex items-center justify-center">
+                      <div className="rounded-xl border-2 border-stone-600/70 bg-stone-900/85 px-4 py-1.5 text-xs font-black tracking-widest text-white shadow-md flex items-center gap-1.5 rotate-[-2deg]">
+                        <Check size={14} className="stroke-[3] text-emerald-400" />
+                        <span>เก็บคูปองแล้ว</span>
+                      </div>
+                    </div>
+                  )}
                   {/* Left Stub */}
                   <div className="flex w-32 shrink-0 flex-col items-center justify-center bg-[#F5F0E6] px-3 py-5 text-center border-r border-dashed border-[#D6CCB8]">
                     <Icon size={22} className="text-[#556B2F] mb-1.5" />
@@ -314,12 +336,12 @@ export default function VouchersPage() {
                           type="button"
                           disabled={disabled || claimingId === v.id}
                           onClick={() => handleClaim(v.id)}
-                          className={`inline-flex items-center gap-1 rounded-xl px-4 py-1.5 text-xs font-bold transition cursor-pointer ${
+                          className={`inline-flex items-center gap-1 rounded-xl px-4 py-1.5 text-xs font-bold transition ${
                             v.isClaimed
-                              ? "bg-[#556B2F]/15 text-[#556B2F] cursor-default"
+                              ? "bg-stone-300 text-stone-600 border border-stone-400/50 cursor-not-allowed shadow-none"
                               : disabled
                                 ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
-                                : "bg-[#6A5242] text-white hover:bg-[#556B2F]"
+                                : "bg-[#6A5242] text-white hover:bg-[#556B2F] cursor-pointer"
                           }`}
                         >
                           {v.isClaimed ? (
