@@ -137,7 +137,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center font-anuphan antialiased transition-all duration-300 ${
+      className={`fixed inset-0 z-[200] flex items-center justify-center font-anuphan antialiased transition-all duration-300 ${
         isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
     >

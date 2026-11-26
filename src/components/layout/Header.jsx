@@ -35,6 +35,7 @@ export default function Header({
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authRedirectAfterLogin, setAuthRedirectAfterLogin] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -177,6 +178,17 @@ setAvatar(null);
     if (onAuthStatusChange) {
       onAuthStatusChange(true, user);
     }
+
+    if (authRedirectAfterLogin) {
+      const target = authRedirectAfterLogin;
+      setAuthRedirectAfterLogin(null);
+      router.push(target);
+    }
+  };
+
+  const handleOpenAuth = (redirectUrl = null) => {
+    setAuthRedirectAfterLogin(redirectUrl);
+    setIsAuthOpen(true);
   };
 
   return (
@@ -418,7 +430,11 @@ setAvatar(null);
       />
 
       {/* Cart Drawer */}
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        onOpenAuth={handleOpenAuth}
+      />
     </>
   );
 }

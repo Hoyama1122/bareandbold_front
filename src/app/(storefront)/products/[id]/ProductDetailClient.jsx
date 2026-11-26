@@ -13,11 +13,13 @@ import ProductReviewsSection from "@/components/product-detail/ProductReviewsSec
 import RecommendedProducts from "@/components/product-detail/RecommendedProducts";
 import ImageZoomModal from "@/components/product-detail/ImageZoomModal";
 import { addToCart as addCartAPI } from "@/services/cart.service";
+import { useAuth } from "@/context/AuthContext";
 import { Check, X } from "lucide-react";
 
 export default function ProductDetailClient({ nameSlug }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isLoggedIn } = useAuth();
   const [product, setProduct] = useState(null);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -302,7 +304,11 @@ export default function ProductDetailClient({ nameSlug }) {
         shopName: product.shop?.name || "Bare & Bold",
         selectedOptions: selectedOptions,
       });
-      router.push("/checkout");
+      if (!isLoggedIn) {
+        router.push("/login?next=/checkout");
+      } else {
+        router.push("/checkout");
+      }
     } catch (error) {
       console.error("Failed to buy now:", error);
       showToast("เกิดข้อผิดพลาดในการสั่งซื้อสินค้า", "error");

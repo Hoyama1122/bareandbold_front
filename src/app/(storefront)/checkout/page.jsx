@@ -48,7 +48,13 @@ export default function CheckoutPage() {
     DEFAULT_PLATFORM_SETTINGS,
   );
 
-  const { shop } = useAuth();
+  const { user, isLoggedIn, loading: authLoading, shop } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isLoggedIn) {
+      router.replace("/login?next=/checkout");
+    }
+  }, [authLoading, isLoggedIn, router]);
 
   const ownShopItems = useMemo(() => {
     if (!shop?.id || !orderItems || orderItems.length === 0) return [];
@@ -359,6 +365,11 @@ export default function CheckoutPage() {
 
   const handleConfirm = async (e) => {
     e.preventDefault();
+    if (!isLoggedIn) {
+      setError("กรุณาเข้าสู่ระบบก่อนทำการสั่งซื้อสินค้า");
+      router.push("/login?next=/checkout");
+      return;
+    }
     if (!orderItems || orderItems.length === 0) {
       setError("ไม่มีสินค้าในตะกร้า กรุณาเลือกสินค้าก่อนทำการสั่งซื้อ");
       return;
@@ -459,6 +470,15 @@ export default function CheckoutPage() {
       console.error("Failed to simulate webhook:", err);
     }
   };
+
+  if (authLoading || (!isLoggedIn && typeof window !== "undefined")) {
+    return (
+      <div style={{ background: CREAM, minHeight: "100vh" }} className="flex flex-col items-center justify-center p-10 font-sans">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6A5242]" />
+        <p className="mt-4 text-sm text-[#8C8577]">กำลังตรวจสอบการเข้าสู่ระบบ...</p>
+      </div>
+    );
+  }
 
   if (placed) {
     return <OrderSuccess orderNumber={orderNumber} total={savedTotal || total} router={router} baht={baht} />;

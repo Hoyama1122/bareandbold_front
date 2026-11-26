@@ -10,6 +10,7 @@ import {
   platformService,
 } from "@/services/platform.service";
 import { calculateCartPricing } from "@/lib/pricing";
+import { useAuth } from "@/context/AuthContext";
 
 const INK = "#2B2118";
 const CREAM = "#F2ECDD";
@@ -25,6 +26,7 @@ function baht(n) {
 
 export default function CartSummaryPage() {
   const router = useRouter();
+  const { isLoggedIn } = useAuth();
   const [items, setItems] = useState([]);
   const [shippingSettings, setShippingSettings] = useState(
     DEFAULT_PLATFORM_SETTINGS,
@@ -321,12 +323,28 @@ export default function CartSummaryPage() {
                   <span className="kanit text-xl font-semibold">฿{baht(total)}</span>
                 </div>
 
+                {!isLoggedIn && (
+                  <div className="mb-3 flex items-center gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200/80 rounded-xl px-3.5 py-2.5">
+                    <svg className="w-4 h-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span>กรุณาเข้าสู่ระบบก่อนทำการชำระเงิน</span>
+                  </div>
+                )}
+
                 <button
-                  onClick={() => router.push("/checkout")}
-                  className="w-full py-3 rounded-lg font-medium kanit"
+                  type="button"
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      router.push("/login?next=/checkout");
+                      return;
+                    }
+                    router.push("/checkout");
+                  }}
+                  className="w-full py-3 rounded-lg font-medium kanit cursor-pointer transition hover:opacity-95"
                   style={{ background: INK, color: CREAM }}
                   >
-                  ดำเนินการชำระเงิน
+                  {isLoggedIn ? "ดำเนินการชำระเงิน" : "เข้าสู่ระบบเพื่อชำระเงิน"}
                 </button>
                 <p className="text-xs text-center mt-3" style={{ color: MUTED }}>
                   ราคานี้ยังไม่รวมภาษีที่อาจเรียกเก็บเพิ่มเติม

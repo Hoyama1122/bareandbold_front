@@ -2,10 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ShoppingBag01Icon } from "hugeicons-react";
 import { cartService, getCart, removeCartItem } from "@/services/cart.service";
+import { useAuth } from "@/context/AuthContext";
 
-export default function CartDrawer({ isOpen, onClose }) {
+export default function CartDrawer({ isOpen, onClose, onOpenAuth }) {
+  const router = useRouter();
+  const { isLoggedIn } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [mounted, setMounted] = useState(false);
 
@@ -224,6 +228,14 @@ export default function CartDrawer({ isOpen, onClose }) {
               <span>ยอดรวมทั้งหมด:</span>
               <span className="text-lg font-black text-[#6A5242]">฿{total.toLocaleString()}</span>
             </div>
+            {!isLoggedIn && (
+              <div className="flex items-center gap-2 text-xs text-amber-800 bg-amber-50/90 border border-amber-200/80 rounded-xl px-3.5 py-2.5">
+                <svg className="w-4 h-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>กรุณาเข้าสู่ระบบก่อนทำการชำระเงิน</span>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <Link
                 href="/cart"
@@ -232,13 +244,25 @@ export default function CartDrawer({ isOpen, onClose }) {
               >
                 ดูตะกร้าสินค้า
               </Link>
-              <Link
-                href="/checkout"
-                onClick={onClose}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isLoggedIn) {
+                    onClose();
+                    if (onOpenAuth) {
+                      onOpenAuth("/checkout");
+                    } else {
+                      router.push("/login?next=/checkout");
+                    }
+                    return;
+                  }
+                  onClose();
+                  router.push("/checkout");
+                }}
                 className="w-full py-3 bg-[#6A5242] hover:bg-[#523e31] text-white text-xs font-bold tracking-wider rounded-lg transition duration-200 text-center flex items-center justify-center cursor-pointer shadow-sm"
               >
-                ชำระเงิน
-              </Link>
+                {isLoggedIn ? "ชำระเงิน" : "เข้าสู่ระบบเพื่อชำระเงิน"}
+              </button>
             </div>
           </div>
         )}
