@@ -249,11 +249,13 @@ export default function OrderHistoryPage() {
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, [returnFiles]);
 
-  const openReturnModal = (order = null) => {
+  const openReturnModal = (order = null, item = null) => {
     const defaultOrder = order || eligibleReturnOrders[0] || null;
+    const defaultItem = item || (defaultOrder?.items?.length === 1 ? defaultOrder.items[0] : null);
+
     setReturnType("REFUND");
     setReturnOrderId(defaultOrder?.id || "");
-    setReturnItemId("");
+    setReturnItemId(defaultItem?.id || "");
     setReturnReason("");
     setReturnCondition("");
     setReturnBankName("");
@@ -471,19 +473,6 @@ export default function OrderHistoryPage() {
                   {tab.label}
                 </span>
               </button>
-
-              {tab.id === "CANCELLED" && (
-                <button
-                  onClick={() => openReturnModal()}
-                  className="my-2 px-4 rounded-lg text-xs font-semibold whitespace-nowrap border cursor-pointer"
-                  style={{ borderColor: BORDER, color: WALNUT, background: WHITE }}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    <RotateCcw size={14} />
-                    คืนสินค้า
-                  </span>
-                </button>
-              )}
             </React.Fragment>
           ))}
         </div>
@@ -571,8 +560,18 @@ export default function OrderHistoryPage() {
                           )}
                           <span className="text-xs text-zinc-400 mt-2 block font-anuphan">จำนวน: x{it.quantity}</span>
                         </div>
-                        <div className="text-right pl-4">
+                        <div className="text-right pl-4 flex flex-col items-end gap-1.5 shrink-0">
                           <span className="text-sm font-semibold" style={{ color: DARK }}>฿{baht(it.price)}</span>
+                          {["SHIPPED", "PARTIALLY_SHIPPED", "DELIVERED", "COMPLETED"].includes(order.status) && (
+                            <button
+                              type="button"
+                              onClick={() => openReturnModal(order, it)}
+                              className="text-[11px] font-semibold text-[#6A5242] hover:text-[#523e31] hover:underline flex items-center gap-1 cursor-pointer transition"
+                            >
+                              <RotateCcw size={11} />
+                              ขอคืนสินค้านี้
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
@@ -1252,51 +1251,135 @@ export default function OrderHistoryPage() {
                     </div>
                   </div>
                 )}
+                {/* ออเดอร์และสินค้าที่ต้องการคืน (อิงจากสินค้าที่กดขอคืนสินค้าโดยอัตโนมัติ) */}
                 <div>
-                  <label className="mb-1 block text-sm font-semibold" style={{ color: DARK }}>
-                    ออเดอร์ที่ต้องการคืนสินค้า *
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-500">
+                    ออเดอร์และสินค้าที่ต้องการคืน
                   </label>
-                  <select
-                    value={returnOrderId}
-                    onChange={(event) => {
-                      setReturnOrderId(event.target.value);
-                      setReturnItemId("");
-                    }}
-                    className="w-full rounded-lg border px-3 py-2 text-sm"
-                    style={{ borderColor: BORDER, color: DARK }}
-                    required
-                  >
-                    <option value="">เลือกออเดอร์</option>
-                    {eligibleReturnOrders.map((order) => (
-                      <option key={order.id} value={order.id}>
-                        {order.id} — ฿{baht(order.totalPrice)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  {(() => {
+                    const targetOrder = orders.find((o) => o.id === returnOrderId) || eligibleReturnOrders.find((o) => o.id === returnOrderId);
+                    const targetItem = targetOrder?.items?.find((it) => it.id === returnItemId);
 
-                {returnOrderId && (
-                  <div>
-                    <label className="mb-1 block text-sm font-semibold" style={{ color: DARK }}>
-                      สินค้าที่ต้องการคืน
-                    </label>
-                    <select
-                      value={returnItemId}
-                      onChange={(event) => setReturnItemId(event.target.value)}
-                      className="w-full rounded-lg border px-3 py-2 text-sm"
-                      style={{ borderColor: BORDER, color: DARK }}
-                    >
-                      <option value="">สินค้าทั้งออเดอร์</option>
-                      {orders
-                        .find((order) => order.id === returnOrderId)
-                        ?.items?.map((item) => (
-                          <option key={item.id} value={item.id}>
-                            {item.product?.name || "สินค้า"} (จำนวน {item.quantity})
+                    if (targetOrder) {
+                      return (
+                        <div className="rounded-xl border border-[#EADECC] bg-[#FAF8F5] p-3.5 space-y-3">
+                          <div className="flex items-center justify-between text-xs border-b border-[#EADECC]/60 pb-2">
+                            <span className="text-zinc-600 font-medium">
+                              ออเดอร์: <strong className="font-mono text-zinc-900 font-bold">#{targetOrder.id}</strong>
+                            </span>
+                            <span className="font-bold text-[#6A5242]">ยอดรวมคำสั่งซื้อ ฿{baht(targetOrder.totalPrice)}</span>
+                          </div>
+
+                          {targetItem ? (
+                            <div className="flex items-center gap-3 bg-white p-2.5 rounded-lg border border-[#EADECC]/80">
+                              <img
+                                src={
+                                  targetItem.product?.images?.[0]?.url ||
+                                  targetItem.product?.imageUrl ||
+                                  "/images/placeholder.jpg"
+                                }
+                                alt={targetItem.product?.name || "Product"}
+                                className="w-14 h-14 rounded-lg object-cover flex-shrink-0 border border-zinc-100"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <h5 className="font-bold text-xs text-[#3C322A] truncate">
+                                  {targetItem.product?.name}
+                                </h5>
+                                <p className="text-[11px] text-zinc-500 font-anuphan mt-0.5">
+                                  {targetItem.customDetails?.size ? `ขนาด: ${targetItem.customDetails.size} ` : ""}
+                                  {targetItem.customDetails?.material ? `/ วัสดุ: ${targetItem.customDetails.material}` : ""}
+                                </p>
+                                <p className="text-[11px] text-zinc-400 font-anuphan">
+                                  จำนวน: {targetItem.quantity} ชิ้น • ฿{baht(targetItem.price)}
+                                </p>
+                              </div>
+                              {targetOrder.items && targetOrder.items.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setReturnItemId("")}
+                                  className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-800 underline cursor-pointer shrink-0"
+                                >
+                                  เปลี่ยนเป็นทั้งออเดอร์
+                                </button>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {targetOrder.items && targetOrder.items.length > 1 && (
+                                <p className="text-xs font-semibold text-zinc-700">
+                                  เลือกสินค้าที่ต้องการคืนในออเดอร์นี้:
+                                </p>
+                              )}
+                              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                                {targetOrder.items?.map((it) => (
+                                  <div
+                                    key={it.id}
+                                    onClick={() => setReturnItemId(it.id)}
+                                    className={`flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition ${
+                                      returnItemId === it.id
+                                        ? "border-[#6A5242] bg-[#F5F0E6]/50 ring-1 ring-[#6A5242]"
+                                        : "border-zinc-200 bg-white hover:bg-zinc-50"
+                                    }`}
+                                  >
+                                    <img
+                                      src={
+                                        it.product?.images?.[0]?.url ||
+                                        it.product?.imageUrl ||
+                                        "/images/placeholder.jpg"
+                                      }
+                                      alt={it.product?.name || "Product"}
+                                      className="w-10 h-10 rounded-md object-cover flex-shrink-0"
+                                    />
+                                    <div className="flex-1 min-w-0 text-xs">
+                                      <p className="font-semibold text-zinc-800 truncate">{it.product?.name}</p>
+                                      <p className="text-[11px] text-zinc-500">จำนวน: x{it.quantity} (฿{baht(it.price)})</p>
+                                    </div>
+                                    <span className="text-[11px] font-bold text-[#6A5242]">
+                                      {returnItemId === it.id ? "✓ เลือกชิ้นนี้" : "เลือกชิ้นนี้"}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                              {targetOrder.items && targetOrder.items.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setReturnItemId("")}
+                                  className={`w-full py-1.5 text-xs font-bold rounded-lg border text-center transition cursor-pointer ${
+                                    returnItemId === ""
+                                      ? "bg-[#6A5242] text-white border-[#6A5242]"
+                                      : "bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50"
+                                  }`}
+                                >
+                                  {returnItemId === "" ? "✓ คืนสินค้าทุกรายการในออเดอร์นี้" : "คืนสินค้าทุกรายการในออเดอร์นี้"}
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <select
+                        value={returnOrderId}
+                        onChange={(event) => {
+                          setReturnOrderId(event.target.value);
+                          setReturnItemId("");
+                        }}
+                        className="w-full rounded-lg border px-3 py-2 text-sm"
+                        style={{ borderColor: BORDER, color: DARK }}
+                        required
+                      >
+                        <option value="">เลือกออเดอร์</option>
+                        {eligibleReturnOrders.map((order) => (
+                          <option key={order.id} value={order.id}>
+                            {order.id} — ฿{baht(order.totalPrice)}
                           </option>
                         ))}
-                    </select>
-                  </div>
-                )}
+                      </select>
+                    );
+                  })()}
+                </div>
 
                 <div>
                   <label className="mb-1 block text-sm font-semibold" style={{ color: DARK }}>
