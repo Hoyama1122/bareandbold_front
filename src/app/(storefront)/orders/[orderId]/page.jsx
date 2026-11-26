@@ -115,37 +115,66 @@ function Timeline({ status, date }) {
  
 export default function OrderDetailPage() {
   const router = useRouter();
-const { orderId } = useParams();
+  const { orderId } = useParams();
 
-const [order, setOrder] = useState(null);
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  async function loadOrder() {
-    const data = await getOrderById(orderId);
-
-    if (data.success) {
-      setOrder(data.order);
+  useEffect(() => {
+    async function loadOrder() {
+      setLoading(true);
+      try {
+        const data = await getOrderById(orderId);
+        if (data && data.success && data.order) {
+          setOrder(data.order);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
     }
+
+    if (orderId) {
+      loadOrder();
+    } else {
+      setLoading(false);
+    }
+  }, [orderId]);
+
+  if (loading) {
+    return (
+      <div style={{ background: CREAM, minHeight: "100vh" }} className="flex flex-col items-center justify-center p-10 font-sans">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6A5242]" />
+        <p className="mt-4 text-sm text-[#8C8577]">กำลังโหลดข้อมูลคำสั่งซื้อ...</p>
+      </div>
+    );
   }
 
-  if (orderId) {
-    loadOrder();
+  if (!order) {
+    return (
+      <div style={{ background: CREAM, minHeight: "100vh" }} className="flex flex-col items-center justify-center p-10 font-sans text-center">
+        <p className="text-lg font-bold text-[#3C322A]">ไม่พบข้อมูลคำสั่งซื้อนี้</p>
+        <p className="text-sm text-[#8C8577] mt-1">คำสั่งซื้ออาจไม่มีอยู่ หรือคุณไม่มีสิทธิ์เข้าถึง</p>
+        <button
+          onClick={() => router.push("/orders")}
+          className="mt-4 px-5 py-2.5 bg-[#6A5242] text-white text-sm font-bold rounded-xl hover:bg-[#523e31] transition cursor-pointer"
+        >
+          กลับสู่หน้ารายการสั่งซื้อ
+        </button>
+      </div>
+    );
   }
-}, [orderId]);
 
-if (!order) {
-  return <div className="p-10">Loading...</div>;
-}
-
-const subtotal = order.items.reduce((sum, item) => {
-  const basePrice = Number(item.price || 0) * item.quantity;
-  const accessoriesPrice = (item.accessories || []).reduce((accSum, acc) => {
-    return accSum + Number(acc.price || 0) * acc.quantity;
+  const subtotal = (order.items || []).reduce((sum, item) => {
+    const basePrice = Number(item.price || 0) * item.quantity;
+    const accessoriesPrice = (item.accessories || []).reduce((accSum, acc) => {
+      return accSum + Number(acc.price || 0) * acc.quantity;
+    }, 0);
+    return sum + basePrice + accessoriesPrice;
   }, 0);
-  return sum + basePrice + accessoriesPrice;
-}, 0);
 
-const shippingFee = order.totalPrice - subtotal;
+  const shippingFee = (order.totalPrice || 0) - subtotal;
  
   return (
     <div style={{ background: CREAM, minHeight: "100vh", fontFamily: "'Sarabun', sans-serif", color: INK }}>
