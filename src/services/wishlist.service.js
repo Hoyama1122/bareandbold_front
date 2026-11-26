@@ -25,7 +25,13 @@ const apiFetch = async (endpoint, options = {}) => {
 export const wishlistService = {
   isLoggedIn: () => {
     if (typeof window === "undefined") return false;
-    return document.cookie.includes("bare_user_token") || document.cookie.includes("token");
+    return Boolean(
+      localStorage.getItem("bare_user_email") ||
+      localStorage.getItem("profile") ||
+      localStorage.getItem("bare_user") ||
+      document.cookie.includes("bare_user_token") ||
+      document.cookie.includes("token")
+    );
   },
 
   fetchWishlist: async () => {

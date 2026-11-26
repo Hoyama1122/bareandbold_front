@@ -31,6 +31,16 @@ const apiFetch = async (endpoint, options = {}) => {
 };
 
 export const addressService = {
+  isLoggedIn: () => {
+    if (typeof window === "undefined") return false;
+    return Boolean(
+      localStorage.getItem("bare_user_email") ||
+      localStorage.getItem("profile") ||
+      localStorage.getItem("bare_user") ||
+      document.cookie.includes("bare_user_token")
+    );
+  },
+
   getAddresses: async () => {
     try {
       const data = await apiFetch("/addresses");

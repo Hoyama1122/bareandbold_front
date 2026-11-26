@@ -73,6 +73,17 @@ const mapBackendCartToLocal = (backendCart) => {
 let isMergingCart = false;
 
 export const cartService = {
+  // Helper check for logged-in status
+  isLoggedIn: () => {
+    if (typeof window === "undefined") return false;
+    return Boolean(
+      localStorage.getItem("bare_user_email") ||
+      localStorage.getItem("profile") ||
+      localStorage.getItem("bare_user") ||
+      document.cookie.includes("bare_user_token")
+    );
+  },
+
   // Fetch Cart (syncs with local storage and notifies components)
   fetchCart: async () => {
     if (typeof window === "undefined") return [];
@@ -333,4 +344,8 @@ export async function getCart() {
 
 export async function removeCartItem(productId) {
   return await cartService.removeCartItem(productId);
+}
+
+export function isLoggedIn() {
+  return cartService.isLoggedIn();
 }

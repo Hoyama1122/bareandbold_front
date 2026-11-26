@@ -8,6 +8,7 @@ import { paymentService } from "@/services/payment.service";
 import {Clock,MapPin,Truck,AlertCircle,ShoppingBag,Store,ChevronDown,ChevronUp,RotateCcw,ImagePlus,Star,CheckCircle2,PackageCheck,ExternalLink,Copy,Check,Package} from "lucide-react";
 import ReviewModal from "@/components/orders/ReviewModal";
 import { uploadService } from "@/services/upload.service";
+import { useAuth } from "@/context/AuthContext";
 
 // Theme color constants matching f:/GitHub/CSI204-BareAndBold/bareandbold_front/src/app/globals.css
 const CREAM = "#FDFBF7";       // earth-cream
@@ -46,6 +47,7 @@ function formatDate(dateStr) {
 
 export default function OrderHistoryPage() {
   const router = useRouter();
+  const { user, isLoggedIn: authLoggedIn, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -58,17 +60,6 @@ export default function OrderHistoryPage() {
   const [chargeId, setChargeId] = useState("");
   const [showQRModal, setShowQRModal] = useState(false);
   const [simulating, setSimulating] = useState({});
-
-  useEffect(() => {
-    const checkLogin = () => {
-      const logged = cartService.isLoggedIn();
-      setIsLoggedIn(logged);
-      if (!logged) {
-        setLoading(false);
-      }
-    };
-    checkLogin();
-  }, []);
 
   const fetchOrders = async () => {
     try {
@@ -85,10 +76,15 @@ export default function OrderHistoryPage() {
   };
 
   useEffect(() => {
-    if (isLoggedIn) {
-      fetchOrders();
+    if (!authLoading) {
+      setIsLoggedIn(authLoggedIn);
+      if (authLoggedIn) {
+        fetchOrders();
+      } else {
+        setLoading(false);
+      }
     }
-  }, [isLoggedIn]);
+  }, [authLoading, authLoggedIn]);
 
   // Polling order status if QR modal is open
   useEffect(() => {
